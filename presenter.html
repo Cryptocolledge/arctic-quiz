@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <title>Presenter: Квиз Арктика</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="theme-color" content="#050816" />
+  <style>
+    :root{
+      --bg: radial-gradient(circle at top, #59c8ff 0%, #0f2340 42%, #050816 100%);
+      --card: rgba(8, 18, 40, 0.92);
+      --muted: #b5c2d9;
+      --text: #f7fbff;
+      --accent: #4fdfff;
+      --border: rgba(255,255,255,0.08);
+      --shadow: 0 24px 70px rgba(0,0,0,0.75);
+      --radius: 22px;
+    }
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{
+      min-height:100vh;
+      font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      padding: 18px;
+    }
+    .wrap{max-width: 1280px; margin: 0 auto; display:flex; flex-direction:column; gap: 14px;}
+    .top{
+      display:flex; align-items:center; justify-content:space-between; gap: 12px; flex-wrap: wrap;
+      padding: 14px 16px;
+      border: 1px solid var(--border);
+      background: var(--card);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(18px);
+    }
+    .title{font-weight: 750; letter-spacing: .06em; text-transform: uppercase;}
+    .sub{color: var(--muted); font-size: 0.92rem; margin-top: 2px;}
+    .leftTitle{display:flex; flex-direction:column; gap: 2px;}
+    .chips{display:flex; gap: 8px; flex-wrap: wrap; align-items:center;}
+    .chip{
+      padding: 6px 10px;
+      border-radius: 999px;
+      border:1px solid rgba(175,238,255,0.45);
+      background: rgba(3,10,28,0.78);
+      color: #d8f9ff;
+      font-size: 0.85rem;
+      white-space: nowrap;
+    }
+    .btn{
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,0.16);
+      padding: 10px 14px;
+      font-size: 0.86rem;
+      font-weight: 650;
+      letter-spacing: .06em;
+      text-transform: uppercase;
+      cursor: pointer;
+      background: rgba(5, 15, 32, 0.96);
+      color: var(--text);
+      min-height: 44px;
+    }
+    .btnPrimary{
+      background: linear-gradient(120deg, #4fdfff, #6b7aff);
+      color: #02111f;
+      border-color: rgba(170, 244, 255, 0.9);
+    }
+    .btn:disabled{opacity:.55; cursor: default;}
+    .grid{
+      display:grid;
+      grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr);
+      gap: 14px;
+      align-items: stretch;
+    }
+    @media (max-width: 980px){
+      .grid{grid-template-columns: 1fr;}
+    }
+    .card{
+      border: 1px solid var(--border);
+      background: var(--card);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 16px;
+      backdrop-filter: blur(18px);
+    }
+    .qType{color: var(--muted); font-size: 0.85rem; letter-spacing: .12em; text-transform: uppercase;}
+    .qText{font-size: clamp(1.1rem, 1.8vw, 2rem); line-height: 1.25; font-weight: 720; margin-top: 8px;}
+    .qExtra{color: var(--muted); margin-top: 8px; font-size: 1rem;}
+    .imgBox{
+      margin-top: 12px;
+      border-radius: 18px;
+      overflow: hidden;
+      border: 1px solid rgba(135, 206, 255, 0.5);
+      background: rgba(2, 7, 20, 0.95);
+    }
+    .imgBox img{width:100%; max-height: 320px; object-fit: cover; display:block;}
+    .rebus{
+      margin-top: 12px;
+      padding: 10px;
+      border-radius: 14px;
+      border: 1px dashed rgba(120, 244, 255, 0.7);
+      background: rgba(2, 8, 24, 0.9);
+      display:flex; gap: 10px; align-items:center; justify-content:center;
+      flex-wrap: wrap;
+      font-weight: 750;
+      letter-spacing: .08em;
+    }
+    .rebus span{
+      padding: 6px 10px;
+      border-radius: 999px;
+      background: rgba(7, 23, 54, 0.92);
+      border: 1px solid rgba(94, 234, 255, 0.8);
+    }
+    .timer{
+      margin-top: 12px;
+      display:flex; align-items:center; gap: 10px; flex-wrap: wrap;
+    }
+    .barShell{flex:1; min-width: 220px; height: 10px; background: rgba(255,255,255,0.08); border-radius: 999px; overflow:hidden;}
+    .bar{height:100%; width: 0%; background: linear-gradient(90deg, #4fdfff, #ff6ec7); transition: width 0.25s linear;}
+    .bigNum{font-weight: 800; font-size: 1.3rem; color:#e5f9ff;}
+    table{width:100%; border-collapse: collapse; margin-top: 10px;}
+    th, td{padding: 10px 10px; border-bottom: 1px solid rgba(255,255,255,0.08); text-align:left;}
+    th{color: var(--muted); font-size: 0.78rem; text-transform: uppercase; letter-spacing: .12em;}
+    tr:hover td{background: rgba(79,223,255,0.06);}
+    .hint{color: var(--muted); font-size: 0.9rem; margin-top: 8px;}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="top">
+      <div class="leftTitle">
+        <div class="title">Режим докладчика · Арктика</div>
+        <div class="sub">Большой экран: текущий вопрос + результаты команд (обновление каждые 3 секунды)</div>
+      </div>
+      <div class="chips">
+        <span class="chip" id="chipGame">Игра: default</span>
+        <span class="chip" id="chipPhase">Статус: ожидание</span>
+        <span class="chip" id="chipQ">Вопрос: —</span>
+        <button class="btn btnPrimary" id="btnStart">Старт</button>
+        <button class="btn" id="btnPause">Пауза</button>
+        <button class="btn" id="btnPrev">◀ Назад</button>
+        <button class="btn" id="btnNext">Далее ▶</button>
+        <button class="btn" id="btnReset">Сброс</button>
+      </div>
+    </div>
+
+    <div class="grid">
+      <div class="card">
+        <div class="qType" id="qType">Ожидание…</div>
+        <div class="qText" id="qText">Нажмите «Старт», чтобы начать игру.</div>
+        <div class="qExtra" id="qExtra"></div>
+        <div class="imgBox" id="imgBox" style="display:none;">
+          <img id="qImg" alt="Изображение" />
+        </div>
+        <div class="rebus" id="rebus" style="display:none;"></div>
+        <div class="timer">
+          <div class="bigNum" id="timeLeft">—</div>
+          <div class="barShell"><div class="bar" id="timeBar"></div></div>
+          <div class="chip" id="timeLimitChip">25 сек / вопрос</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="qType">Таблица результатов команд</div>
+        <table>
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Команда</th>
+              <th>Студент</th>
+              <th>Учреждение</th>
+              <th>Счёт</th>
+              <th>%</th>
+              <th>Когда</th>
+            </tr>
+          </thead>
+          <tbody id="scoreBody"><tr><td colspan="7" style="color:var(--muted);text-align:center;padding:20px;">Ожидание результатов…</td></tr></tbody>
+        </table>
+        <div class="hint">Показывается лучший результат каждой команды.</div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script>
+    const SUPABASE_URL = "https://arpbhbfyucpojvxipqng.supabase.co";
+    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFycGJoYmZ5dWNwb2p2eGlwcW5nIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIyMTAwNTQsImV4cCI6MjA4Nzc4NjA1NH0.MQWcU9ph2sWNgbHbfDZ0qKEC1V1PzbI7I7TtQyPNyeg";
+    const GAME_ID = "default";
+    const QUESTION_TIME = 25;
+
+    const supabaseClient = (window.supabase && window.supabase.createClient)
+      ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
+      : null;
+
+    const Q = [
+      {type:"text", question:"Что такое Арктика с географической точки зрения?", extra:"Подумайте, как определяется эта область на карте мира."},
+      {type:"text", question:"Какой океан лежит в центре Арктики?", extra:""},
+      {type:"image", question:"Какое типичное арктическое животное изображено на фото?", extra:"", image:"https://upload.wikimedia.org/wikipedia/commons/6/6e/Polar_Bear_-_Alaska_%28cropped%29.jpg"},
+      {type:"text", question:"Какой тип растительности характерен для арктической тундры?", extra:""},
+      {type:"text", question:"Как называется многолетне промёрзший слой грунта в Арктике?", extra:""},
+      {type:"rebus", question:"Какое слово зашифровано в ребусе?", extra:"", rebusParts:["СЕВЕР","ПОЛЮС"]},
+      {type:"text", question:"Какое из перечисленных морей НЕ относится к акватории Арктики?", extra:""},
+      {type:"text", question:"Какая из стран НЕ имеет территорий в Арктике?", extra:""},
+      {type:"text", question:"Как называется многолетний морской лёд, свободно плавающий в Арктическом океане?", extra:""},
+      {type:"text", question:"Что такое полярный день?", extra:""},
+      {type:"text", question:"Что такое полярная ночь?", extra:""},
+      {type:"image", question:"Какое природное явление показано на фото?", extra:"", image:"https://upload.wikimedia.org/wikipedia/commons/5/5c/Aurora_1.jpg"},
+      {type:"text", question:"Какое арктическое животное славится способностью менять окраску шерсти в зависимости от сезона?", extra:""},
+      {type:"text", question:"Через какую условную линию проходят многие арктические территории?", extra:""},
+      {type:"rebus", question:"Разгадайте ребус и определите арктический объект.", extra:"", rebusParts:["АЙС","БЕРГ"]},
+      {type:"text", question:"Почему потепление климата в Арктике опасно для всего мира?", extra:""},
+      {type:"image", question:"К какому животному относится показанный морской обитатель с бивнями?", extra:"", image:"https://upload.wikimedia.org/wikipedia/commons/3/3d/Odobenus_rosmarus_diving.jpg"},
+      {type:"text", question:"Как называют коренные народы Севера, традиционно ведущие кочевой или полукочевой образ жизни?", extra:""},
+      {type:"text", question:"Для чего используются дрейфующие научные станции в Арктике?", extra:""},
+      {type:"text", question:"Какая особенность делает Арктический океан уникальным по сравнению с другими океанами?", extra:""},
+      {type:"rebus", question:"Какое слово скрыто в ребусе?", extra:"", rebusParts:["ТУН","ДРА"]},
+      {type:"text", question:"Для чего предназначены атомные ледоколы России в Арктике?", extra:""},
+      {type:"text", question:"Почему разливы нефти особенно опасны для арктических экосистем?", extra:""},
+      {type:"image", question:"Какой арктический морской млекопитающий с длинным спиральным бивнем показан на изображении?", extra:"", image:"https://upload.wikimedia.org/wikipedia/commons/3/3a/Narwhals_breach.jpg"},
+      {type:"text", question:"Как называется сильная снежная буря с ветром в Арктике?", extra:""},
+      {type:"text", question:"Какой из вариантов лучше всего описывает зиму в Арктике?", extra:""},
+      {type:"rebus", question:"Посмотрите на ребус и выберите верный термин.", extra:"", rebusParts:["СЕВЕРНОЕ","СИЯНИЕ"]},
+      {type:"text", question:"Какое тёплое течение оказывает заметное влияние на климат европейской части Арктики?", extra:""},
+      {type:"text", question:"Почему Арктика привлекает внимание стран как потенциальный ресурсный регион?", extra:""},
+      {type:"text", question:"Как меняется площадь морского льда в Арктике в течение года?", extra:""},
+      {type:"text", question:"Какое из утверждений о современном состоянии арктического морского льда является наиболее верным?", extra:""}
+    ];
+
+    const el = (id) => document.getElementById(id);
+    const chipGame = el("chipGame");
+    const chipPhase = el("chipPhase");
+    const chipQ = el("chipQ");
+    const qType = el("qType");
+    const qText = el("qText");
+    const qExtra = el("qExtra");
+    const imgBox = el("imgBox");
+    const qImg = el("qImg");
+    const rebus = el("rebus");
+    const timeLeftEl = el("timeLeft");
+    const timeBar = el("timeBar");
+    const scoreBody = el("scoreBody");
+    const btnStart = el("btnStart");
+    const btnPause = el("btnPause");
+    const btnPrev = el("btnPrev");
+    const btnNext = el("btnNext");
+    const btnReset = el("btnReset");
+
+    chipGame.textContent = "Игра: " + GAME_ID;
+
+    let lastState = null;
+    // Флаг чтобы таймер НЕ переключал вопросы автоматически
+    let timerExpiredHandled = false;
+
+    function parseTime(ts){
+      const d = new Date(ts);
+      const t = d.getTime();
+      return Number.isFinite(t) ? t : null;
+    }
+
+    function renderQuestion(index){
+      const q = Q[index] || null;
+      if (!q){
+        qType.textContent = "—";
+        qText.textContent = "Нет вопроса";
+        qExtra.textContent = "";
+        imgBox.style.display = "none";
+        rebus.style.display = "none";
+        return;
+      }
+      const typeLabel = q.type === "image" ? "Вопрос с изображением" : (q.type === "rebus" ? "Ребус" : "Вопрос");
+      qType.textContent = typeLabel;
+      qText.textContent = q.question;
+      qExtra.textContent = q.extra || "";
+
+      if (q.type === "image" && q.image){
+        imgBox.style.display = "";
+        qImg.src = q.image;
+      } else {
+        imgBox.style.display = "none";
+        qImg.src = "";
+      }
+
+      if (q.type === "rebus" && q.rebusParts){
+        rebus.style.display = "";
+        rebus.innerHTML = `<span>${q.rebusParts[0]||""}</span><span>+</span><span>${q.rebusParts[1]||""}</span>`;
+      } else {
+        rebus.style.display = "none";
+        rebus.innerHTML = "";
+      }
+    }
+
+    async function getState(){
+      if (!supabaseClient) return null;
+      const { data, error } = await supabaseClient
+        .from("quiz_state")
+        .select("*")
+        .eq("game_id", GAME_ID)
+        .maybeSingle();
+      if (error) { console.error("getState error", error); return null; }
+      return data || null;
+    }
+
+    async function upsertState(patch){
+      if (!supabaseClient) return null;
+      const row = Object.assign({ game_id: GAME_ID }, patch);
+      const { data, error } = await supabaseClient
+        .from("quiz_state")
+        .upsert(row, { onConflict: "game_id" })
+        .select()
+        .maybeSingle();
+      if (error) { console.error("upsertState error", error); return null; }
+      return data || null;
+    }
+
+    function updateTimer(state){
+      const phase = state?.phase || "waiting";
+      if (phase !== "running" || !state?.question_started_at){
+        timeLeftEl.textContent = "—";
+        timeBar.style.width = "0%";
+        timerExpiredHandled = false;
+        return;
+      }
+      const started = parseTime(state.question_started_at);
+      if (!started){
+        timeLeftEl.textContent = "—";
+        timeBar.style.width = "0%";
+        return;
+      }
+      const elapsed = (Date.now() - started) / 1000;
+      const left = Math.max(0, Math.ceil(QUESTION_TIME - elapsed));
+      timeLeftEl.textContent = String(left);
+      timeBar.style.width = String(Math.max(0, Math.min(100, (left / QUESTION_TIME) * 100))) + "%";
+      // УБРАЛИ автоматический переход! Ведущий сам нажимает "Далее"
+    }
+
+    function applyState(state){
+      lastState = state;
+
+      const phase = state?.phase || "waiting";
+      chipPhase.textContent = "Статус: " + (
+        phase === "running" ? "идёт ▶" :
+        phase === "paused" ? "пауза ⏸" :
+        phase === "ended" ? "завершено ✓" : "ожидание"
+      );
+
+      const idx = (state && typeof state.current_index === "number") ? state.current_index : null;
+      chipQ.textContent = "Вопрос: " + (idx === null ? "—" : (idx + 1) + " / " + Q.length);
+      if (idx !== null){
+        renderQuestion(Math.max(0, Math.min(Q.length - 1, idx)));
+      }
+      updateTimer(state);
+    }
+
+    async function refreshState(){
+      const s = await getState();
+      applyState(s);
+    }
+
+    async function refreshScores(){
+      if (!supabaseClient) return;
+      const { data, error } = await supabaseClient
+        .from("quiz_results")
+        .select("team_name,student_name,institution_name,score,percent,created_at")
+        .order("created_at", { ascending: false })
+        .limit(200);
+      if (error || !data) return;
+
+      const best = new Map();
+      for (const row of data){
+        const key = row.team_name || "—";
+        const cur = best.get(key);
+        if (!cur || (row.score ?? -1) > (cur.score ?? -1)) best.set(key, row);
+      }
+
+      const rows = Array.from(best.values()).sort((a,b) => (b.score||0)-(a.score||0));
+      if (rows.length === 0){
+        scoreBody.innerHTML = `<tr><td colspan="7" style="color:var(--muted);text-align:center;padding:20px;">Результатов пока нет</td></tr>`;
+        return;
+      }
+      scoreBody.innerHTML = rows.map((r, i) => {
+        const when = r.created_at ? new Date(r.created_at).toLocaleTimeString() : "";
+        const medal = i === 0 ? "🥇" : i === 1 ? "🥈" : i === 2 ? "🥉" : (i+1);
+        return `<tr>
+          <td>${medal}</td>
+          <td><b>${r.team_name||"—"}</b></td>
+          <td>${r.student_name||"—"}</td>
+          <td>${r.institution_name||"—"}</td>
+          <td><b>${r.score ?? 0}</b></td>
+          <td>${r.percent ?? 0}%</td>
+          <td>${when}</td>
+        </tr>`;
+      }).join("");
+    }
+
+    async function goStart(){
+      const now = new Date().toISOString();
+      const s = await upsertState({ phase: "running", current_index: 0, question_started_at: now });
+      applyState(s);
+    }
+
+    async function goPause(){
+      const s = await upsertState({ phase: "paused" });
+      applyState(s);
+    }
+
+    async function goResume(){
+      const now = new Date().toISOString();
+      const s = await upsertState({ phase: "running", question_started_at: now });
+      applyState(s);
+    }
+
+    async function goNext(){
+      const cur = lastState?.current_index ?? 0;
+      const next = cur + 1;
+      if (next >= Q.length){
+        const s = await upsertState({ phase: "ended" });
+        applyState(s);
+        return;
+      }
+      const now = new Date().toISOString();
+      const s = await upsertState({ phase: "running", current_index: next, question_started_at: now });
+      applyState(s);
+    }
+
+    async function goPrev(){
+      const cur = lastState?.current_index ?? 0;
+      const prev = Math.max(0, cur - 1);
+      const now = new Date().toISOString();
+      const s = await upsertState({ phase: "running", current_index: prev, question_started_at: now });
+      applyState(s);
+    }
+
+    async function goReset(){
+      const s = await upsertState({ phase: "waiting", current_index: 0, question_started_at: null });
+      applyState(s);
+    }
+
+    btnStart.addEventListener("click", goStart);
+    btnPause.addEventListener("click", async () => {
+      const phase = lastState?.phase || "waiting";
+      if (phase === "running") return goPause();
+      if (phase === "paused") return goResume();
+    });
+    btnNext.addEventListener("click", goNext);
+    btnPrev.addEventListener("click", goPrev);
+    btnReset.addEventListener("click", goReset);
+
+    setInterval(refreshState, 1000);
+    setInterval(refreshScores, 3000);
+    setInterval(() => updateTimer(lastState), 250);
+
+    refreshState();
+    refreshScores();
+  </script>
+</body>
+</html>
