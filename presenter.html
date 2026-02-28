@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <title>Presenter: Квиз Арктика</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="theme-color" content="#050816" />
+  <style>
+    :root{
+      --bg: radial-gradient(circle at top, #59c8ff 0%, #0f2340 42%, #050816 100%);
+      --card: rgba(8, 18, 40, 0.92); --muted: #b5c2d9; --text: #f7fbff;
+      --accent: #4fdfff; --border: rgba(255,255,255,0.08); --shadow: 0 24px 70px rgba(0,0,0,0.75);
+      --radius: 22px; --success: #61ffb2; --danger: #ff5f7a;
+    }
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{ min-height:100vh; font-family: system-ui,-apple-system,"Segoe UI",sans-serif; background:var(--bg); color:var(--text); padding:18px; }
+    .wrap{max-width:1280px;margin:0 auto;display:flex;flex-direction:column;gap:14px;}
+    .top{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;padding:14px 16px;border:1px solid var(--border);background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);backdrop-filter:blur(18px);}
+    .title{font-weight:750;letter-spacing:.06em;text-transform:uppercase;font-size:1.1rem;}
+    .sub{color:var(--muted);font-size:0.85rem;margin-top:2px;}
+    .leftTitle{display:flex;flex-direction:column;gap:2px;}
+    .chips{display:flex;gap:8px;flex-wrap:wrap;align-items:center;}
+    .chip{padding:6px 10px;border-radius:999px;border:1px solid rgba(175,238,255,0.45);background:rgba(3,10,28,0.78);color:#d8f9ff;font-size:0.85rem;white-space:nowrap;}
+    .chip.green{border-color:rgba(97,255,178,0.7);color:var(--success);}
+    .chip.orange{border-color:rgba(255,200,80,0.7);color:#ffe080;}
+    .btn{border-radius:999px;border:1px solid rgba(255,255,255,0.16);padding:10px 16px;font-size:0.86rem;font-weight:650;letter-spacing:.06em;text-transform:uppercase;cursor:pointer;background:rgba(5,15,32,0.96);color:var(--text);min-height:44px;transition:filter 0.15s,transform 0.15s;}
+    .btn:hover:not(:disabled){filter:brightness(1.15);transform:translateY(-1px);}
+    .btn:disabled{opacity:.45;cursor:default;}
+    .btnPrimary{background:linear-gradient(120deg,#4fdfff,#6b7aff);color:#02111f;border-color:rgba(170,244,255,0.9);box-shadow:0 8px 24px rgba(12,52,80,0.6);}
+    .btnDanger{background:linear-gradient(120deg,#ff5f7a,#c0392b);color:#fff;border-color:rgba(255,120,140,0.9);}
+    .grid{display:grid;grid-template-columns:minmax(0,1.4fr) minmax(0,1fr);gap:14px;align-items:stretch;}
+    @media(max-width:980px){.grid{grid-template-columns:1fr;}}
+    .card{border:1px solid var(--border);background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);padding:18px;backdrop-filter:blur(18px);}
+    .cardTitle{color:var(--muted);font-size:0.8rem;letter-spacing:.14em;text-transform:uppercase;margin-bottom:10px;}
+    .qType{color:var(--muted);font-size:0.85rem;letter-spacing:.12em;text-transform:uppercase;}
+    .qText{font-size:clamp(1.1rem,1.8vw,2rem);line-height:1.25;font-weight:720;margin-top:8px;}
+    .qExtra{color:var(--muted);margin-top:8px;font-size:1rem;}
+    .imgBox{margin-top:12px;border-radius:18px;overflow:hidden;border:1px solid rgba(135,206,255,0.5);background:rgba(2,7,20,0.95);}
+    .imgBox img{width:100%;max-height:280px;object-fit:cover;display:block;}
+    .rebus{margin-top:12px;padding:10px;border-radius:14px;border:1px dashed rgba(120,244,255,0.7);background:rgba(2,8,24,0.9);display:flex;gap:10px;align-items:center;justify-content:center;flex-wrap:wrap;font-weight:750;letter-spacing:.08em;}
+    .rebus span{padding:6px 10px;border-radius:999px;background:rgba(7,23,54,0.92);border:1px solid rgba(94,234,255,0.8);}
+    .timerRow{margin-top:14px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;padding:10px 14px;border-radius:14px;background:rgba(3,10,28,0.7);border:1px solid rgba(79,223,255,0.25);}
+    .barShell{flex:1;min-width:120px;height:10px;background:rgba(255,255,255,0.08);border-radius:999px;overflow:hidden;}
+    .bar{height:100%;width:100%;background:linear-gradient(90deg,#4fdfff,#ff6ec7);border-radius:inherit;transition:width 0.25s linear;}
+    .bigNum{font-weight:800;font-size:1.5rem;color:#e5f9ff;min-width:36px;text-align:center;}
+    .statusBar{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:0;}
+    .statBox{flex:1;min-width:100px;padding:10px 14px;border-radius:14px;background:rgba(3,10,28,0.8);border:1px solid rgba(79,223,255,0.2);display:flex;flex-direction:column;gap:2px;}
+    .statLabel{font-size:0.72rem;color:var(--muted);text-transform:uppercase;letter-spacing:.12em;}
+    .statVal{font-size:1.2rem;font-weight:750;color:var(--accent);}
+    table{width:100%;border-collapse:collapse;margin-top:4px;}
+    th,td{padding:9px 10px;border-bottom:1px solid rgba(255,255,255,0.07);text-align:left;font-size:0.9rem;}
+    th{color:var(--muted);font-size:0.75rem;text-transform:uppercase;letter-spacing:.12em;}
+    tr:hover td{background:rgba(79,223,255,0.05);}
+    .hint{color:var(--muted);font-size:0.82rem;margin-top:8px;}
+    @keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(79,223,255,0.5);}50%{box-shadow:0 0 0 10px rgba(79,223,255,0);}}
+    .pulsing{animation:pulse 2s infinite;}
+  </style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top">
+    <div class="leftTitle">
+      <div class="title">🎙 Режим докладчика · Арктика</div>
+      <div class="sub">Управляйте квизом здесь. Студенты видят вопросы на своих устройствах в реальном времени.</div>
+    </div>
+    <div class="chips">
+      <span class="chip" id="chipPhase">⏳ Ожидание</span>
+      <span class="chip" id="chipQ">Вопрос: —</span>
+      <span class="chip" id="chipTeams">👥 Команд: 0</span>
+      <button class="btn btnPrimary pulsing" id="btnStart">▶ Старт</button>
+      <button class="btn" id="btnPause">⏸ Пауза</button>
+      <button class="btn" id="btnPrev">◀ Назад</button>
+      <button class="btn" id="btnNext">Далее ▶</button>
+      <button class="btn btnDanger" id="btnReset">✕ Сброс</button>
+    </div>
+  </div>
+
+  <div class="statusBar">
+    <div class="statBox"><div class="statLabel">Статус игры</div><div class="statVal" id="statPhase">Ожидание</div></div>
+    <div class="statBox"><div class="statLabel">Текущий вопрос</div><div class="statVal" id="statQ">—</div></div>
+    <div class="statBox"><div class="statLabel">Команд финишировало</div><div class="statVal" id="statTeams">0</div></div>
+    <div class="statBox"><div class="statLabel">Лидер</div><div class="statVal" id="statLeader">—</div></div>
+  </div>
+
+  <div class="grid">
+    <div class="card">
+      <div class="cardTitle">Текущий вопрос (виден на экранах студентов)</div>
+      <div class="qType" id="qType">Ожидание…</div>
+      <div class="qText" id="qText">Нажмите «Старт», чтобы начать игру.</div>
+      <div class="qExtra" id="qExtra"></div>
+      <div class="imgBox" id="imgBox" style="display:none;"><img id="qImg" alt="" /></div>
+      <div class="rebus" id="rebus" style="display:none;"></div>
+      <div class="timerRow">
+        <div class="bigNum" id="timeLeft">—</div>
+        <div class="barShell"><div class="bar" id="timeBar" style="width:0%"></div></div>
+        <span class="chip">25 сек / вопрос</span>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="cardTitle">Таблица результатов команд</div>
+      <table>
+        <thead><tr><th>#</th><th>Команда</th><th>Студент</th><th>Счёт</th><th>%</th><th>Время</th></tr></thead>
+        <tbody id="scoreBody"><tr><td colspan="6" style="color:var(--muted);text-align:center;padding:20px;">Студенты ещё не завершили квиз</td></tr></tbody>
+      </table>
+      <div class="hint">Лучший результат каждой команды. Обновляется каждые 3 сек.</div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+  const SUPABASE_URL="https://arpbhbfyucpojvxipqng.supabase.co";
+  const SUPABASE_ANON_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFycGJoYmZ5dWNwb2p2eGlwcW5nIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIyMTAwNTQsImV4cCI6MjA4Nzc4NjA1NH0.MQWcU9ph2sWNgbHbfDZ0qKEC1V1PzbI7I7TtQyPNyeg";
+  const GAME_ID="default", QUESTION_TIME=25;
+  const sb=(window.supabase&&window.supabase.createClient)?window.supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY):null;
+
+  const Q=[
+    {type:"text",question:"Что такое Арктика с географической точки зрения?",extra:"Подумайте, как определяется эта область на карте мира."},
+    {type:"text",question:"Какой океан лежит в центре Арктики?",extra:""},
+    {type:"image",question:"Какое типичное арктическое животное изображено на фото?",extra:"",image:"https://upload.wikimedia.org/wikipedia/commons/6/6e/Polar_Bear_-_Alaska_%28cropped%29.jpg"},
+    {type:"text",question:"Какой тип растительности характерен для арктической тундры?",extra:""},
+    {type:"text",question:"Как называется многолетне промёрзший слой грунта в Арктике?",extra:""},
+    {type:"rebus",question:"Какое слово зашифровано в ребусе?",extra:"",rebusParts:["СЕВЕР","ПОЛЮС"]},
+    {type:"text",question:"Какое из перечисленных морей НЕ относится к акватории Арктики?",extra:""},
+    {type:"text",question:"Какая из стран НЕ имеет территорий в Арктике?",extra:""},
+    {type:"text",question:"Как называется многолетний морской лёд, свободно плавающий в Арктическом океане?",extra:""},
+    {type:"text",question:"Что такое полярный день?",extra:""},
+    {type:"text",question:"Что такое полярная ночь?",extra:""},
+    {type:"image",question:"Какое природное явление показано на фото?",extra:"",image:"https://upload.wikimedia.org/wikipedia/commons/5/5c/Aurora_1.jpg"},
+    {type:"text",question:"Какое арктическое животное славится способностью менять окраску шерсти в зависимости от сезона?",extra:""},
+    {type:"text",question:"Через какую условную линию проходят многие арктические территории?",extra:""},
+    {type:"rebus",question:"Разгадайте ребус и определите арктический объект.",extra:"",rebusParts:["АЙС","БЕРГ"]},
+    {type:"text",question:"Почему потепление климата в Арктике опасно для всего мира?",extra:""},
+    {type:"image",question:"К какому животному относится показанный морской обитатель с бивнями?",extra:"",image:"https://upload.wikimedia.org/wikipedia/commons/3/3d/Odobenus_rosmarus_diving.jpg"},
+    {type:"text",question:"Как называют коренные народы Севера, традиционно ведущие кочевой образ жизни?",extra:""},
+    {type:"text",question:"Для чего используются дрейфующие научные станции в Арктике?",extra:""},
+    {type:"text",question:"Какая особенность делает Арктический океан уникальным по сравнению с другими океанами?",extra:""},
+    {type:"rebus",question:"Какое слово скрыто в ребусе?",extra:"",rebusParts:["ТУН","ДРА"]},
+    {type:"text",question:"Для чего предназначены атомные ледоколы России в Арктике?",extra:""},
+    {type:"text",question:"Почему разливы нефти особенно опасны для арктических экосистем?",extra:""},
+    {type:"image",question:"Какой арктический морской млекопитающий с длинным спиральным бивнем показан?",extra:"",image:"https://upload.wikimedia.org/wikipedia/commons/3/3a/Narwhals_breach.jpg"},
+    {type:"text",question:"Как называется сильная снежная буря с ветром в Арктике?",extra:""},
+    {type:"text",question:"Какой из вариантов лучше всего описывает зиму в Арктике?",extra:""},
+    {type:"rebus",question:"Посмотрите на ребус и выберите верный термин.",extra:"",rebusParts:["СЕВЕРНОЕ","СИЯНИЕ"]},
+    {type:"text",question:"Какое тёплое течение влияет на климат европейской части Арктики?",extra:""},
+    {type:"text",question:"Почему Арктика привлекает внимание стран как ресурсный регион?",extra:""},
+    {type:"text",question:"Как меняется площадь морского льда в Арктике в течение года?",extra:""},
+    {type:"text",question:"Какое утверждение о современном состоянии арктического льда наиболее верно?",extra:""}
+  ];
+
+  const $=id=>document.getElementById(id);
+  const chipPhase=$("chipPhase"),chipQ=$("chipQ"),chipTeams=$("chipTeams");
+  const statPhase=$("statPhase"),statQ=$("statQ"),statTeams=$("statTeams"),statLeader=$("statLeader");
+  const qType=$("qType"),qText=$("qText"),qExtra=$("qExtra"),imgBox=$("imgBox"),qImg=$("qImg"),rebus=$("rebus");
+  const timeLeftEl=$("timeLeft"),timeBar=$("timeBar"),scoreBody=$("scoreBody");
+  const btnStart=$("btnStart"),btnPause=$("btnPause"),btnPrev=$("btnPrev"),btnNext=$("btnNext"),btnReset=$("btnReset");
+
+  let lastState=null, timerTick=null;
+
+  function renderQ(i){
+    const q=Q[i];if(!q)return;
+    qType.textContent=q.type==="image"?"Вопрос с изображением":q.type==="rebus"?"Ребус":"Вопрос";
+    qText.textContent=q.question; qExtra.textContent=q.extra||"";
+    if(q.type==="image"&&q.image){imgBox.style.display="";qImg.src=q.image;}else{imgBox.style.display="none";}
+    if(q.type==="rebus"&&q.rebusParts){rebus.style.display="";rebus.innerHTML=`<span>${q.rebusParts[0]}</span><span style="color:#4fdfff;font-size:1.2rem">+</span><span>${q.rebusParts[1]}</span>`;}
+    else{rebus.style.display="none";}
+  }
+
+  function startTimer(startedAt){
+    if(timerTick)clearInterval(timerTick);
+    const ms=new Date(startedAt).getTime();
+    function tick(){
+      const left=Math.max(0,Math.ceil(QUESTION_TIME-(Date.now()-ms)/1000));
+      timeLeftEl.textContent=String(left);
+      timeBar.style.width=Math.max(0,(left/QUESTION_TIME)*100)+"%";
+      timeBar.style.background=left<=5?"linear-gradient(90deg,#ff5f7a,#c0392b)":left<=10?"linear-gradient(90deg,#ffe080,#ff9800)":"linear-gradient(90deg,#4fdfff,#ff6ec7)";
+    }
+    tick();timerTick=setInterval(tick,250);
+  }
+
+  function stopTimer(){if(timerTick){clearInterval(timerTick);timerTick=null;}timeBar.style.width="0%";}
+
+  function applyState(s){
+    lastState=s;
+    if(!s){chipPhase.textContent="⏳ Ожидание";chipPhase.className="chip";statPhase.textContent="Ожидание";stopTimer();timeLeftEl.textContent="—";return;}
+    const phase=s.phase||"waiting",idx=typeof s.current_index==="number"?s.current_index:null;
+
+    if(phase==="running"){chipPhase.textContent="▶ Идёт";chipPhase.className="chip green";statPhase.textContent="▶ Идёт";btnStart.classList.remove("pulsing");}
+    else if(phase==="paused"){chipPhase.textContent="⏸ Пауза";chipPhase.className="chip orange";statPhase.textContent="⏸ Пауза";stopTimer();timeLeftEl.textContent="⏸";}
+    else if(phase==="ended"){chipPhase.textContent="✓ Завершено";chipPhase.className="chip";statPhase.textContent="✓ Завершено";stopTimer();timeLeftEl.textContent="—";}
+    else{chipPhase.textContent="⏳ Ожидание";chipPhase.className="chip";statPhase.textContent="Ожидание";stopTimer();timeLeftEl.textContent="—";}
+
+    if(idx!==null){chipQ.textContent="Вопрос: "+(idx+1)+" / "+Q.length;statQ.textContent=(idx+1)+" из "+Q.length;renderQ(Math.max(0,Math.min(Q.length-1,idx)));}
+    else{chipQ.textContent="Вопрос: —";statQ.textContent="—";}
+
+    if(phase==="running"&&s.question_started_at)startTimer(s.question_started_at);
+    btnPause.textContent=phase==="paused"?"▶ Продолжить":"⏸ Пауза";
+  }
+
+  async function getState(){if(!sb)return null;const{data,error}=await sb.from("quiz_state").select("*").eq("game_id",GAME_ID).maybeSingle();if(error)return null;return data||null;}
+  async function ups(patch){if(!sb)return null;const{data,error}=await sb.from("quiz_state").upsert(Object.assign({game_id:GAME_ID},patch),{onConflict:"game_id"}).select().maybeSingle();if(error){console.error(error);return null;}return data||null;}
+
+  async function goStart(){applyState(await ups({phase:"running",current_index:0,question_started_at:new Date().toISOString()}));}
+  async function goPause(){applyState(await ups({phase:"paused"}));}
+  async function goResume(){applyState(await ups({phase:"running",question_started_at:new Date().toISOString()}));}
+  async function goNext(){
+    const cur=lastState?.current_index??0,next=cur+1;
+    if(next>=Q.length){applyState(await ups({phase:"ended"}));return;}
+    applyState(await ups({phase:"running",current_index:next,question_started_at:new Date().toISOString()}));
+  }
+  async function goPrev(){
+    const prev=Math.max(0,(lastState?.current_index??0)-1);
+    applyState(await ups({phase:"running",current_index:prev,question_started_at:new Date().toISOString()}));
+  }
+  async function goReset(){
+    if(!confirm("Сбросить игру? Все данные о состоянии будут удалены."))return;
+    applyState(await ups({phase:"waiting",current_index:0,question_started_at:null}));
+  }
+
+  btnStart.addEventListener("click",goStart);
+  btnPause.addEventListener("click",()=>{const p=lastState?.phase||"waiting";if(p==="running")goPause();else if(p==="paused")goResume();});
+  btnNext.addEventListener("click",goNext);
+  btnPrev.addEventListener("click",goPrev);
+  btnReset.addEventListener("click",goReset);
+
+  async function refreshScores(){
+    if(!sb)return;
+    const{data,error}=await sb.from("quiz_results").select("team_name,student_name,score,percent,created_at").eq("game_id",GAME_ID).order("created_at",{ascending:false}).limit(300);
+    if(error||!data)return;
+    const best=new Map();
+    for(const r of data){const k=r.team_name||"—";const c=best.get(k);if(!c||(r.score??-1)>(c.score??-1))best.set(k,r);}
+    const rows=Array.from(best.values()).sort((a,b)=>(b.score||0)-(a.score||0));
+    chipTeams.textContent="👥 Команд: "+rows.length;
+    statTeams.textContent=rows.length;
+    statLeader.textContent=rows.length>0?(rows[0].team_name||"—")+" ("+rows[0].score+")":"—";
+    if(rows.length===0){scoreBody.innerHTML=`<tr><td colspan="6" style="color:var(--muted);text-align:center;padding:20px;">Студенты ещё не завершили квиз</td></tr>`;return;}
+    scoreBody.innerHTML=rows.map((r,i)=>`<tr><td>${i===0?"🥇":i===1?"🥈":i===2?"🥉":(i+1)}</td><td><b>${r.team_name||"—"}</b></td><td>${r.student_name||"—"}</td><td><b>${r.score??0}</b></td><td>${r.percent??0}%</td><td style="color:var(--muted);font-size:0.8rem">${r.created_at?new Date(r.created_at).toLocaleTimeString("ru"):""}</td></tr>`).join("");
+  }
+
+  setInterval(()=>getState().then(applyState),1000);
+  setInterval(refreshScores,3000);
+  getState().then(applyState);
+  refreshScores();
+</script>
+</body>
+</html>
