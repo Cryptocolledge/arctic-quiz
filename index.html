@@ -1,0 +1,798 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8"/>
+<title>Квиз: Арктика</title>
+<meta name="viewport" content="width=device-width,initial-scale=1.0,viewport-fit=cover"/>
+<meta name="theme-color" content="#050816"/>
+<style>
+:root{--bg:radial-gradient(circle at top,#5cc6ff 0%,#12233d 40%,#050816 100%);--card:rgba(8,18,40,0.93);--accent:#4fdfff;--ok:#61ffb2;--err:#ff5f7a;--gold:#ffd36b;--text:#f7fbff;--muted:#b5c2d9;--border:rgba(255,255,255,0.07);--shadow:0 24px 60px rgba(1,10,30,0.9);--r:24px;}
+*{box-sizing:border-box;margin:0;padding:0}html,body{height:100%}
+body{font-family:system-ui,-apple-system,"Segoe UI",sans-serif;background:var(--bg);color:var(--text);min-height:100vh;display:flex;align-items:flex-start;justify-content:center;padding:20px;overflow-y:auto;}
+body::before,body::after{content:"";position:fixed;inset:-100px;background:radial-gradient(circle at 10% 10%,rgba(93,255,252,.11) 0,transparent 55%),radial-gradient(circle at 80% 0%,rgba(194,120,255,.13) 0,transparent 55%),radial-gradient(circle at 80% 90%,rgba(54,181,255,.11) 0,transparent 55%);opacity:.4;pointer-events:none;animation:aur 22s linear infinite alternate;z-index:-2;}
+body::after{animation-duration:32s;opacity:.2;filter:blur(8px);}
+@keyframes aur{0%{transform:translate3d(0,0,0) scale(1)}50%{transform:translate3d(-25px,-8px,0) scale(1.03)}100%{transform:translate3d(25px,18px,0) scale(1.02)}}
+.snow{pointer-events:none;position:fixed;inset:0;overflow:hidden;z-index:0;opacity:.4;}
+.flake{position:absolute;top:-20px;width:2px;height:7px;border-radius:999px;background:linear-gradient(to bottom,rgba(255,255,255,.9),rgba(160,227,255,.1));animation:sf 16s linear infinite;filter:blur(.2px);}
+@keyframes sf{0%{transform:translate3d(0,-20px,0);opacity:0}10%{opacity:1}100%{transform:translate3d(35px,130vh,0);opacity:0}}
+.shell{position:relative;width:100%;max-width:940px;z-index:1;padding-bottom:20px;}
+.card{background:var(--card);border-radius:var(--r);border:1px solid var(--border);box-shadow:var(--shadow);padding:22px 24px 20px;display:flex;flex-direction:column;gap:16px;position:relative;overflow:hidden;}
+@keyframes fi{from{opacity:0;transform:translateY(20px) scale(.98)}to{opacity:1;transform:none}}
+.card::before{content:"";position:absolute;inset:0;background:linear-gradient(135deg,rgba(79,223,255,.15),transparent 55%),linear-gradient(-135deg,rgba(107,119,255,.12),transparent 55%);opacity:.3;pointer-events:none;z-index:-1;}
+/* Header */
+.qhdr{display:flex;align-items:flex-start;justify-content:space-between;gap:14px;flex-wrap:wrap;}
+.title{font-size:1.35rem;font-weight:700;letter-spacing:.04em;text-transform:uppercase;display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+.pill{padding:3px 8px;border-radius:999px;font-size:.68rem;font-weight:600;letter-spacing:.1em;text-transform:uppercase;background:linear-gradient(120deg,rgba(79,223,255,.18),rgba(108,122,255,.18));border:1px solid rgba(187,247,255,.35);color:#d6f6ff;}
+.subtitle{font-size:.88rem;color:var(--muted);margin-top:3px;}
+.meta-row{display:flex;align-items:center;gap:8px;font-size:.78rem;color:var(--muted);margin-top:5px;flex-wrap:wrap;}
+.chip{padding:4px 9px;border-radius:999px;border:1px solid rgba(255,255,255,.12);background:rgba(8,20,40,.8);display:inline-flex;align-items:center;gap:5px;}
+.dot{width:6px;height:6px;border-radius:50%;background:radial-gradient(circle at 30% 30%,#fff,#4fdfff);box-shadow:0 0 8px rgba(121,228,255,.7);}
+.name-row{margin-top:7px;display:flex;align-items:center;gap:5px;font-size:.75rem;color:var(--muted);flex-wrap:wrap;}
+.nlbl{font-weight:600;opacity:.8;}.nval{color:var(--text);padding:2px 7px;border-radius:999px;background:rgba(5,16,36,.9);border:1px solid rgba(122,142,255,.5);max-width:130px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+/* Score highlight */
+.score-display{display:flex;align-items:center;gap:8px;margin-top:6px;}
+.score-big{font-size:1.5rem;font-weight:800;color:var(--gold);text-shadow:0 0 20px rgba(255,211,107,.6);}
+.score-label{font-size:.75rem;color:var(--muted);}
+/* Points popup animation */
+.pts-popup{position:fixed;font-size:1.4rem;font-weight:800;color:var(--gold);text-shadow:0 0 20px rgba(255,211,107,.8);pointer-events:none;z-index:100;animation:popUp .9s ease-out forwards;}
+@keyframes popUp{0%{opacity:1;transform:translateY(0) scale(1)}60%{opacity:1;transform:translateY(-45px) scale(1.2)}100%{opacity:0;transform:translateY(-80px) scale(0.9)}}
+/* Progress */
+.pblock{display:flex;flex-direction:column;gap:7px;align-items:flex-end;min-width:0;flex-shrink:0;}
+.ctr{font-size:.88rem;color:var(--muted);white-space:nowrap;}
+.pline{width:200px;max-width:45vw;height:6px;border-radius:999px;background:rgba(255,255,255,.06);overflow:hidden;position:relative;}
+.pfill{position:absolute;inset:0;width:0%;background:linear-gradient(90deg,#4fdfff,#6b7aff);border-radius:inherit;transition:width .4s ease-out;}
+.tbadge{display:inline-flex;align-items:center;gap:9px;padding:6px 11px;border-radius:999px;background:radial-gradient(circle at 20% 0,rgba(79,223,255,.22),rgba(8,20,40,.9));border:1px solid rgba(155,247,255,.4);font-size:.78rem;color:#e5f9ff;}
+.tcircle{width:24px;height:24px;border-radius:50%;border:2px solid rgba(79,223,255,.6);display:flex;align-items:center;justify-content:center;}
+.tnum{font-size:.73rem;font-weight:700;}
+.tbshell{width:88px;height:4px;border-radius:999px;background:rgba(255,255,255,.08);overflow:hidden;position:relative;}
+.tbar{position:absolute;inset:0;border-radius:inherit;background:linear-gradient(90deg,#4fdfff,#ff6ec7);transform-origin:left;transform:scaleX(0);transition:transform .25s linear;}
+/* Body grid */
+.body{display:grid;grid-template-columns:minmax(0,3.4fr) minmax(0,2.6fr);gap:18px;align-items:stretch;}
+@media(max-width:800px){.body{grid-template-columns:1fr}.qhdr{flex-direction:column}.pblock{align-items:flex-start;width:100%}}
+@media(max-width:580px){body{padding:12px}.card{padding:16px 14px}.title{font-size:1.15rem}}
+/* Question panel */
+.qpanel{padding:15px;border-radius:18px;background:radial-gradient(circle at 0 0,rgba(79,223,255,.14),transparent 55%),rgba(5,9,25,.96);border:1px solid rgba(107,121,255,.35);box-shadow:0 10px 28px rgba(2,8,24,.85);position:relative;overflow:hidden;display:flex;flex-direction:column;gap:8px;}
+.qpanel::before{content:"";position:absolute;inset:0;background:radial-gradient(circle at 0 0,rgba(255,255,255,.1) 0,transparent 55%);opacity:.5;pointer-events:none;}
+.qtag-row{display:flex;align-items:center;justify-content:space-between;gap:8px;position:relative;z-index:1;}
+.qtag{font-size:.73rem;padding:3px 8px;border-radius:999px;background:rgba(6,20,50,.9);border:1px solid rgba(94,234,255,.8);color:#d8f9ff;display:inline-flex;align-items:center;gap:5px;}
+.diff{font-size:.73rem;padding:3px 7px;border-radius:999px;border:1px solid rgba(255,255,255,.16);color:var(--muted);background:rgba(5,11,30,.85);}
+/* Points badge on question */
+.pts-badge{padding:3px 9px;border-radius:999px;font-size:.73rem;font-weight:700;border:1px solid rgba(255,211,107,.5);background:rgba(255,211,107,.12);color:var(--gold);}
+.qbody{position:relative;z-index:1;}
+.qbody h2{font-size:1.04rem;line-height:1.4;font-weight:600;margin-bottom:8px;}
+.qextra{font-size:.83rem;color:var(--muted);margin-bottom:8px;}
+.imgwrap{border-radius:16px;overflow:hidden;border:1px solid rgba(135,206,255,.5);background:#030d1e;}
+.imgwrap img{display:block;width:100%;max-height:190px;object-fit:cover;}
+.imgcap{font-size:.75rem;padding:5px 8px;color:var(--muted);background:rgba(1,8,22,.9);}
+.rebusbox{padding:10px;border-radius:13px;background:rgba(2,8,24,.9);border:1px dashed rgba(120,244,255,.7);}
+.rlbl{font-size:.68rem;letter-spacing:.16em;text-transform:uppercase;color:#e0fbff;opacity:.85;margin-bottom:6px;}
+.rfig{display:flex;align-items:center;justify-content:center;gap:12px;font-weight:700;letter-spacing:.08em;font-size:.98rem;}
+.rpart{padding:5px 9px;border-radius:999px;background:rgba(7,23,54,.92);border:1px solid rgba(94,234,255,.8);box-shadow:0 0 8px rgba(94,234,255,.35);}
+.rop{font-size:1rem;color:var(--accent);}
+.rnote{font-size:.71rem;color:var(--muted);margin-top:4px;text-align:center;}
+/* Waiting inside panel */
+.qwait{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;padding:30px 10px;text-align:center;}
+.qwait-icon{font-size:2.5rem;animation:pulse 2s ease-in-out infinite;}
+@keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.1)}}
+.qwait-text{font-size:1rem;color:var(--muted);}
+.qwait-name{font-size:.88rem;color:var(--text);padding:4px 12px;border-radius:999px;background:rgba(79,223,255,.12);border:1px solid rgba(79,223,255,.3);}
+/* Options panel */
+.opanel{padding:14px;border-radius:18px;background:linear-gradient(145deg,rgba(9,14,30,.98),rgba(3,8,22,.98));border:1px solid rgba(255,255,255,.06);box-shadow:0 12px 32px rgba(0,0,0,.85);display:flex;flex-direction:column;gap:9px;position:relative;}
+.opanel::before{content:"";position:absolute;inset:0;background:radial-gradient(circle at 0 0,rgba(79,223,255,.07) 0,transparent 55%),radial-gradient(circle at 100% 100%,rgba(107,122,255,.09) 0,transparent 60%);opacity:.4;pointer-events:none;}
+.otop{display:flex;align-items:center;justify-content:space-between;gap:8px;position:relative;z-index:1;}
+.otitle{font-size:.78rem;text-transform:uppercase;letter-spacing:.18em;color:var(--muted);}
+/* Score pill - big and golden */
+.spill{font-size:.9rem;padding:4px 10px;border-radius:999px;background:rgba(255,211,107,.12);border:1px solid rgba(255,211,107,.5);color:var(--gold);font-weight:700;}
+.opts{display:flex;flex-direction:column;gap:7px;position:relative;z-index:2;pointer-events:auto;}
+.opt{width:100%;text-align:left;padding:11px 12px;border-radius:13px;border:1px solid rgba(122,142,255,.25);background:radial-gradient(circle at 0% 0%,rgba(79,223,255,.13),rgba(7,12,32,.97));color:var(--text);cursor:pointer;font-size:.88rem;display:flex;align-items:center;gap:8px;position:relative;overflow:hidden;transition:border-color .16s,transform .16s,box-shadow .16s;min-height:44px;pointer-events:auto;}
+.opt::before{content:"";position:absolute;inset:0;background:linear-gradient(120deg,rgba(79,223,255,.16),rgba(107,122,255,.09));opacity:0;transition:opacity .14s;pointer-events:none;}
+.obadge{width:23px;height:23px;border-radius:9px;border:1px solid rgba(175,195,255,.8);font-size:.76rem;display:flex;align-items:center;justify-content:center;color:#d8e3ff;background:rgba(9,15,40,.95);flex-shrink:0;}
+.otext{flex:1;line-height:1.3;}
+.opt:not(.disabled):hover{transform:translateY(-1px);border-color:rgba(144,230,255,.95);box-shadow:0 8px 22px rgba(0,0,0,.7);}
+.opt:not(.disabled):hover::before{opacity:1;}
+/* Selected state - only highlights what student picked, no correct shown yet */
+.opt.selected{border-color:rgba(79,223,255,.9);background:radial-gradient(circle at 0 0,rgba(79,223,255,.22),rgba(4,18,38,.98));}
+.opt.selected .obadge{border-color:rgba(144,230,255,1);background:rgba(4,18,38,.98);color:var(--accent);}
+/* Correct/incorrect shown AFTER presenter reveals */
+.opt.correct{border-color:rgba(97,255,178,.95);background:radial-gradient(circle at 0 0,rgba(97,255,178,.2),rgba(6,28,26,.98));}
+.opt.incorrect{border-color:rgba(255,95,122,.95);background:radial-gradient(circle at 0 0,rgba(255,95,122,.2),rgba(32,7,18,.98));}
+.opt.disabled{cursor:default;opacity:.82;transform:none;}
+.opt.disabled::before{opacity:0;}
+.opt.correct .obadge{border-color:rgba(156,255,209,1);background:rgba(9,31,30,.98);color:var(--ok);}
+.opt.incorrect .obadge{border-color:rgba(255,156,172,1);background:rgba(32,6,14,.98);color:var(--err);}
+/* Answer reveal banner */
+.reveal-banner{padding:8px 12px;border-radius:12px;font-size:.84rem;font-weight:600;text-align:center;display:none;}
+.reveal-banner.show{display:block;}
+.reveal-banner.ok{background:rgba(97,255,178,.12);border:1px solid rgba(97,255,178,.5);color:var(--ok);}
+.reveal-banner.err{background:rgba(255,95,122,.12);border:1px solid rgba(255,95,122,.5);color:var(--err);}
+.reveal-banner.timeout{background:rgba(255,200,80,.1);border:1px solid rgba(255,200,80,.4);color:#ffe080;}
+/* Wait for reveal state */
+.wait-reveal{padding:8px 12px;border-radius:12px;font-size:.82rem;color:var(--muted);text-align:center;border:1px dashed rgba(255,255,255,.12);animation:blink 2s ease-in-out infinite;display:none;}
+.wait-reveal.show{display:block;}
+@keyframes blink{0%,100%{opacity:.5}50%{opacity:1}}
+.ctrlrow{display:flex;align-items:center;justify-content:space-between;gap:8px;position:relative;z-index:1;flex-wrap:wrap;}
+.fb{min-height:1.1em;font-size:.8rem;color:var(--muted);}
+.fb.ok{color:var(--ok)}.fb.err{color:var(--err)}
+.navbtns{display:flex;gap:7px;align-items:center;flex-wrap:wrap;justify-content:flex-end;}
+.btn{border-radius:999px;border:1px solid rgba(255,255,255,.16);padding:9px 16px;font-size:.84rem;font-weight:600;letter-spacing:.07em;text-transform:uppercase;cursor:pointer;background:rgba(5,15,32,.96);color:var(--text);display:inline-flex;align-items:center;gap:6px;transition:background .16s,border-color .16s,transform .16s,box-shadow .16s,filter .16s;min-height:44px;}
+.btn-p{background:linear-gradient(120deg,#4fdfff,#6b7aff);border-color:rgba(170,244,255,.9);color:#02111f;box-shadow:0 8px 24px rgba(12,52,80,.7);}
+.btn-p:disabled{opacity:.45;cursor:default;box-shadow:none;}
+.btn-g{background:transparent;}
+.btn:not(:disabled):hover{transform:translateY(-1px);box-shadow:0 7px 20px rgba(0,0,0,.65);}
+.btn-g:not(:disabled):hover{background:rgba(10,20,44,.9);border-color:rgba(126,152,255,.7);}
+.btn-p:not(:disabled):hover{filter:brightness(1.05);}
+.hidden{display:none!important}
+/* Overlays */
+.ov{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;z-index:30;background:rgba(2,6,18,0.75);}.ov.hidden{display:none!important;pointer-events:none!important;visibility:hidden!important;}
+.ov-bg-dark{background:rgba(0,5,18,0.88);}
+.ov-bg-semi{background:rgba(0,5,18,0.72);}
+.ocard{width:min(460px,100% - 28px);border-radius:22px;background:radial-gradient(circle at top,rgba(79,223,255,.22),rgba(4,9,26,.99));border:1px solid rgba(175,238,255,.7);box-shadow:0 22px 65px rgba(0,0,0,.95);padding:20px;position:relative;overflow:hidden;}
+.ocard::before,.ocard::after{content:"";position:absolute;border-radius:999px;background:radial-gradient(circle,rgba(79,223,255,.2),transparent 70%);opacity:.45;pointer-events:none;}
+.ocard::before{width:260px;height:260px;top:-110px;right:-55px;}
+.ocard::after{width:200px;height:200px;bottom:-75px;left:-35px;}
+.stitle{font-size:1.15rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;margin-bottom:5px;}
+.ssub{font-size:.88rem;color:var(--muted);margin-bottom:11px;}
+.sform{display:flex;flex-direction:column;gap:9px;margin-bottom:9px;}
+.frow{display:flex;flex-direction:column;gap:3px;font-size:.83rem;}
+.frow label{color:var(--muted);}
+.finput{padding:8px 10px;border-radius:11px;border:1px solid rgba(170,190,255,.7);background:rgba(3,10,28,.96);color:var(--text);outline:none;font-size:.88rem;}
+.finput::placeholder{color:rgba(181,194,217,.65);}
+.finput:focus{border-color:rgba(144,230,255,.95);box-shadow:0 0 0 1px rgba(144,230,255,.35);}
+.snote{font-size:.76rem;color:var(--muted);margin-bottom:9px;}
+/* Waiting overlay */
+.ready-screen{display:flex;flex-direction:column;align-items:center;gap:14px;padding:10px 0 6px;}
+.ready-icon{font-size:3rem;}
+.ready-title{font-size:1.1rem;font-weight:700;text-align:center;}
+.ready-sub{font-size:.88rem;color:var(--muted);text-align:center;max-width:340px;}
+.ready-info{display:flex;flex-direction:column;gap:6px;width:100%;margin-top:4px;}
+.rinfo-row{display:flex;align-items:center;justify-content:space-between;padding:6px 11px;border-radius:11px;background:rgba(5,14,34,.9);border:1px solid rgba(122,142,255,.3);font-size:.83rem;}
+.rinfo-row span:first-child{color:var(--muted);}
+.rinfo-row span:last-child{font-weight:600;}
+.status-badge{display:inline-flex;align-items:center;gap:6px;padding:5px 12px;border-radius:999px;font-size:.8rem;}
+.status-waiting{background:rgba(255,200,80,.12);border:1px solid rgba(255,200,80,.5);color:#ffe080;animation:blink 2s ease-in-out infinite;}
+.status-running{background:rgba(97,255,178,.12);border:1px solid rgba(97,255,178,.5);color:var(--ok);}
+/* Result */
+.rhdr{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:9px;}
+.rtitle{font-size:1.05rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;}
+.grade{min-width:64px;height:64px;border-radius:999px;border:2px solid rgba(187,247,208,.9);background:radial-gradient(circle at 30% 15%,rgba(255,255,255,.9),rgba(31,99,68,.6));color:#022c22;font-size:1.45rem;font-weight:800;display:flex;align-items:center;justify-content:center;box-shadow:0 12px 28px rgba(12,83,55,.9);}
+.rbody{position:relative;z-index:1;display:grid;grid-template-columns:3fr 2fr;gap:12px;margin-bottom:11px;font-size:.84rem;}
+@media(max-width:580px){.rbody{grid-template-columns:1fr}}
+.rstat{padding:7px 9px;border-radius:13px;background:rgba(4,13,30,.96);border:1px solid rgba(79,223,255,.5);display:flex;flex-direction:column;gap:3px;}
+.rstat span:first-child{font-size:.73rem;color:var(--muted);text-transform:uppercase;letter-spacing:.13em;}
+.rstat span:last-child{font-weight:560;}
+.rmsg{font-size:.88rem;color:var(--text);margin-bottom:7px;}
+.rftr{display:flex;align-items:center;justify-content:space-between;gap:8px;font-size:.78rem;color:var(--muted);position:relative;z-index:1;flex-wrap:wrap;}
+.ract{display:flex;gap:7px;align-items:center;flex-wrap:wrap;justify-content:flex-end;}
+
+/* ── Developer signature ─────────────────────────────────── */
+.dev-sig{
+  position:fixed;bottom:14px;right:18px;z-index:5;
+  display:flex;align-items:center;gap:8px;
+  padding:6px 13px 6px 10px;
+  border-radius:999px;
+  background:rgba(3,9,26,0.82);
+  border:1px solid rgba(79,223,255,0.28);
+  
+  box-shadow:0 4px 20px rgba(0,0,0,0.5),0 0 0 1px rgba(79,223,255,0.08);
+  cursor:default;
+  transition:border-color .25s, box-shadow .25s;
+  user-select:none;
+}
+.dev-sig:hover{
+  border-color:rgba(79,223,255,0.65);
+  box-shadow:0 4px 28px rgba(79,223,255,0.18),0 0 0 1px rgba(79,223,255,0.15);
+}
+.dev-sig-icon{
+  width:26px;height:26px;border-radius:50%;
+  background:linear-gradient(135deg,#4fdfff 0%,#6b7aff 50%,#c26bff 100%);
+  display:flex;align-items:center;justify-content:center;
+  font-size:.72rem;font-weight:800;color:#02111f;
+  flex-shrink:0;
+  box-shadow:0 0 12px rgba(79,223,255,0.5);
+}
+.dev-sig-text{display:flex;flex-direction:column;line-height:1.2;}
+.dev-sig-name{
+  font-size:.73rem;font-weight:700;letter-spacing:.03em;
+  background:linear-gradient(90deg,#4fdfff,#c26bff);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+}
+.dev-sig-role{font-size:.6rem;color:rgba(181,194,217,0.7);letter-spacing:.06em;}
+@media(max-width:500px){.dev-sig{bottom:8px;right:8px;padding:5px 10px 5px 8px;}.dev-sig-icon{width:22px;height:22px;font-size:.65rem;}}
+</style>
+</head>
+<body>
+<div class="snow" id="snow"></div>
+
+<!-- OVERLAY 1: Registration -->
+<div class="ov ov-bg-dark" id="ov-register">
+  <div class="ocard">
+    <div class="stitle">🧊 Арктический квиз</div>
+    <div class="ssub">Заполните данные. После регистрации попадёте в зал ожидания.</div>
+    <div class="sform">
+      <div class="frow"><label for="inp-name">Имя и фамилия *</label><input id="inp-name" class="finput" type="text" maxlength="60" placeholder="Например: Иван Петров"/></div>
+      <div class="frow"><label for="inp-team">Команда / группа *</label><input id="inp-team" class="finput" type="text" maxlength="60" placeholder="Например: Группа ИСП-21"/></div>
+      <div class="frow"><label for="inp-inst">Учебное заведение *</label><input id="inp-inst" class="finput" type="text" maxlength="80" placeholder="Например: Колледж Арктики"/></div>
+    </div>
+    <div class="snote">Все поля обязательны. После регистрации ждите сигнала ведущего.</div>
+    <button class="btn btn-p" id="reg-btn" type="button" disabled>Зарегистрироваться</button>
+  </div>
+</div>
+
+<!-- OVERLAY 2: Waiting -->
+<div class="ov ov-bg-dark hidden" id="ov-waiting">
+  <div class="ocard">
+    <div class="ready-screen">
+      <div class="ready-icon">🏔️</div>
+      <div class="ready-title">Вы зарегистрированы!</div>
+      <div class="ready-sub">Ожидайте, когда ведущий запустит игру. Вопросы появятся автоматически.</div>
+      <div class="ready-info" id="ready-info"></div>
+      <div class="status-badge status-waiting" id="game-status-badge">⏳ Ожидание ведущего…</div>
+    </div>
+  </div>
+</div>
+
+<!-- MAIN QUIZ UI -->
+<div class="shell">
+  <div class="card">
+    <div class="qhdr">
+      <div>
+        <div class="title">Квиз об Арктике <span class="pill">колледж · география</span></div>
+        <div class="subtitle">30 вопросов о природе, людях и тайнах Арктики.</div>
+        <div class="meta-row">
+          <div class="chip"><span class="dot"></span><span id="meta-diff">Уровень: средний</span></div>
+          <div class="chip">30 вопросов · 25 сек на каждый</div>
+          <button class="btn btn-g" id="music-btn" type="button">Музыка: выкл</button>
+        </div>
+        <div class="name-row">
+          <span class="nlbl">Студент:</span><span class="nval" id="h-name">—</span>
+          <span class="nlbl">Команда:</span><span class="nval" id="h-team">—</span>
+          <span class="nlbl">Учреждение:</span><span class="nval" id="h-inst">—</span>
+        </div>
+        <div class="score-display">
+          <span class="score-big" id="score">0</span>
+          <span class="score-label">очков</span>
+        </div>
+      </div>
+      <div class="pblock">
+        <div class="ctr" id="ctr">Вопрос 1 из 30</div>
+        <div class="pline"><div class="pfill" id="prog"></div></div>
+        <div class="tbadge">
+          <div class="tcircle"><span class="tnum" id="tnum">—</span></div>
+          <div class="tbshell"><div class="tbar" id="tbar"></div></div>
+          <span>До конца вопроса</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="body">
+      <div class="qpanel">
+        <div class="qtag-row">
+          <div class="qtag"><span class="dot"></span><span id="qtype">—</span></div>
+          <div style="display:flex;gap:6px;align-items:center">
+            <div class="pts-badge" id="pts-badge">+1 очко</div>
+            <div class="diff" id="qdiff">—</div>
+          </div>
+        </div>
+        <div class="qwait" id="qwait">
+          <div class="qwait-icon">⏳</div>
+          <div class="qwait-text">Ожидайте сигнала ведущего…</div>
+          <div class="qwait-name" id="qwait-name"></div>
+        </div>
+        <div class="qbody hidden" id="qbody">
+          <h2 id="qtext">—</h2>
+          <div class="qextra" id="qextra"></div>
+          <div class="imgwrap hidden" id="imgwrap">
+            <img id="qimg" alt="Фото к вопросу" crossorigin="anonymous"/>
+            <div class="imgcap" id="imgcap"></div>
+          </div>
+          <div class="rebusbox hidden" id="rebusbox">
+            <div class="rlbl">Ребус</div>
+            <div class="rfig" id="rfig"></div>
+            <div class="rnote" id="rnote"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="opanel">
+        <div class="otop">
+          <div class="otitle">Выберите один вариант</div>
+          <div class="spill">⭐ <span id="score2">0</span> очков</div>
+        </div>
+        <div class="opts" id="opts"></div>
+        <!-- Shown while waiting for presenter to reveal answer -->
+        <div class="wait-reveal" id="wait-reveal">⏳ Ждём, пока ведущий откроет ответ…</div>
+        <!-- Shown after reveal -->
+        <div class="reveal-banner" id="reveal-banner"></div>
+        <div class="ctrlrow">
+          <div class="fb" id="fb"></div>
+          <div class="navbtns">
+            <button class="btn btn-g" id="restart-btn" type="button">Заново</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Result overlay -->
+<div class="ov ov-bg-semi hidden" id="ov-result">
+  <div class="ocard">
+    <div class="rhdr">
+      <div><div class="rtitle">Итоги квиза</div><div style="font-size:.88rem;color:var(--muted)" id="rsub">—</div></div>
+      <div class="grade" id="grade">—</div>
+    </div>
+    <div class="rbody">
+      <div class="rstat"><span>Участник</span><span id="rpart">—</span></div>
+      <div class="rstat"><span>Правильных ответов</span><span id="rcorr">—</span></div>
+      <div class="rstat"><span>Набрано очков</span><span id="rfinal-score">—</span></div>
+      <div class="rstat"><span>Процент</span><span id="rpct">—</span></div>
+    </div>
+    <div class="rmsg" id="rmsg"></div>
+    <div class="rftr">
+      <span>Можно пройти ещё раз</span>
+      <div class="ract">
+        <button class="btn btn-g" id="pdf-btn" type="button">PDF</button>
+        <button class="btn btn-g" id="close-btn" type="button">Закрыть</button>
+        <button class="btn btn-p" id="again-btn" type="button">Ещё раз</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Developer signature -->
+<div class="dev-sig" title="Разработчик проекта">
+  <div class="dev-sig-icon">ША</div>
+  <div class="dev-sig-text">
+    <span class="dev-sig-name">Широков А.Д.</span>
+    <span class="dev-sig-role">РАЗРАБОТЧИК</span>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+const SURL="https://arpbhbfyucpojvxipqng.supabase.co";
+const SKEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFycGJoYmZ5dWNwb2p2eGlwcW5nIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIyMTAwNTQsImV4cCI6MjA4Nzc4NjA1NH0.MQWcU9ph2sWNgbHbfDZ0qKEC1V1PzbI7I7TtQyPNyeg";
+const GID="default", QT=25;
+const sb=(window.supabase&&window.supabase.createClient)?window.supabase.createClient(SURL,SKEY):null;
+
+// Очки по сложности: ★☆☆=1, ★★☆=2, ★★★=3
+function pts(dif){return dif<=1?1:dif===2?2:3;}
+
+const Q=[
+  // 1-5
+  {tp:"text",dif:1,q:"Что такое Арктика с географической точки зрения?",ex:"Подумайте, как определяется эта область на карте мира.",opts:["Часть Антарктиды вокруг Южного полюса","Область вокруг Северного полюса, включая океан и прилегающие земли","Только морской лёд Северного Ледовитого океана","Только территории России за Полярным кругом"],ci:1},
+  {tp:"text",dif:1,q:"Какой океан лежит в центре Арктики?",ex:"",opts:["Северный Ледовитый","Тихий","Индийский","Атлантический"],ci:0},
+  {tp:"image",dif:1,q:"Какое типичное арктическое животное изображено на фото?",ex:"",img:"https://upload.wikimedia.org/wikipedia/commons/thumb/6/6e/Polar_Bear_-_Alaska_%28cropped%29.jpg/640px-Polar_Bear_-_Alaska_%28cropped%29.jpg",cap:"Белый медведь (Ursus maritimus)",opts:["Бурый медведь","Белый медведь","Гризли","Панда"],ci:1},
+  {tp:"text",dif:2,q:"Какой тип растительности характерен для арктической тундры?",ex:"",opts:["Влажные тропические леса","Степные злаки и ковыль","Мхи, лишайники и низкорослые кустарники","Хвойные леса тайги"],ci:2},
+  {tp:"text",dif:2,q:"Как называется многолетне промёрзший слой грунта в Арктике?",ex:"",opts:["Мерцающий ледник","Вечная мерзлота","Сезонный покров","Криоосадок"],ci:1},
+  // 6-10
+  {tp:"rebus",dif:2,q:"Какое слово зашифровано в ребусе?",ex:"",rp:["СЕВЕР","ПОЛЮС"],rh:"Сложите два слова вместе.",opts:["Северный склон","Северное сияние","Северный полюс","Северный ветер"],ci:2},
+  {tp:"text",dif:2,q:"Какое из перечисленных морей НЕ относится к акватории Арктики?",ex:"",opts:["Баренцево море","Карское море","Красное море","Чукотское море"],ci:2},
+  {tp:"text",dif:2,q:"Какая из стран НЕ имеет территорий в Арктике?",ex:"",opts:["Россия","Канада","Норвегия","Германия"],ci:3},
+  {tp:"text",dif:3,q:"Как называется многолетний морской лёд, свободно плавающий в Арктическом океане?",ex:"",opts:["Паковый лёд","Глетчер","Сувой","Шельфовый лёд"],ci:0},
+  {tp:"text",dif:2,q:"Что такое полярный день?",ex:"",opts:["День, когда Солнце не поднимается","Период, когда Солнце не заходит более 24 часов","День с сильным ветром","День с северным сиянием"],ci:1},
+  // 11-15
+  {tp:"text",dif:2,q:"Что такое полярная ночь?",ex:"",opts:["Ночь с очень низкой температурой","Ночь с максимальной высотой Луны","Период, когда Солнце не поднимается более 24 часов","Ночь с самым сильным ветром"],ci:2},
+  {tp:"image",dif:1,q:"Какое природное явление показано на фото?",ex:"",img:"https://upload.wikimedia.org/wikipedia/commons/thumb/5/5c/Aurora_1.jpg/640px-Aurora_1.jpg",cap:"Полярное (северное) сияние",opts:["Молния","Радуга","Северное (полярное) сияние","Зарница"],ci:2},
+  {tp:"text",dif:2,q:"Какое арктическое животное меняет окраску шерсти в зависимости от сезона?",ex:"",opts:["Белый медведь","Песец","Морж","Нарвал"],ci:1},
+  {tp:"text",dif:1,q:"Через какую условную линию проходят многие арктические территории?",ex:"",opts:["Экватор","Полярный круг","Тропик Рака","Гринвичский меридиан"],ci:1},
+  {tp:"rebus",dif:2,q:"Разгадайте ребус и определите арктический объект.",ex:"",rp:["АЙС","БЕРГ"],rh:"Англ. ice + нем. berg (гора).",opts:["Ледник","Айсберг","Шельф","Снежная буря"],ci:1},
+  // 16-20
+  {tp:"text",dif:3,q:"Почему потепление климата в Арктике опасно для всего мира?",ex:"",opts:["Только из-за таяния рек","Таяние льда ведёт к повышению уровня мирового океана","Становится слишком жарко для туризма","Исчезают песчаные пляжи"],ci:1},
+  {tp:"image",dif:2,q:"Какое животное с бивнями показано на фото?",ex:"",img:"https://upload.wikimedia.org/wikipedia/commons/thumb/3/3d/Odobenus_rosmarus_diving.jpg/640px-Odobenus_rosmarus_diving.jpg",cap:"Морж (Odobenus rosmarus)",opts:["Тюлень","Морж","Морской лев","Касатка"],ci:1},
+  {tp:"text",dif:2,q:"Как называют коренные народы Севера, ведущие кочевой образ жизни?",ex:"",opts:["Скандинавы","Индейцы","Эскимосы, ненцы, чукчи и другие","Славяне"],ci:2},
+  {tp:"text",dif:2,q:"Для чего используются дрейфующие научные станции в Арктике?",ex:"",opts:["Для добычи нефти","Для наблюдения за морским транспортом","Для долгосрочных научных исследований льда, атмосферы и океана","Для строительства временных городов"],ci:2},
+  {tp:"text",dif:3,q:"Какая особенность делает Арктический океан уникальным?",ex:"",opts:["Он самый солёный","Он окружён материками и покрыт льдом","В нём нет морских течений","В нём нет островов"],ci:1},
+  // 21-25
+  {tp:"rebus",dif:2,q:"Какое слово скрыто в ребусе?",ex:"",rp:["ТУН","ДРА"],rh:"Сложите части вместе — природная зона Арктики.",opts:["Тайга","Тундра","Степь","Саванна"],ci:1},
+  {tp:"text",dif:2,q:"Для чего предназначены атомные ледоколы России в Арктике?",ex:"",opts:["Для рыбалки","Для туризма","Для проводки судов по Северному морскому пути","Для перевозки пассажиров"],ci:2},
+  {tp:"text",dif:3,q:"Почему разливы нефти особенно опасны для арктических экосистем?",ex:"",opts:["Нефть быстро испаряется в холоде","Организмам в холоде сложнее разлагать загрязнения, восстановление очень медленное","Там нет животных","Нефть образует лёд"],ci:1},
+  {tp:"image",dif:2,q:"Какой морской кит со спиральным бивнем показан на фото?",ex:"",img:"https://upload.wikimedia.org/wikipedia/commons/thumb/3/3a/Narwhals_breach.jpg/640px-Narwhals_breach.jpg",cap:"Нарвал (Monodon monoceros)",opts:["Кашалот","Нарвал","Белуха","Дельфин-афалина"],ci:1},
+  {tp:"text",dif:1,q:"Как называется сильная снежная буря с ветром в Арктике?",ex:"",opts:["Муссон","Ураган","Пурга","Цунами"],ci:2},
+  // 26-30
+  {tp:"text",dif:2,q:"Какой из вариантов лучше всего описывает зиму в Арктике?",ex:"",opts:["Тёплая и влажная","Мягкая с частыми дождями","Очень холодная, сухая, с сильными ветрами","Жаркая с грозами"],ci:2},
+  {tp:"rebus",dif:3,q:"Посмотрите на ребус и выберите верный термин.",ex:"",rp:["СЕВЕРНОЕ","СИЯНИЕ"],rh:"Световые полосы на ночном небе Арктики.",opts:["Полярная ночь","Северное сияние","Полярный день","Ледяной дождь"],ci:1},
+  {tp:"text",dif:3,q:"Какое тёплое течение влияет на климат европейской части Арктики?",ex:"",opts:["Куросио","Гольфстрим","Северное Пассатное течение","Экваториальное противотечение"],ci:1},
+  {tp:"text",dif:2,q:"Почему Арктика привлекает страны как ресурсный регион?",ex:"",opts:["Там удобные пляжи","Там запасы нефти, газа и других полезных ископаемых","Там дешёвая электроэнергия","Там нет льда"],ci:1},
+  {tp:"text",dif:3,q:"Как меняется площадь морского льда в Арктике в течение года?",ex:"",opts:["Практически не меняется","Увеличивается летом и уменьшается зимой","Уменьшается летом и увеличивается зимой","Каждый год полностью исчезает"],ci:2}
+];
+// Sanity
+// Sanity check
+if(Q.length!==30)console.error("BUG: Q.length="+Q.length);
+
+// ── STATE ────────────────────────────────────────────────────
+let playerName="",teamName="",instName="";
+let registered=false,gameActive=false;
+let curIdx=0,score=0,answered=false,timeLeft=QT;
+let selectedIdx=-1; // что выбрал студент (до раскрытия ответа)
+let totalTime=0,qAnswered=0;
+const userAnswers=new Array(Q.length).fill(null);
+let timerTick=null,timerToken=0;
+let lastIdx=-1,lastStartedAt="",lastPhase="";
+let lastShowAnswer=false; // последнее значение show_answer из Supabase
+let syncTimer=null;
+
+// ── DOM ──────────────────────────────────────────────────────
+const $=id=>document.getElementById(id);
+const ovReg=$("ov-register"),ovWait=$("ov-waiting"),ovResult=$("ov-result");
+const regBtn=$("reg-btn"),inpName=$("inp-name"),inpTeam=$("inp-team"),inpInst=$("inp-inst");
+const readyInfo=$("ready-info"),statusBadge=$("game-status-badge");
+const hName=$("h-name"),hTeam=$("h-team"),hInst=$("h-inst"),metaDiff=$("meta-diff");
+const ctr=$("ctr"),prog=$("prog"),tnum=$("tnum"),tbar=$("tbar");
+const scoreEl=$("score"),score2El=$("score2");
+const qwait=$("qwait"),qbody=$("qbody"),qwaitName=$("qwait-name");
+const qtype=$("qtype"),qdiff=$("qdiff"),ptsBadge=$("pts-badge"),qtextEl=$("qtext"),qextra=$("qextra");
+const imgwrap=$("imgwrap"),qimg=$("qimg"),imgcap=$("imgcap");
+const rebusbox=$("rebusbox"),rfig=$("rfig"),rnote=$("rnote");
+const opts=$("opts"),fb=$("fb"),restartBtn=$("restart-btn"),musicBtn=$("music-btn");
+const waitReveal=$("wait-reveal"),revealBanner=$("reveal-banner");
+const grade=$("grade"),rsub=$("rsub"),rcorr=$("rcorr"),rfinalScore=$("rfinal-score"),rpct=$("rpct"),rmsg=$("rmsg"),rpart=$("rpart");
+const closeBtn=$("close-btn"),againBtn=$("again-btn"),pdfBtn=$("pdf-btn");
+
+// ── AUDIO ────────────────────────────────────────────────────
+let audioCtx=null,bgOn=false,bgNodes=null;
+function getAC(){if(!("AudioContext"in window||"webkitAudioContext"in window))return null;if(!audioCtx){const C=window.AudioContext||window.webkitAudioContext;audioCtx=new C();}if(audioCtx.state==="suspended")audioCtx.resume();return audioCtx;}
+function tone(f,d,t="sine",v=.22,a=.01,r=.15,o=0){const c=getAC();if(!c)return;const n=c.currentTime+o,os=c.createOscillator(),g=c.createGain();os.type=t;os.frequency.setValueAtTime(f,n);g.gain.setValueAtTime(0,n);g.gain.linearRampToValueAtTime(v,n+a);g.gain.linearRampToValueAtTime(0,n+d+r);os.connect(g).connect(c.destination);os.start(n);os.stop(n+d+r+.02);}
+function playOk(){tone(880,.18,"sine",.23,.005,.14,0);tone(1100,.18,"sine",.22,.005,.14,.08);tone(1320,.22,"sine",.21,.005,.18,.18);}
+function playErr(){tone(170,.6,"sine",.28,.02,.32,0);tone(119,.7,"sine",.24,.02,.38,0);}
+function playDone(){[523,659,784,988,1047].forEach((f,i)=>tone(f,.25,"triangle",.22,.01,.18,i*.22));}
+function startBg(){const c=getAC();if(!c||bgOn)return;const mg=c.createGain();mg.gain.value=.16;mg.connect(c.destination);const c1f=[261.63,392,523.25],c2f=[220,329.63,440];const c1g=c.createGain(),c2g=c.createGain();c1g.gain.value=0;c2g.gain.value=0;c1g.connect(mg);c2g.connect(mg);const c1o=c1f.map(f=>{const o=c.createOscillator();o.type="sine";o.frequency.setValueAtTime(f,c.currentTime);o.connect(c1g);o.start();return o;});const c2o=c2f.map(f=>{const o=c.createOscillator();o.type="sine";o.frequency.setValueAtTime(f,c.currentTime);o.connect(c2g);o.start();return o;});const vib=c.createOscillator(),vg=c.createGain();vib.type="sine";vib.frequency.setValueAtTime(.2,c.currentTime);vg.gain.value=3;vib.connect(vg);[...c1o,...c2o].forEach(o=>vg.connect(o.frequency));vib.start();const cs=16;function sched(t){const f=5;c1g.gain.cancelScheduledValues(t);c2g.gain.cancelScheduledValues(t);c1g.gain.setValueAtTime(0,t);c1g.gain.linearRampToValueAtTime(.22,t+f);c1g.gain.linearRampToValueAtTime(.12,t+cs-f);c1g.gain.linearRampToValueAtTime(0,t+cs);const s2=t+cs;c2g.gain.setValueAtTime(0,s2);c2g.gain.linearRampToValueAtTime(.22,s2+f);c2g.gain.linearRampToValueAtTime(.12,s2+cs-f);c2g.gain.linearRampToValueAtTime(0,s2+cs);}sched(c.currentTime);const iid=setInterval(()=>sched(c.currentTime),cs*2*1000);bgOn=true;bgNodes={mg,c1g,c2g,c1o,c2o,vib,vg,iid};musicBtn.textContent="Музыка: вкл";}
+function stopBg(){if(!bgOn||!bgNodes)return;const c=getAC();if(!c)return;const n=c.currentTime;try{bgNodes.mg.gain.cancelScheduledValues(n);bgNodes.mg.gain.setValueAtTime(bgNodes.mg.gain.value,n);bgNodes.mg.gain.linearRampToValueAtTime(0,n+.6);}catch(e){}[...bgNodes.c1o,...bgNodes.c2o,...(bgNodes.vib?[bgNodes.vib]:[])].forEach(nd=>{try{nd.stop(n+.65);}catch(e){}});if(bgNodes.iid)clearInterval(bgNodes.iid);bgOn=false;bgNodes=null;musicBtn.textContent="Музыка: выкл";}
+
+// ── TIMER ─────────────────────────────────────────────────────
+function stopTimer(){timerToken++;if(timerTick){clearInterval(timerTick);timerTick=null;}}
+function startTimer(startedAtISO){
+  stopTimer();
+  const myTok=timerToken;
+  // Яндекс браузер: нормализуем ISO строку
+  let startMs=0;
+  try{
+    // Заменяем пробел на T если нужно (некоторые БД возвращают "2026-03-02 06:24:20.195")
+    const iso=(startedAtISO||"").replace(" ","T").replace(/\+00$/,"Z");
+    startMs=new Date(iso).getTime();
+    if(isNaN(startMs)||startMs<=0){
+      // Fallback: используем текущее время
+      startMs=Date.now();
+    }
+  }catch(e){startMs=Date.now();}
+  
+  function tick(){
+    if(timerToken!==myTok)return;
+    const elapsed=(Date.now()-startMs)/1000;
+    const left=Math.max(0,Math.ceil(QT-elapsed));
+    timeLeft=left;
+    tnum.textContent=String(left);
+    tbar.style.transform="scaleX("+Math.max(0,left/QT)+")";
+    if(left<=0){stopTimer();onTimeout();}
+  }
+  tick();timerTick=setInterval(tick,250);
+}
+
+// ── POINTS POPUP ─────────────────────────────────────────────
+function showPtsPopup(p,btnEl){
+  const pop=document.createElement("div");
+  pop.className="pts-popup";pop.textContent="+"+p+" очк"+(p===1?"о":p<5?"а":"ов");
+  // позиционируем рядом с кнопкой
+  const rect=btnEl.getBoundingClientRect();
+  pop.style.left=(rect.left+rect.width/2-40)+"px";
+  pop.style.top=(rect.top+window.scrollY-10)+"px";
+  document.body.appendChild(pop);
+  setTimeout(()=>pop.remove(),950);
+}
+
+// ── RENDER QUESTION ───────────────────────────────────────────
+function renderQ(){
+  const q=Q[curIdx];
+  answered=false;selectedIdx=-1;
+  waitReveal.classList.remove("show");
+  revealBanner.classList.remove("show");
+  revealBanner.className="reveal-banner";
+  fb.textContent="";fb.className="fb";
+  opts.innerHTML="";
+  qwait.classList.add("hidden");qbody.classList.remove("hidden");
+  qtype.textContent=q.tp==="image"?"Вопрос по изображению":q.tp==="rebus"?"Задание-ребус":"Факт о природе";
+  qdiff.textContent=q.dif<=1?"Сложность: ★☆☆":q.dif===2?"Сложность: ★★☆":"Сложность: ★★★";
+  const p=pts(q.dif);
+  ptsBadge.textContent="+"+p+" очк"+(p===1?"о":p<5?"а":"ов");
+  ctr.textContent="Вопрос "+(curIdx+1)+" из "+Q.length;
+  prog.style.width=(curIdx/Q.length*100)+"%";
+  qtextEl.textContent=q.q;qextra.textContent=q.ex||"";
+  if(q.tp==="image"&&q.img){
+    imgwrap.classList.remove("hidden");qimg.src="";
+    setTimeout(()=>{qimg.src=q.img;},10);
+    imgcap.textContent=q.cap||"";
+  }else{imgwrap.classList.add("hidden");qimg.src="";}
+  if(q.tp==="rebus"&&q.rp){
+    rebusbox.classList.remove("hidden");rfig.innerHTML="";
+    const p1=document.createElement("span");p1.className="rpart";p1.textContent=q.rp[0];
+    const op=document.createElement("span");op.className="rop";op.textContent="+";
+    const p2=document.createElement("span");p2.className="rpart";p2.textContent=q.rp[1];
+    rfig.appendChild(p1);rfig.appendChild(op);rfig.appendChild(p2);
+    rnote.textContent=q.rh||"";
+  }else{rebusbox.classList.add("hidden");}
+  q.opts.forEach((text,i)=>{
+    const btn=document.createElement("button");
+    btn.className="opt";btn.type="button";btn.dataset.i=String(i);
+    const badge=document.createElement("div");badge.className="obadge";badge.textContent=String.fromCharCode(65+i);
+    const txt=document.createElement("div");txt.className="otext";txt.textContent=text;
+    btn.appendChild(badge);btn.appendChild(txt);
+    btn.addEventListener("click",onOptClick);
+    opts.appendChild(btn);
+  });
+}
+
+function showWaitInPanel(){
+  qwait.classList.remove("hidden");qbody.classList.add("hidden");
+  opts.innerHTML="";fb.textContent="";fb.className="fb";
+  waitReveal.classList.remove("show");revealBanner.classList.remove("show");
+  tnum.textContent="—";tbar.style.transform="scaleX(0)";
+}
+
+// ── TIMEOUT: time ran out, but DON'T show correct answer yet ──
+function onTimeout(){
+  if(answered)return;
+  // Если студент не выбрал ничего — фиксируем пропуск
+  if(selectedIdx===-1){
+    userAnswers[curIdx]={q:Q[curIdx].q,sel:-1,ci:Q[curIdx].ci,ok:false,t:QT};
+    qAnswered++;
+  }
+  // Блокируем кнопки — но НЕ показываем правильный ответ
+  opts.querySelectorAll(".opt").forEach(b=>b.classList.add("disabled"));
+  answered=true;
+  // Показываем "ждём ведущего"
+  waitReveal.classList.add("show");
+  fb.textContent="";
+}
+
+// ── STUDENT PICKS ANSWER (before timer ends) ─────────────────
+function onOptClick(e){
+  getAC();
+  if(answered)return;
+  const btn=e.currentTarget,i=Number(btn.dataset.i),q=Q[curIdx];
+  answered=true;selectedIdx=i;stopTimer();
+  const used=QT-Math.max(timeLeft,0);totalTime+=used;qAnswered++;
+  // Записываем выбор (ok узнаем после раскрытия)
+  userAnswers[curIdx]={q:q.q,sel:i,ci:q.ci,ok:(i===q.ci),t:used};
+  // Блокируем все кнопки, подсвечиваем ТОЛЬКО выбранный (не правильный!)
+  opts.querySelectorAll(".opt").forEach(b=>b.classList.add("disabled"));
+  btn.classList.add("selected");
+  // Показываем "ждём ведущего"
+  waitReveal.classList.add("show");
+  fb.textContent="";
+}
+
+// ── REVEAL ANSWER: ведущий нажал "Показать ответ" ────────────
+function revealAnswer(){
+  const q=Q[curIdx];
+  waitReveal.classList.remove("show");
+  // Снимаем выделение "selected"
+  opts.querySelectorAll(".opt").forEach(b=>b.classList.remove("selected"));
+  // Показываем правильный / неправильный
+  opts.querySelectorAll(".opt").forEach((b,i)=>{
+    if(i===q.ci)b.classList.add("correct");
+  });
+  const ua=userAnswers[curIdx];
+  if(!ua||ua.sel===-1){
+    // Время вышло, не ответил
+    revealBanner.textContent="⏱ Время вышло! Правильный ответ выделен зелёным.";
+    revealBanner.className="reveal-banner timeout show";
+    fb.textContent="";
+  } else if(ua.ok){
+    const p=pts(q.dif);
+    score+=p;scoreEl.textContent=score;score2El.textContent=score;
+    revealBanner.textContent="✅ Верно! +"+ p+" очк"+(p===1?"о":p<5?"а":"ов");
+    revealBanner.className="reveal-banner ok show";
+    // анимация очков
+    const correctBtn=opts.querySelectorAll(".opt")[q.ci];
+    showPtsPopup(p,correctBtn);
+    playOk();
+    // Помечаем выбранную тоже зелёной (она же и правильная)
+    opts.querySelectorAll(".opt")[ua.sel].classList.add("correct");
+  } else {
+    opts.querySelectorAll(".opt")[ua.sel].classList.add("incorrect");
+    revealBanner.textContent="❌ Неверно. Правильный ответ выделен зелёным.";
+    revealBanner.className="reveal-banner err show";
+    playErr();
+  }
+  // Отправляем текущий счёт в реальном времени
+  pushScore();
+}
+
+// ── PUSH LIVE SCORE ──────────────────────────────────────────
+async function pushScore(){
+  if(!sb||!playerName)return;
+  try{
+    await sb.from("quiz_scores").upsert({
+      game_id:GID,
+      student_name:playerName,
+      team_name:teamName,
+      institution_name:instName,
+      score:score,
+      questions_answered:qAnswered,
+      updated_at:new Date().toISOString()
+    },{onConflict:"game_id,student_name,team_name"});
+  }catch(_){}
+}
+
+// ── SUPABASE ─────────────────────────────────────────────────
+async function fetchGameState(){
+  if(!sb)return undefined; // undefined = нет соединения, null = нет записи
+  try{
+    const{data,error}=await sb.from("quiz_state").select("*").eq("game_id",GID).maybeSingle();
+    if(error)return undefined; // ошибка сети — не менять состояние
+    return data; // null если записи нет, объект если есть
+  }catch(_){return undefined;}
+}
+
+function applyGameState(s){
+  if(!registered)return;
+  const phase=s?.phase||"waiting";
+  const idx=typeof s?.current_index==="number"?s.current_index:0;
+  const startedAt=s?.question_started_at||"";
+  const showAnswer=s?.show_answer===true;
+
+  // Обновляем статус-бейдж
+  if(phase==="running"){statusBadge.textContent="▶ Игра началась!";statusBadge.className="status-badge status-running";}
+  else if(phase==="paused"){statusBadge.textContent="⏸ Пауза";statusBadge.className="status-badge status-waiting";}
+  else if(phase==="ended"){statusBadge.textContent="✓ Игра завершена";statusBadge.className="status-badge status-waiting";}
+  else{statusBadge.textContent="⏳ Ожидание ведущего…";statusBadge.className="status-badge status-waiting";}
+
+  // ── waiting ──────────────────────────────────────────────────
+  if(phase==="waiting"){
+    stopTimer();
+    if(gameActive){
+      gameActive=false;lastIdx=-1;lastStartedAt="";lastPhase="";lastShowAnswer=false;
+      showWaitInPanel();
+    }
+    ovWait.classList.remove("hidden");ovWait.style.display="";
+    return;
+  }
+
+  // ── ended ────────────────────────────────────────────────────
+  if(phase==="ended"){
+    stopTimer();
+    ovWait.classList.add("hidden");ovWait.style.display="none";
+    if(ovResult.classList.contains("hidden"))showResult();
+    return;
+  }
+
+  // ── paused ───────────────────────────────────────────────────
+  if(phase==="paused"){
+    stopTimer();tnum.textContent="⏸";
+    ovWait.classList.add("hidden");ovWait.style.display="none";
+    lastPhase=phase;
+    return;
+  }
+
+  // ── running ──────────────────────────────────────────────────
+  // Всегда скрываем overlay при running — это ключевое исправление
+  ovWait.classList.add("hidden");ovWait.style.display="none";
+  gameActive=true;
+
+  // Новый вопрос?
+  const qChanged=idx!==lastIdx;
+  if(qChanged){
+    stopTimer();
+    lastIdx=idx;curIdx=idx;
+    answered=false;selectedIdx=-1;
+    lastShowAnswer=false;lastStartedAt="";
+    renderQ();
+    // Сразу запускаем таймер если есть startedAt
+    if(startedAt){lastStartedAt=startedAt;startTimer(startedAt);}
+    lastPhase=phase;
+    return;
+  }
+
+  // ── Тот же вопрос ────────────────────────────────────────────
+
+  // Раскрытие ответа
+  if(showAnswer&&!lastShowAnswer){
+    lastShowAnswer=true;
+    stopTimer();
+    if(!answered){
+      userAnswers[curIdx]={q:Q[curIdx].q,sel:-1,ci:Q[curIdx].ci,ok:false,t:QT};
+      qAnswered++;answered=true;
+    }
+    revealAnswer();
+  }else if(!showAnswer&&lastShowAnswer){
+    lastShowAnswer=false;
+  }
+
+  // Таймер: новый startedAt и ответ ещё не раскрыт
+  if(startedAt&&startedAt!==lastStartedAt&&!showAnswer){
+    lastStartedAt=startedAt;
+    startTimer(startedAt);
+  }
+
+  lastPhase=phase;
+}
+
+async function syncLoop(){
+  const s=await fetchGameState();
+  if(s===undefined)return; // ошибка сети — не трогаем состояние UI
+  applyGameState(s);
+}
+
+// ── REGISTRATION ─────────────────────────────────────────────
+async function registerPlayer(){
+  playerName=inpName.value.trim();teamName=inpTeam.value.trim();instName=inpInst.value.trim();
+  if(!playerName||!teamName||!instName)return;
+  hName.textContent=playerName;hTeam.textContent=teamName;hInst.textContent=instName;
+  readyInfo.innerHTML=[["Имя",playerName],["Команда",teamName],["Учреждение",instName]]
+    .map(([l,v])=>`<div class="rinfo-row"><span>${l}</span><span>${v}</span></div>`).join("");
+  qwaitName.textContent=playerName;
+  registered=true;
+  ovReg.classList.add("hidden");ovReg.style.display="none";ovWait.classList.remove("hidden");ovWait.style.display="";
+  if(sb){try{await sb.from("quiz_players").upsert({game_id:GID,student_name:playerName,team_name:teamName,institution_name:instName,joined_at:new Date().toISOString()},{onConflict:"game_id,team_name,student_name"});}catch(_){}}
+  if(syncTimer)clearInterval(syncTimer);
+  syncTimer=setInterval(syncLoop,1500);
+  syncLoop();
+  updateMetaDiff();
+}
+
+// ── RESULT ───────────────────────────────────────────────────
+function gradeInfo(pct){
+  if(pct>=90)return{m:"5",t:"Отлично!",d:"Блестящие знания об Арктике — уровень будущего полярного исследователя."};
+  if(pct>=75)return{m:"4",t:"Хороший результат",d:"Достойный уровень — немного повторить материал, и будет почти идеально."};
+  if(pct>=50)return{m:"3",t:"Есть прогресс",d:"Базовые представления об Арктике есть, но стоит ещё раз повторить тему."};
+  return{m:"2",t:"Нужно подтянуть тему",d:"Пока знаний недостаточно — используйте квиз как план подготовки к контрольной."};
+}
+function showResult(){
+  stopTimer();
+  const total=Q.length,correct=userAnswers.filter(a=>a&&a.ok).length;
+  const pct=Math.round(correct/total*100);
+  const g=gradeInfo(pct);
+  grade.textContent=g.m;rsub.textContent=g.t;rmsg.textContent=g.d;
+  rcorr.textContent=correct+" из "+total;rfinalScore.textContent=score+" очков";rpct.textContent=pct+"%";
+  rpart.textContent=playerName+" · "+teamName;
+  ovResult.classList.remove("hidden");ovResult.style.display="";playDone();
+  if(sb){try{sb.from("quiz_results").insert({game_id:GID,student_name:playerName,team_name:teamName,institution_name:instName,score,total_questions:total,percent:pct,duration_sec:Math.round(totalTime),answers:userAnswers});}catch(_){}}
+}
+function resetQuiz(){
+  stopTimer();
+  curIdx=0;score=0;scoreEl.textContent=0;score2El.textContent=0;totalTime=0;qAnswered=0;
+  answered=false;selectedIdx=-1;lastIdx=-1;lastStartedAt="";lastPhase="";lastShowAnswer=false;gameActive=false;
+  for(let i=0;i<userAnswers.length;i++)userAnswers[i]=null;
+  ovResult.classList.add("hidden");ovResult.style.display="none";showWaitInPanel();
+  ovWait.classList.remove("hidden");ovWait.style.display="";
+  statusBadge.textContent="⏳ Ожидание ведущего…";statusBadge.className="status-badge status-waiting";
+}
+
+// ── PDF ──────────────────────────────────────────────────────
+function downloadPdf(){
+  if(!window.jspdf||!window.jspdf.jsPDF){alert("jsPDF не загружен.");return;}
+  const{jsPDF}=window.jspdf,doc=new jsPDF({unit:"mm",format:"a4"});
+  const total=Q.length,correct=userAnswers.filter(a=>a&&a.ok).length,pct=Math.round(correct/total*100);
+  const g=gradeInfo(pct),now=new Date(),pad=n=>n<10?"0"+n:""+n;
+  const ds=pad(now.getDate())+"."+pad(now.getMonth()+1)+"."+now.getFullYear()+" "+pad(now.getHours())+":"+pad(now.getMinutes());
+  let y=14;const L=12,W=180;
+  doc.setFont("helvetica","bold");doc.setFontSize(15);doc.text("Результаты квиза об Арктике",L,y);y+=8;
+  doc.setFontSize(10);doc.setFont("helvetica","normal");
+  [["Имя",playerName||"—"],["Команда",teamName||"—"],["Учреждение",instName||"—"],["Дата",ds],["Результат",correct+" из "+total+" ("+pct+"%), оценка: "+g.m],["Очки",score+" очков"],["Комментарий",g.t]].forEach(([l,v])=>{doc.text(l+": "+v,L,y);y+=5.5;});
+  y+=3;doc.setFont("helvetica","bold");doc.text("Детализация по вопросам",L,y);y+=5.5;doc.setFont("helvetica","normal");
+  const add=t=>{doc.splitTextToSize(t,W).forEach(l=>{if(y>278){doc.addPage();y=14;}doc.text(l,L,y);y+=4.5;});};
+  Q.forEach((q,i)=>{const ua=userAnswers[i];let sel="Не ответил(а)",mk="Неверно";if(ua&&ua.sel>=0){sel=q.opts[ua.sel];mk=ua.ok?"Верно (+"+pts(q.dif)+" очк"+(pts(q.dif)===1?"о":"а")+")":"Неверно";}add((i+1)+". "+q.q);add("   Правильный: "+q.opts[q.ci]);add("   Ваш ответ: "+sel+" — "+mk);y+=1.5;});
+  doc.save("Arktika_Quiz_"+(playerName.replace(/[^a-zA-Z0-9а-яА-ЯёЁ]+/g,"_").slice(0,40)||"player")+".pdf");
+}
+
+// ── SNOW & META ──────────────────────────────────────────────
+function createSnow(){const sl=$("snow");for(let i=0;i<30;i++){const f=document.createElement("div");f.className="flake";const s=1+Math.random()*2;f.style.left=Math.random()*100+"%";f.style.animationDuration=(12+Math.random()*10)+"s";f.style.animationDelay=-(Math.random()*16)+"s";f.style.height=(5+s*1.7)+"px";f.style.width=(1+s/2)+"px";sl.appendChild(f);}}
+function updateMetaDiff(){const avg=Q.reduce((s,q)=>s+(q.dif||2),0)/Q.length;metaDiff.textContent=avg<1.7?"Уровень: базовый":avg<2.4?"Уровень: средний":"Уровень: продвинутый";}
+
+// ── EVENTS ───────────────────────────────────────────────────
+[inpName,inpTeam,inpInst].forEach(el=>{
+  el.addEventListener("input",()=>{regBtn.disabled=!(inpName.value.trim()&&inpTeam.value.trim()&&inpInst.value.trim());});
+  el.addEventListener("keydown",e=>{if(e.key==="Enter"&&!regBtn.disabled){e.preventDefault();registerPlayer();}});
+});
+regBtn.addEventListener("click",registerPlayer);
+restartBtn.addEventListener("click",resetQuiz);
+closeBtn.addEventListener("click",()=>{ovResult.classList.add("hidden");ovResult.style.display="none";});
+againBtn.addEventListener("click",()=>{ovResult.classList.add("hidden");ovResult.style.display="none";resetQuiz();});
+pdfBtn.addEventListener("click",downloadPdf);
+musicBtn.addEventListener("click",()=>bgOn?stopBg():startBg());
+
+createSnow();
+</script>
+</body>
+</html>
