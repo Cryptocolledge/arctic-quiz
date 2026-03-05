@@ -1,0 +1,918 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8"/>
+<title>Квиз: Арктика</title>
+<meta name="viewport" content="width=device-width,initial-scale=1.0,viewport-fit=cover"/>
+<style>
+:root{--bg:#050816;--card:rgba(8,18,40,0.95);--accent:#4fdfff;--ok:#61ffb2;--err:#ff5f7a;--gold:#ffd36b;--text:#f7fbff;--muted:#b5c2d9;--border:rgba(255,255,255,0.07);--r:18px;}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{min-height:100%;background:var(--bg);}
+body{font-family:system-ui,-apple-system,"Segoe UI",sans-serif;color:var(--text);min-height:100vh;padding:14px;background:radial-gradient(ellipse at top,#0d2a4a 0%,#050816 60%);}
+.shell{max-width:960px;margin:0 auto;display:flex;flex-direction:column;gap:10px;}
+/* HEADER */
+.hdr{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:12px 16px;display:flex;align-items:flex-start;justify-content:space-between;gap:10px;flex-wrap:wrap;}
+.htitle{font-size:1.05rem;font-weight:750;letter-spacing:.05em;text-transform:uppercase;display:flex;align-items:center;gap:7px;}
+.pill{padding:2px 8px;border-radius:999px;font-size:.64rem;font-weight:600;letter-spacing:.1em;text-transform:uppercase;background:rgba(79,223,255,.15);border:1px solid rgba(79,223,255,.4);color:#cff6ff;}
+.hrow{display:flex;align-items:center;gap:5px;flex-wrap:wrap;margin-top:5px;}
+.chip{padding:3px 8px;border-radius:999px;border:1px solid rgba(255,255,255,.1);background:rgba(5,14,36,.9);font-size:.73rem;color:var(--muted);display:inline-flex;align-items:center;gap:4px;}
+.dot{width:5px;height:5px;border-radius:50%;background:#4fdfff;box-shadow:0 0 6px #4fdfff;}
+.nval{padding:1px 7px;border-radius:999px;background:rgba(5,16,36,.9);border:1px solid rgba(122,142,255,.4);font-size:.73rem;color:var(--text);max-width:130px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.score-big{font-size:1.35rem;font-weight:800;color:var(--gold);}
+.hdr-right{display:flex;flex-direction:column;align-items:flex-end;gap:5px;}
+.qctr{font-size:.78rem;color:var(--muted);}
+.pbar-wrap{width:170px;height:5px;border-radius:999px;background:rgba(255,255,255,.06);}
+.pbar-fill{height:100%;border-radius:inherit;background:linear-gradient(90deg,#4fdfff,#6b7aff);transition:width .4s;}
+.tbadge{display:flex;align-items:center;gap:6px;padding:5px 9px;border-radius:999px;background:rgba(79,223,255,.1);border:1px solid rgba(79,223,255,.3);font-size:.74rem;color:#d8f9ff;}
+.tcirc{width:22px;height:22px;border-radius:50%;border:2px solid rgba(79,223,255,.5);display:flex;align-items:center;justify-content:center;font-size:.68rem;font-weight:700;}
+.tcirc.urgent{animation:timerPulse .5s ease-in-out infinite;border-color:rgba(255,95,122,.8);}
+@keyframes timerPulse{0%,100%{transform:scale(1);background:transparent}50%{transform:scale(1.3);background:rgba(255,95,122,.2);}}
+.tshell{width:70px;height:4px;border-radius:999px;background:rgba(255,255,255,.08);overflow:hidden;}
+.tbar{height:100%;border-radius:inherit;transform-origin:left;transform:scaleX(1);transition:transform .22s linear;}
+/* GRID */
+.grid{display:grid;grid-template-columns:minmax(0,3.2fr) minmax(0,2.8fr);gap:10px;}
+@media(max-width:780px){.grid{grid-template-columns:1fr}}
+/* QUESTION PANEL */
+.qpanel{background:var(--card);border:1px solid rgba(79,223,255,.2);border-radius:var(--r);padding:14px;display:flex;flex-direction:column;gap:9px;}
+.qmeta{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:5px;}
+.qtag{font-size:.68rem;padding:2px 7px;border-radius:999px;background:rgba(4,16,44,.9);border:1px solid rgba(79,223,255,.7);color:#cff6ff;display:inline-flex;align-items:center;gap:4px;}
+.qdiff{font-size:.68rem;padding:2px 6px;border-radius:999px;border:1px solid rgba(255,255,255,.13);color:var(--muted);}
+.qpts{font-size:.68rem;padding:2px 7px;border-radius:999px;border:1px solid rgba(255,211,107,.5);background:rgba(255,211,107,.1);color:var(--gold);font-weight:700;}
+.qtext{font-size:.97rem;font-weight:650;line-height:1.4;}
+.qextra{font-size:.8rem;color:var(--muted);}
+.qillus{border-radius:12px;overflow:hidden;border:1px solid rgba(79,223,255,.25);background:linear-gradient(135deg,#0a1a30,#061020);display:flex;flex-direction:column;align-items:center;min-height:140px;}
+.qillus svg{width:100%;max-height:190px;}
+.qillus-cap{font-size:.71rem;color:var(--muted);padding:5px 9px;text-align:center;background:rgba(2,8,24,.7);width:100%;}
+.rebusbox{padding:9px;border-radius:11px;background:rgba(2,8,24,.9);border:1px dashed rgba(79,223,255,.6);display:flex;flex-direction:column;gap:5px;align-items:center;}
+.rfig{display:flex;align-items:center;gap:8px;font-weight:750;font-size:.92rem;}
+.rpart{padding:4px 8px;border-radius:999px;background:rgba(7,23,54,.9);border:1px solid rgba(79,223,255,.7);}
+.rop{color:var(--accent);}
+.rnote{font-size:.68rem;color:var(--muted);}
+.qwait{display:flex;flex-direction:column;align-items:center;gap:9px;padding:22px 10px;text-align:center;}
+.qwait-icon{font-size:2rem;animation:pulse 2s ease-in-out infinite;}
+@keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.1)}}
+/* OPTIONS */
+.opanel{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:13px;display:flex;flex-direction:column;gap:7px;}
+.otop{display:flex;align-items:center;justify-content:space-between;}
+.otitle{font-size:.7rem;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);}
+.spill{font-size:.82rem;padding:3px 8px;border-radius:999px;background:rgba(255,211,107,.1);border:1px solid rgba(255,211,107,.4);color:var(--gold);font-weight:700;}
+.opts{display:flex;flex-direction:column;gap:5px;}
+.opt{width:100%;text-align:left;padding:9px 11px;border-radius:11px;border:1px solid rgba(122,142,255,.2);background:rgba(5,12,30,.95);color:var(--text);cursor:pointer;font-size:.84rem;display:flex;align-items:center;gap:7px;transition:border-color .15s,transform .12s;min-height:40px;}
+.opt:hover:not(:disabled){transform:translateY(-1px);border-color:rgba(79,223,255,.7);}
+.opt:disabled{cursor:default;opacity:.7;}
+.obadge{width:21px;height:21px;border-radius:7px;border:1px solid rgba(175,195,255,.6);font-size:.7rem;display:flex;align-items:center;justify-content:center;background:rgba(6,14,38,.9);flex-shrink:0;}
+.opt.selected{border-color:rgba(79,223,255,.8);background:rgba(4,18,38,.98);}
+.opt.correct{border-color:rgba(97,255,178,.8);background:rgba(6,28,26,.95);}
+.opt.correct .obadge{border-color:rgba(97,255,178,.9);color:var(--ok);}
+.opt.incorrect{border-color:rgba(255,95,122,.8);background:rgba(32,7,18,.95);}
+.opt.incorrect .obadge{border-color:rgba(255,95,122,.9);color:var(--err);}
+.wait-reveal{padding:6px 9px;border-radius:9px;font-size:.77rem;color:var(--muted);text-align:center;border:1px dashed rgba(255,255,255,.1);animation:blink 2s ease-in-out infinite;display:none;}
+.wait-reveal.show{display:block;}
+@keyframes blink{0%,100%{opacity:.4}50%{opacity:1}}
+.reveal-banner{padding:7px 11px;border-radius:9px;font-size:.8rem;font-weight:600;text-align:center;display:none;}
+.reveal-banner.show{display:block;}
+.reveal-banner.ok{background:rgba(97,255,178,.1);border:1px solid rgba(97,255,178,.4);color:var(--ok);}
+.reveal-banner.err{background:rgba(255,95,122,.1);border:1px solid rgba(255,95,122,.4);color:var(--err);}
+.reveal-banner.timeout{background:rgba(255,200,80,.08);border:1px solid rgba(255,200,80,.4);color:#ffe080;}
+.ctrlrow{display:flex;align-items:center;justify-content:space-between;gap:5px;flex-wrap:wrap;}
+.btn{border-radius:999px;border:1px solid rgba(255,255,255,.14);padding:7px 13px;font-size:.78rem;font-weight:650;cursor:pointer;background:rgba(4,12,30,.95);color:var(--text);display:inline-flex;align-items:center;gap:5px;transition:filter .14s,transform .12s;min-height:36px;letter-spacing:.04em;}
+.btn:hover:not(:disabled){filter:brightness(1.2);transform:translateY(-1px);}
+.btn:disabled{opacity:.4;cursor:default;}
+.btn-p{background:linear-gradient(120deg,#4fdfff,#6b7aff);color:#02111f;border-color:rgba(160,240,255,.8);}
+.btn-g{background:transparent;}
+.btn-alert{background:linear-gradient(120deg,#ff9f43,#ee5a24);color:#fff;border-color:rgba(255,160,80,.8);font-weight:750;}
+/* CHAT */
+.chat-panel{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:13px;display:flex;flex-direction:column;gap:7px;}
+.chat-title{font-size:.7rem;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);display:flex;align-items:center;justify-content:space-between;}
+.chat-new-badge{background:var(--err);color:#fff;border-radius:999px;padding:1px 6px;font-size:.63rem;font-weight:700;display:none;}
+.chat-new-badge.show{display:inline-block;}
+.chat-msgs{max-height:150px;overflow-y:auto;display:flex;flex-direction:column;gap:4px;}
+.chat-msgs::-webkit-scrollbar{width:3px;}
+.chat-msgs::-webkit-scrollbar-thumb{background:rgba(79,223,255,.3);border-radius:999px;}
+.cmsg{padding:5px 8px;border-radius:9px;font-size:.78rem;line-height:1.3;}
+.cmsg.host{background:rgba(79,223,255,.1);border:1px solid rgba(79,223,255,.25);}
+.cmsg.mine{background:rgba(107,122,255,.1);border:1px solid rgba(107,122,255,.22);margin-left:10px;}
+.cmsg.other{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.07);margin-left:10px;}
+.cmsg.alert-msg{background:rgba(255,159,67,.1);border:1px solid rgba(255,159,67,.4);}
+.cmsg.blocked{background:rgba(255,95,122,.06);border:1px solid rgba(255,95,122,.2);opacity:.5;}
+.cname{font-size:.66rem;font-weight:700;opacity:.8;margin-bottom:1px;}
+.ctime{font-size:.61rem;color:var(--muted);margin-left:3px;}
+.chat-input-row{display:flex;gap:5px;}
+.chat-inp{flex:1;padding:6px 9px;border-radius:9px;border:1px solid rgba(122,142,255,.35);background:rgba(3,10,28,.96);color:var(--text);font-size:.8rem;outline:none;}
+.chat-inp:focus{border-color:rgba(79,223,255,.7);}
+.chat-inp::placeholder{color:var(--muted);opacity:.55;}
+.chat-blocked-notice{font-size:.75rem;color:var(--err);text-align:center;padding:6px;border:1px solid rgba(255,95,122,.3);border-radius:8px;display:none;}
+/* OVERLAYS */
+.ov{position:fixed;inset:0;display:none;align-items:center;justify-content:center;z-index:50;background:rgba(2,6,18,.86);padding:14px;}
+.ov.active{display:flex;}
+.ocard{width:min(520px,100%);border-radius:var(--r);background:radial-gradient(circle at top,rgba(79,223,255,.16),rgba(4,9,26,.99));border:1px solid rgba(175,238,255,.45);box-shadow:0 20px 60px rgba(0,0,0,.9);padding:20px;max-height:90vh;overflow-y:auto;}
+.stitle{font-size:1.05rem;font-weight:750;letter-spacing:.06em;text-transform:uppercase;margin-bottom:4px;}
+.ssub{font-size:.83rem;color:var(--muted);margin-bottom:10px;}
+.sform{display:flex;flex-direction:column;gap:7px;margin-bottom:9px;}
+.frow{display:flex;flex-direction:column;gap:2px;font-size:.8rem;}
+.frow label{color:var(--muted);}
+.finput{padding:7px 9px;border-radius:9px;border:1px solid rgba(170,190,255,.55);background:rgba(3,10,28,.96);color:var(--text);outline:none;font-size:.83rem;}
+.finput:focus{border-color:rgba(79,223,255,.8);}
+.snote{font-size:.72rem;color:var(--muted);margin-bottom:9px;}
+/* Mode selector */
+.mode-row{display:flex;gap:8px;margin-bottom:12px;}
+.mode-btn{flex:1;padding:10px;border-radius:12px;border:2px solid rgba(255,255,255,.12);background:rgba(5,14,36,.9);color:var(--muted);cursor:pointer;text-align:center;font-size:.82rem;font-weight:600;transition:border-color .15s,color .15s;}
+.mode-btn.active{border-color:rgba(79,223,255,.8);color:#cff6ff;background:rgba(4,18,38,.95);}
+/* Anticheat overlay */
+.anticheat-box{background:rgba(255,95,122,.08);border:1px solid rgba(255,95,122,.4);border-radius:12px;padding:12px;margin-bottom:12px;}
+.anticheat-title{font-size:.88rem;font-weight:750;color:var(--err);margin-bottom:6px;}
+.anticheat-list{font-size:.78rem;color:#ffb0b8;display:flex;flex-direction:column;gap:3px;}
+.anticheat-list li{list-style:none;padding-left:14px;position:relative;}
+.anticheat-list li::before{content:"⚠";position:absolute;left:0;font-size:.7rem;}
+/* Ready screen */
+.ready-screen{display:flex;flex-direction:column;align-items:center;gap:10px;padding:6px 0 2px;}
+.ready-info{display:flex;flex-direction:column;gap:4px;width:100%;}
+.rinfo-row{display:flex;align-items:center;justify-content:space-between;padding:5px 9px;border-radius:9px;background:rgba(5,14,34,.9);border:1px solid rgba(122,142,255,.22);font-size:.8rem;}
+.rinfo-row span:first-child{color:var(--muted);}
+.status-badge{display:inline-flex;align-items:center;gap:5px;padding:5px 11px;border-radius:999px;font-size:.76rem;}
+.s-waiting{background:rgba(255,200,80,.1);border:1px solid rgba(255,200,80,.4);color:#ffe080;animation:blink 2s infinite;}
+.s-running{background:rgba(97,255,178,.1);border:1px solid rgba(97,255,178,.4);color:var(--ok);}
+/* Result */
+.rhdr{display:flex;align-items:center;justify-content:space-between;gap:9px;margin-bottom:9px;}
+.rtitle{font-size:.98rem;font-weight:750;letter-spacing:.06em;text-transform:uppercase;}
+.grade{min-width:54px;height:54px;border-radius:50%;border:2px solid rgba(97,255,178,.8);background:radial-gradient(circle at 30% 20%,rgba(255,255,255,.85),rgba(20,80,50,.7));color:#022c22;font-size:1.3rem;font-weight:800;display:flex;align-items:center;justify-content:center;}
+.rbody{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-bottom:9px;}
+.rstat{padding:6px 8px;border-radius:11px;background:rgba(4,13,30,.96);border:1px solid rgba(79,223,255,.35);display:flex;flex-direction:column;gap:2px;}
+.rstat span:first-child{font-size:.66rem;color:var(--muted);text-transform:uppercase;letter-spacing:.09em;}
+.rstat span:last-child{font-weight:650;}
+.rmsg{font-size:.83rem;margin-bottom:7px;}
+.rftr{display:flex;align-items:center;justify-content:space-between;gap:5px;flex-wrap:wrap;font-size:.74rem;color:var(--muted);}
+.ract{display:flex;gap:5px;flex-wrap:wrap;}
+/* Pts popup */
+.pts-popup{position:fixed;font-size:1.2rem;font-weight:800;color:var(--gold);pointer-events:none;z-index:200;animation:popUp .9s ease-out forwards;}
+@keyframes popUp{0%{opacity:1;transform:translateY(0) scale(1)}70%{opacity:1;transform:translateY(-40px) scale(1.15)}100%{opacity:0;transform:translateY(-72px) scale(.9)}}
+/* Snow */
+.snow{pointer-events:none;position:fixed;inset:0;overflow:hidden;z-index:0;opacity:.3;}
+.flake{position:absolute;top:-10px;width:2px;height:6px;border-radius:999px;background:rgba(255,255,255,.85);animation:sf 14s linear infinite;}
+@keyframes sf{0%{opacity:0;transform:translate(0,-10px)}8%{opacity:1}100%{opacity:0;transform:translate(28px,105vh)}}
+/* Dev */
+.dev-sig{position:fixed;bottom:10px;right:12px;z-index:10;display:flex;align-items:center;gap:5px;padding:4px 10px 4px 7px;border-radius:999px;background:rgba(3,9,26,.82);border:1px solid rgba(79,223,255,.22);}
+.dev-icon{width:20px;height:20px;border-radius:50%;background:linear-gradient(135deg,#4fdfff,#c26bff);display:flex;align-items:center;justify-content:center;font-size:.6rem;font-weight:800;color:#02111f;}
+.dev-name{font-size:.65rem;font-weight:700;background:linear-gradient(90deg,#4fdfff,#c26bff);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+</style>
+</head>
+<body>
+<div class="snow" id="snow"></div>
+
+<!-- OV 1: Регистрация -->
+<div class="ov active" id="ov-reg">
+<div class="ocard">
+  <!-- Приветствие -->
+  <div style="text-align:center;margin-bottom:14px;padding:12px;border-radius:12px;background:rgba(79,223,255,.07);border:1px solid rgba(79,223,255,.2);">
+    <div style="font-size:1.5rem;margin-bottom:6px;">🧊</div>
+    <div style="font-size:.95rem;font-weight:750;color:#cff6ff;margin-bottom:5px;">Добро пожаловать в Арктический квиз!</div>
+    <div style="font-size:.78rem;color:var(--muted);line-height:1.5;">Рад приветствовать вас в этой игре!<br>Желаю удачи, острого ума и честной игры.<br>Пусть знания об Арктике помогут вам победить 🏆</div>
+    <div style="font-size:.68rem;color:rgba(79,223,255,.5);margin-top:6px;">— Разработчик: Широков А.Д.</div>
+  </div>
+  <div class="stitle">Регистрация участника</div>
+  <div class="ssub">Выберите режим участия:</div>
+  <div class="mode-row">
+    <div class="mode-btn active" id="mode-solo" onclick="setMode('solo')">👤 Один игрок</div>
+    <div class="mode-btn" id="mode-team" onclick="setMode('team')">👥 Команда</div>
+  </div>
+
+  <!-- Античит предупреждение -->
+  <div class="anticheat-box">
+    <div class="anticheat-title">⚠️ Правила честной игры</div>
+    <ul class="anticheat-list">
+      <li>Использование интернета для поиска ответов запрещено</li>
+      <li>Использование ИИ-помощников (ChatGPT и др.) запрещено</li>
+      <li>За нарушение снимается 2 балла и выдаётся предупреждение</li>
+      <li>При повторном нарушении — дисквалификация</li>
+    </ul>
+  </div>
+
+  <div id="form-solo" class="sform">
+    <div class="frow"><label>Фамилия и имя *</label><input id="s-name" class="finput" type="text" maxlength="60" placeholder="Иванов Иван"/></div>
+    <div class="frow"><label>Учебное заведение *</label><input id="s-inst" class="finput" type="text" maxlength="80" placeholder="Колледж Арктики"/></div>
+    <div class="frow"><label>Номер группы *</label><input id="s-group" class="finput" type="text" maxlength="30" placeholder="ИСП-21"/></div>
+    <div class="frow"><label>Курс обучения *</label>
+      <select id="s-course" class="finput">
+        <option value="">— выберите —</option>
+        <option>1 курс</option><option>2 курс</option><option>3 курс</option><option>4 курс</option>
+      </select>
+    </div>
+  </div>
+
+  <div id="form-team" class="sform" style="display:none;">
+    <div class="frow"><label>Название команды *</label><input id="t-name" class="finput" type="text" maxlength="60" placeholder="Арктические волки"/></div>
+    <div class="frow"><label>Учебное заведение *</label><input id="t-inst" class="finput" type="text" maxlength="80" placeholder="Колледж Арктики"/></div>
+    <div class="frow"><label>Номер группы *</label><input id="t-group" class="finput" type="text" maxlength="30" placeholder="ИСП-21"/></div>
+    <div class="frow"><label>Участники команды (через запятую) *</label><input id="t-members" class="finput" type="text" maxlength="200" placeholder="Иванов И., Петров П., Сидоров С."/></div>
+  </div>
+
+  <div class="snote">Нажимая «Зарегистрироваться», вы соглашаетесь соблюдать правила честной игры.</div>
+  <button class="btn btn-p" id="reg-btn" disabled style="width:100%">Зарегистрироваться →</button>
+</div>
+</div>
+
+<!-- OV 2: Ожидание -->
+<div class="ov" id="ov-wait">
+<div class="ocard">
+  <div class="ready-screen">
+    <div style="font-size:2.5rem">🏔️</div>
+    <div style="font-size:.98rem;font-weight:750">Вы зарегистрированы!</div>
+    <div style="font-size:.83rem;color:var(--muted);text-align:center">Ожидайте, когда ведущий запустит игру.</div>
+    <div class="ready-info" id="ready-info"></div>
+    <div class="status-badge s-waiting" id="status-badge">⏳ Ожидание ведущего…</div>
+  </div>
+</div>
+</div>
+
+<!-- OV 3: Результат -->
+<div class="ov" id="ov-result">
+<div class="ocard">
+  <div class="rhdr">
+    <div><div class="rtitle">Итоги квиза</div><div style="font-size:.83rem;color:var(--muted)" id="rsub"></div></div>
+    <div class="grade" id="grade">—</div>
+  </div>
+  <div class="rbody">
+    <div class="rstat"><span>Участник</span><span id="rpart">—</span></div>
+    <div class="rstat"><span>Правильных</span><span id="rcorr">—</span></div>
+    <div class="rstat"><span>Очки</span><span id="rfsc">—</span></div>
+    <div class="rstat"><span>Процент</span><span id="rpct">—</span></div>
+  </div>
+  <div class="rmsg" id="rmsg"></div>
+  <div class="rftr">
+    <span>Можно пройти ещё раз</span>
+    <div class="ract">
+      <button class="btn btn-g" id="pdf-btn">📄 PDF</button>
+      <button class="btn btn-p" id="again-btn">Ещё раз</button>
+    </div>
+  </div>
+</div>
+</div>
+
+<div class="shell">
+  <div class="hdr">
+    <div>
+      <div class="htitle">Квиз об Арктике <span class="pill">КОЛЛЕДЖ · ГЕОГРАФИЯ</span></div>
+      <div class="hrow">
+        <div class="chip"><span class="dot"></span><span id="meta-diff">Уровень: средний</span></div>
+        <div class="chip">30 вопросов · 25 сек</div>
+        <button class="btn btn-g" id="music-btn" style="min-height:28px;padding:3px 9px;font-size:.71rem;">🎵 Музыка</button>
+      </div>
+      <div class="hrow" style="margin-top:4px;">
+        <span style="font-size:.71rem;color:var(--muted)">Участник:</span><span class="nval" id="h-name">—</span>
+        <span style="font-size:.71rem;color:var(--muted)" id="h-team-lbl">Команда:</span><span class="nval" id="h-team">—</span>
+        <span style="font-size:.71rem;color:var(--muted)">Учреждение:</span><span class="nval" id="h-inst">—</span>
+      </div>
+      <div class="hrow" style="margin-top:4px;">
+        <span class="score-big" id="score">0</span>
+        <span style="font-size:.72rem;color:var(--muted);">очков</span>
+      </div>
+    </div>
+    <div class="hdr-right">
+      <div class="qctr" id="qctr">Вопрос 1 из 30</div>
+      <div class="pbar-wrap"><div class="pbar-fill" id="pbar" style="width:0%"></div></div>
+      <div class="tbadge">
+        <div class="tcirc"><span id="tnum">—</span></div>
+        <div class="tshell"><div class="tbar" id="tbar" style="transform:scaleX(0)"></div></div>
+        <span>сек</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="grid">
+    <div class="qpanel">
+      <div class="qmeta">
+        <div class="qtag"><span class="dot"></span><span id="qtype">—</span></div>
+        <div style="display:flex;gap:4px;">
+          <div class="qpts" id="qpts">+1 очко</div>
+          <div class="qdiff" id="qdiff">—</div>
+        </div>
+      </div>
+      <div id="qwait" class="qwait">
+        <div class="qwait-icon">⏳</div>
+        <div style="font-size:.88rem;color:var(--muted)">Ожидайте сигнала ведущего…</div>
+        <div id="qwait-name" style="font-size:.8rem;padding:3px 9px;border-radius:999px;background:rgba(79,223,255,.1);border:1px solid rgba(79,223,255,.25);"></div>
+      </div>
+      <div id="qbody" style="display:none;">
+        <div class="qtext" id="qtext">—</div>
+        <div class="qextra" id="qextra" style="margin-top:4px;"></div>
+        <div class="qillus" id="qillus" style="display:none;margin-top:8px;">
+          <div id="qsvg" style="width:100%;"></div>
+          <div class="qillus-cap" id="qcap"></div>
+        </div>
+        <div class="rebusbox" id="rebusbox" style="display:none;margin-top:8px;">
+          <div style="font-size:.64rem;letter-spacing:.13em;text-transform:uppercase;color:#cff6ff;opacity:.8;">Ребус</div>
+          <div class="rfig" id="rfig"></div>
+          <div class="rnote" id="rnote"></div>
+        </div>
+      </div>
+    </div>
+
+    <div style="display:flex;flex-direction:column;gap:9px;">
+      <div class="opanel">
+        <div class="otop">
+          <div class="otitle">Выберите вариант</div>
+          <div class="spill">⭐ <span id="score2">0</span></div>
+        </div>
+        <div class="opts" id="opts"></div>
+        <div class="wait-reveal" id="wait-reveal">⏳ Ждём, пока ведущий откроет ответ…</div>
+        <div class="reveal-banner" id="reveal-banner"></div>
+        <div class="ctrlrow">
+          <button class="btn btn-alert" id="alert-btn" style="display:none;">🚨 Вопрос!</button>
+          <button class="btn btn-g" id="restart-btn" style="margin-left:auto;">Заново</button>
+        </div>
+      </div>
+
+      <div class="chat-panel" id="chat-panel" style="display:none;">
+        <div class="chat-title">
+          <span>💬 Чат с ведущим</span>
+          <span class="chat-new-badge" id="chat-badge">new</span>
+        </div>
+        <div class="chat-msgs" id="chat-msgs"></div>
+        <div class="chat-blocked-notice" id="chat-blocked">🚫 Ваш чат заблокирован ведущим</div>
+        <div class="chat-input-row" id="chat-input-row">
+          <input class="chat-inp" id="chat-inp" type="text" maxlength="200" placeholder="Написать ведущему…"/>
+          <button class="btn btn-p" id="chat-send" style="padding:5px 11px;">➤</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="dev-sig"><div class="dev-icon">ША</div><div class="dev-name">Широков А.Д.</div></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+'use strict';
+const SURL="https://arpbhbfyucpojvxipqng.supabase.co";
+const SKEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFycGJoYmZ5dWNwb2p2eGlwcW5nIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIyMTAwNTQsImV4cCI6MjA4Nzc4NjA1NH0.MQWcU9ph2sWNgbHbfDZ0qKEC1V1PzbI7I7TtQyPNyeg";
+const GID="default",QT=25;
+const sb=window.supabase?.createClient?window.supabase.createClient(SURL,SKEY):null;
+function pts(d){return d<=1?1:d===2?2:3;}
+
+// ── ФИЛЬТР МАТА ──────────────────────────────────────────────
+const BAD_WORDS=["бля","блять","хуй","хуй","пизд","ебал","ёбан","еба","пиздец","сука","ёб","блядь","мудак","мудила","ублюдок","залупа","шлюха","проститутка","заеб","нахуй","пошел","иди нахуй","fuck","shit","bitch","ass","cock","dick","pussy","nigga"];
+function filterMsg(txt){let s=txt;BAD_WORDS.forEach(w=>{const re=new RegExp(w,"gi");s=s.replace(re,"*".repeat(w.length));});return s;}
+
+// ── SVG ───────────────────────────────────────────────────────
+const SVG={
+polar_bear:`<svg viewBox="0 0 280 180" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#0a1a3a"/><stop offset="100%" stop-color="#1a3a6a"/></linearGradient></defs><rect width="280" height="180" fill="url(#sky)"/><circle cx="20" cy="15" r="1" fill="white" opacity=".8"/><circle cx="55" cy="8" r="1" fill="white" opacity=".6"/><circle cx="200" cy="12" r="1.2" fill="white" opacity=".9"/><circle cx="240" cy="20" r=".8" fill="white" opacity=".7"/><ellipse cx="140" cy="165" rx="130" ry="20" fill="#b8deff" opacity=".9"/><ellipse cx="80" cy="158" rx="70" ry="12" fill="#cce8ff" opacity=".7"/><ellipse cx="140" cy="130" rx="52" ry="38" fill="#f0f4f8"/><circle cx="175" cy="100" r="32" fill="#f0f4f8"/><circle cx="158" cy="75" r="10" fill="#f0f4f8"/><circle cx="193" cy="72" r="10" fill="#f0f4f8"/><circle cx="158" cy="75" r="6" fill="#e8ced0"/><circle cx="193" cy="72" r="6" fill="#e8ced0"/><circle cx="167" cy="97" r="5" fill="#1a2a3a"/><circle cx="185" cy="95" r="5" fill="#1a2a3a"/><circle cx="168" cy="96" r="2" fill="white"/><circle cx="186" cy="94" r="2" fill="white"/><ellipse cx="177" cy="108" rx="8" ry="5" fill="#2a3a4a"/><path d="M170 113 Q177 118 184 113" stroke="#2a3a4a" stroke-width="1.5" fill="none" stroke-linecap="round"/><ellipse cx="100" cy="153" rx="22" ry="12" fill="#e8eef4"/><ellipse cx="180" cy="157" rx="22" ry="12" fill="#e8eef4"/><text x="30" y="145" font-size="8" fill="white" opacity=".7">❄</text><text x="230" y="130" font-size="6" fill="white" opacity=".5">❄</text></svg>`,
+aurora:`<svg viewBox="0 0 280 180" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="ns" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#000814"/><stop offset="100%" stop-color="#001a2e"/></linearGradient><filter id="bl"><feGaussianBlur stdDeviation="3"/></filter></defs><rect width="280" height="180" fill="url(#ns)"/><circle cx="15" cy="12" r="1.2" fill="white" opacity=".9"/><circle cx="70" cy="18" r="1" fill="white" opacity=".8"/><circle cx="100" cy="8" r="1.3" fill="white" opacity=".9"/><circle cx="200" cy="7" r="1.2" fill="white" opacity=".9"/><circle cx="265" cy="5" r="1" fill="white" opacity=".8"/><path d="M0,40 Q40,20 80,50 Q120,80 160,45 Q200,20 240,55 Q260,65 280,40 L280,110 Q260,130 240,110 Q200,90 160,115 Q120,140 80,110 Q40,85 0,105 Z" fill="#00ff88" opacity=".18" filter="url(#bl)"/><path d="M10,55 Q50,30 90,60 Q130,90 170,55 Q210,25 250,60 L250,100 Q210,80 170,105 Q130,130 90,100 Q50,75 10,95 Z" fill="#4fdfff" opacity=".22" filter="url(#bl)"/><path d="M20,70 Q70,45 110,75 Q150,105 190,68 Q220,40 270,70 L270,95 Q220,80 190,105 Q150,130 110,102 Q70,78 20,90 Z" fill="#c026d3" opacity=".15" filter="url(#bl)"/><path d="M130,20 Q145,65 135,105" stroke="#4fdfff" stroke-width="2" fill="none" opacity=".5"/><rect x="0" y="145" width="280" height="35" fill="#000a18"/><polygon points="30,145 38,110 46,145" fill="#001020"/><polygon points="220,145 228,108 236,145" fill="#001020"/><circle cx="245" cy="28" r="12" fill="#fffde0" opacity=".9"/><circle cx="249" cy="25" r="10" fill="#000a14" opacity=".85"/></svg>`,
+walrus:`<svg viewBox="0 0 280 180" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="sea" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#0a2a4a"/><stop offset="100%" stop-color="#041828"/></linearGradient></defs><rect width="280" height="180" fill="url(#sea)"/><path d="M0,130 Q35,120 70,130 Q105,140 140,130 Q175,120 210,130 Q245,140 280,130 L280,180 L0,180Z" fill="#062030" opacity=".8"/><ellipse cx="130" cy="138" rx="100" ry="18" fill="#b8deff" opacity=".85"/><ellipse cx="125" cy="118" rx="58" ry="36" fill="#9a7860"/><ellipse cx="170" cy="88" rx="38" ry="32" fill="#9a7860"/><ellipse cx="175" cy="98" rx="22" ry="14" fill="#7a5840"/><circle cx="158" cy="80" r="7" fill="#1a0a05"/><circle cx="183" cy="78" r="7" fill="#1a0a05"/><circle cx="160" cy="78" r="1.5" fill="white"/><circle cx="185" cy="76" r="1.5" fill="white"/><path d="M165,102 Q160,120 155,132" stroke="#f5e6c8" stroke-width="7" fill="none" stroke-linecap="round"/><path d="M182,102 Q185,120 188,132" stroke="#f5e6c8" stroke-width="7" fill="none" stroke-linecap="round"/><line x1="155" y1="96" x2="130" y2="90" stroke="#c8b0a0" stroke-width="1" opacity=".8"/><line x1="155" y1="100" x2="128" y2="98" stroke="#c8b0a0" stroke-width="1" opacity=".8"/><line x1="196" y1="96" x2="218" y2="90" stroke="#c8b0a0" stroke-width="1" opacity=".8"/><line x1="196" y1="100" x2="220" y2="98" stroke="#c8b0a0" stroke-width="1" opacity=".8"/></svg>`,
+narwhal:`<svg viewBox="0 0 280 180" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="deep" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#041428"/><stop offset="100%" stop-color="#08203c"/></linearGradient><linearGradient id="nw" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stop-color="#7ab0d8"/><stop offset="100%" stop-color="#4880b0"/></linearGradient></defs><rect width="280" height="180" fill="url(#deep)"/><circle cx="50" cy="40" r="4" fill="none" stroke="#4fdfff" stroke-width="1" opacity=".4"/><circle cx="220" cy="50" r="3" fill="none" stroke="#4fdfff" stroke-width="1" opacity=".4"/><path d="M80,0 L60,180" stroke="#4fdfff" stroke-width="8" opacity=".04"/><path d="M140,0 L120,180" stroke="#4fdfff" stroke-width="12" opacity=".03"/><ellipse cx="145" cy="105" rx="80" ry="28" fill="url(#nw)"/><ellipse cx="145" cy="112" rx="65" ry="14" fill="#c8dff0" opacity=".6"/><ellipse cx="215" cy="102" rx="28" ry="22" fill="#6898c8"/><circle cx="223" cy="97" r="5" fill="#0a1820"/><circle cx="224" cy="96" r="2" fill="white"/><path d="M238,92 L290,45" stroke="#e8e0d0" stroke-width="5" stroke-linecap="round"/><path d="M238,92 L290,45" stroke="#f5f0e8" stroke-width="3" stroke-linecap="round"/><path d="M68,105 Q45,85 30,75" stroke="#5a90c0" stroke-width="18" fill="none" stroke-linecap="round"/><path d="M68,105 Q45,125 28,135" stroke="#5a90c0" stroke-width="18" fill="none" stroke-linecap="round"/></svg>`
+};
+
+// ── ВОПРОСЫ ───────────────────────────────────────────────────
+const Q=[
+  {tp:"text",dif:2,q:"Назовите единственный океан, центр которого находится непосредственно у Северного полюса.",opts:["Атлантический","Северный Ледовитый","Тихий","Индийский"],ci:1},
+  {tp:"text",dif:2,q:"Арктика с географической точки зрения — это…",opts:["Континент Антарктида","Область вокруг Северного полюса: океан, острова и прибрежные территории","Только территории России севернее 70-й параллели","Архипелаг островов в Норвегии"],ci:1},
+  {tp:"svg",dif:1,q:"Какое животное изображено на иллюстрации и является символом Арктики?",svg:"polar_bear",cap:"Крупнейший наземный хищник планеты",opts:["Бурый медведь","Белый медведь","Гризли","Барибал"],ci:1},
+  {tp:"text",dif:2,q:"Какое сочетание растений типично для арктической тундры?",opts:["Пальмы и бамбук","Дуб и клён","Мхи, лишайники и низкорослые кустарники","Сосна и ель высотой 20 м"],ci:2},
+  {tp:"text",dif:2,q:"Многолетнемёрзлый грунт, сохраняющийся тысячелетиями, называется…",opts:["Вечная мерзлота","Сезонный мёрзлый слой","Криоосадок","Ледниковый щит"],ci:0},
+  {tp:"rebus",dif:2,q:"Сложите два слова и получите географический термин Арктики.",rp:["СЕВЕР","ПОЛЮС"],rh:"Подсказка: самая северная точка Земли.",opts:["Северный склон","Северное сияние","Северный полюс","Полярная звезда"],ci:2},
+  {tp:"text",dif:2,q:"Какое из морей расположено за пределами Северного Ледовитого океана?",opts:["Баренцево","Карское","Красное","Чукотское"],ci:2},
+  {tp:"text",dif:2,q:"Единственная страна из перечисленных, не имеющая выхода к Арктике:",opts:["Россия","Канада","Норвегия","Германия"],ci:3},
+  {tp:"text",dif:3,q:"Многолетний морской лёд, дрейфующий в Арктике и достигающий толщины 3–4 м, называется…",opts:["Паковый лёд","Глетчер","Шельфовый лёд","Торос"],ci:0},
+  {tp:"text",dif:2,q:"Полярный день — это явление, при котором…",opts:["Солнце не поднимается над горизонтом","Солнце непрерывно светит более суток","Температура выше нуля весь год","Луна видна круглые сутки"],ci:1},
+  {tp:"text",dif:2,q:"Полярная ночь длится от нескольких суток до…",opts:["2 недель","6 месяцев (на полюсе)","3 месяцев","1 года"],ci:1},
+  {tp:"svg",dif:1,q:"Световое явление на ночном небе Арктики, вызванное заряженными частицами солнечного ветра:",svg:"aurora",cap:"Одно из самых зрелищных природных явлений",opts:["Молния","Радуга","Северное (полярное) сияние","Зарница"],ci:2},
+  {tp:"text",dif:2,q:"Какой арктический зверь дважды в год меняет окраску: летом — бурую, зимой — белую?",opts:["Белый медведь","Песец","Морж","Нарвал"],ci:1},
+  {tp:"text",dif:2,q:"Граница Арктики условно совпадает с…",opts:["Экватором","Северным полярным кругом (66°33′)","Тропиком Рака","Меридианом 0°"],ci:1},
+  {tp:"rebus",dif:2,q:"Соедините части — получите название плавучей ледяной горы.",rp:["АЙС","БЕРГ"],rh:"Англ. ice + нем. Berg (гора). Большая часть скрыта под водой.",opts:["Ледник","Айсберг","Шельф","Пак"],ci:1},
+  {tp:"text",dif:3,q:"Главная глобальная угроза таяния арктических льдов для человечества — это…",opts:["Исчезновение туристических маршрутов","Подъём уровня Мирового океана и изменение климата","Уменьшение площади пляжей","Снижение солёности рек"],ci:1},
+  {tp:"svg",dif:2,q:"Ластоногое с парой длинных клыков, которое обитает на льдинах Арктики:",svg:"walrus",cap:"Семейство моржовых, единственный вид в роде",opts:["Тюлень","Морж","Морской котик","Касатка"],ci:1},
+  {tp:"text",dif:2,q:"Народы, исконно населяющие арктические территории России:",opts:["Казаки и поморы","Ненцы, чукчи, эвенки, эскимосы","Скандинавы и финны","Казахи и буряты"],ci:1},
+  {tp:"text",dif:2,q:"Российские дрейфующие полярные станции «Северный полюс» предназначены для…",opts:["Добычи арктической нефти","Длительных научных наблюдений: метеорология, океанология, ледовая обстановка","Контроля судоходства","Военных учений"],ci:1},
+  {tp:"text",dif:3,q:"Уникальность Арктического океана среди других океанов состоит в том, что он…",opts:["Самый солёный","Почти полностью окружён материками и круглогодично покрыт льдом","Наименее изученный","Не имеет морских течений"],ci:1},
+  {tp:"rebus",dif:2,q:"Природная зона Арктики с промёрзшими почвами, мхами и карликовыми растениями:",rp:["ТУН","ДРА"],rh:"Зона к северу от тайги с вечной мерзлотой.",opts:["Тайга","Тундра","Степь","Лесотундра"],ci:1},
+  {tp:"text",dif:2,q:"Атомные ледоколы России обеспечивают работу…",opts:["Рыбопромыслового флота","Круизных лайнеров","Северного морского пути — кратчайшего маршрута из Европы в Азию","Военно-морских баз"],ci:2},
+  {tp:"text",dif:3,q:"Почему нефтяные разливы в Арктике особенно катастрофичны?",opts:["Нефть там быстро испаряется и безвредна","Микроорганизмы, разлагающие нефть, почти не работают в холоде — восстановление занимает десятилетия","Там нет живых организмов","Нефть образует защитный лёд"],ci:1},
+  {tp:"svg",dif:2,q:"Единственный кит с прямым спиральным бивнем длиной до 3 метров:",svg:"narwhal",cap:"«Единорог морей» — арктический вид семейства нарваловых",opts:["Кашалот","Нарвал","Белуга","Гринда"],ci:1},
+  {tp:"text",dif:2,q:"Снежная буря с ветром скоростью выше 15 м/с в Арктике называется…",opts:["Муссон","Ураган 5-й категории","Пурга (метель)","Смерч"],ci:2},
+  {tp:"text",dif:2,q:"Зима в арктической зоне характеризуется…",opts:["Температурой около +5°C и частыми дождями","Температурой до −50°C, сильными ветрами, минимальным количеством осадков","Частыми грозами","Тёплым течением и туманами"],ci:1},
+  {tp:"rebus",dif:2,q:"Два слова, обозначающие самое известное световое явление полярного неба:",rp:["СЕВЕРНОЕ","СИЯНИЕ"],rh:"Видно с сентября по март в высоких широтах.",opts:["Полярная ночь","Северное сияние","Полярный день","Ледяная дуга"],ci:1},
+  {tp:"text",dif:3,q:"Тёплое атлантическое течение, значительно смягчающее климат Норвегии и Баренцева моря:",opts:["Куросио","Гольфстрим","Северо-Тихоокеанское","Лабрадорское"],ci:1},
+  {tp:"text",dif:2,q:"Главное стратегическое значение Арктики для государств определяется…",opts:["Красивыми пляжами и туризмом","Колоссальными запасами нефти, газа, редких металлов и контролем над СМП","Дешёвой гидроэнергией","Отсутствием ледового покрова"],ci:1},
+  {tp:"text",dif:3,q:"В отличие от лета, зимой площадь морского льда в Арктике…",opts:["Остаётся неизменной","Уменьшается","Увеличивается примерно в 2,5 раза","Полностью исчезает"],ci:2}
+];
+
+// ── СОСТОЯНИЕ ─────────────────────────────────────────────────
+let pName="",pTeam="",pInst="",pMode="solo",pExtra="";
+let registered=false,chatBlocked=false;
+let curIdx=0,score=0,answered=false,timeLeft=QT,selIdx=-1;
+let totalTime=0,qAnswered=0;
+const UA=new Array(Q.length).fill(null);
+let timerTok=0,timerInt=null,syncInt=null,lastChatId=0,chatReady=false;
+let lastIdx=-1,lastAt="",lastShow=false,lastPhase="";
+
+// ── DOM ───────────────────────────────────────────────────────
+const $=id=>document.getElementById(id);
+const ovReg=$("ov-reg"),ovWait=$("ov-wait"),ovRes=$("ov-result");
+const regBtn=$("reg-btn");
+const statusBadge=$("status-badge"),readyInfo=$("ready-info");
+const hName=$("h-name"),hTeam=$("h-team"),hInst=$("h-inst"),hTeamLbl=$("h-team-lbl");
+const metaDiff=$("meta-diff"),qctr=$("qctr"),pbar=$("pbar"),tnum=$("tnum"),tbar=$("tbar");
+const scoreEl=$("score"),score2El=$("score2");
+const qwait=$("qwait"),qbody=$("qbody");
+const qtypeEl=$("qtype"),qdiffEl=$("qdiff"),qptsEl=$("qpts"),qtextEl=$("qtext"),qextraEl=$("qextra");
+const qillusEl=$("qillus"),qsvgEl=$("qsvg"),qcapEl=$("qcap");
+const rebusboxEl=$("rebusbox"),rfigEl=$("rfig"),rnoteEl=$("rnote");
+const optsEl=$("opts"),waitRevealEl=$("wait-reveal"),revealBannerEl=$("reveal-banner");
+const restartBtn=$("restart-btn"),musicBtn=$("music-btn"),alertBtn=$("alert-btn");
+const chatPanel=$("chat-panel"),chatMsgs=$("chat-msgs"),chatInp=$("chat-inp"),chatSendBtn=$("chat-send");
+const chatBadge=$("chat-badge"),chatBlkNotice=$("chat-blocked"),chatInputRow=$("chat-input-row");
+const grade=$("grade"),rsub=$("rsub"),rcorr=$("rcorr"),rfsc=$("rfsc"),rpct=$("rpct"),rmsg=$("rmsg"),rpart=$("rpart");
+const againBtn=$("again-btn"),pdfBtn=$("pdf-btn");
+
+const showOv=ov=>ov.classList.add("active");
+const hideOv=ov=>ov.classList.remove("active");
+
+// ── РЕЖИМ ─────────────────────────────────────────────────────
+function setMode(m){
+  pMode=m;
+  $("mode-solo").classList.toggle("active",m==="solo");
+  $("mode-team").classList.toggle("active",m==="team");
+  $("form-solo").style.display=m==="solo"?"":"none";
+  $("form-team").style.display=m==="team"?"":"none";
+  checkReg();
+}
+function checkReg(){
+  if(pMode==="solo"){regBtn.disabled=!($("s-name").value.trim()&&$("s-inst").value.trim()&&$("s-group").value.trim()&&$("s-course").value);}
+  else{regBtn.disabled=!($("t-name").value.trim()&&$("t-inst").value.trim()&&$("t-group").value.trim()&&$("t-members").value.trim());}
+}
+["s-name","s-inst","s-group","s-course","t-name","t-inst","t-group","t-members"].forEach(id=>{
+  const el=$(id);if(el)el.addEventListener("input",checkReg);
+});
+
+// ── ЗВУК ─────────────────────────────────────────────────────
+let _ac=null;
+function ac(){if(!_ac){const C=window.AudioContext||window.webkitAudioContext;if(!C)return null;_ac=new C();}if(_ac.state==="suspended")_ac.resume();return _ac;}
+function tone(f,dur,type,vol,delay){const c=ac();if(!c)return;const t=c.currentTime+(delay||0);const o=c.createOscillator(),g=c.createGain();o.type=type||"sine";o.frequency.value=f;g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(vol||.28,t+.01);g.gain.exponentialRampToValueAtTime(.001,t+dur);o.connect(g).connect(c.destination);o.start(t);o.stop(t+dur+.05);}
+function playOk(){tone(523,.1,"sine",.3,0);tone(659,.1,"sine",.26,.11);tone(784,.15,"sine",.23,.22);tone(1047,.25,"sine",.2,.34);}
+function playErr(){tone(311,.18,"sine",.3,0);tone(247,.28,"sine",.26,.2);}
+function playDone(){[523,659,784,880,988,1047].forEach((f,i)=>tone(f,.2,"triangle",.2,i*.14));}
+function playAlert(){tone(880,.08,"square",.25,0);tone(880,.08,"square",.25,.12);tone(1100,.15,"square",.2,.26);}
+function playTick(){tone(1200,.05,"square",.12,0);}  // тик при последних 5 сек
+function playTimeUp(){tone(220,.3,"sawtooth",.3,0);tone(180,.4,"sawtooth",.25,.2);}
+
+// ── МУЗЫКА ────────────────────────────────────────────────────
+let bgOn=false,bgMaster=null,bgOscs=[],bgLfos=[],bgInt=null;
+function startBg(){const c=ac();if(!c||bgOn)return;bgOn=true;const m=c.createGain();m.gain.value=0;m.connect(c.destination);m.gain.linearRampToValueAtTime(.1,c.currentTime+3);bgMaster=m;[110,138.59,164.81,220,261.63].forEach((f,i)=>{const o=c.createOscillator(),g=c.createGain();o.type="sine";o.frequency.value=f;g.gain.value=.12;const lfo=c.createOscillator(),lg=c.createGain();lfo.type="sine";lfo.frequency.value=.15+i*.04;lg.gain.value=.4;lfo.connect(lg).connect(o.frequency);lfo.start();o.connect(g).connect(m);o.start();bgOscs.push({o,g});bgLfos.push(lfo);});let t=0;bgInt=setInterval(()=>{t++;bgOscs.forEach(({g},i)=>{g.gain.setTargetAtTime(.05+.06*Math.sin(t*.07+i*1.2),_ac.currentTime,.8);});},400);musicBtn.textContent="🔇 Музыка";}
+function stopBg(){if(!bgOn)return;if(bgInt){clearInterval(bgInt);bgInt=null;}if(bgMaster)bgMaster.gain.setTargetAtTime(0,_ac.currentTime,.6);setTimeout(()=>{bgOscs.forEach(({o})=>{try{o.stop();}catch(e){}});bgLfos.forEach(l=>{try{l.stop();}catch(e){}});bgOscs=[];bgLfos=[];bgMaster=null;bgOn=false;},1800);musicBtn.textContent="🎵 Музыка";}
+
+// ── ТАЙМЕР ────────────────────────────────────────────────────
+function stopTimer(){timerTok++;if(timerInt){clearInterval(timerInt);timerInt=null;}tnum.textContent="—";tbar.style.transform="scaleX(0)";const tcirc=document.querySelector(".tcirc");if(tcirc)tcirc.classList.remove("urgent");}
+
+function parseIso(iso){
+  if(!iso)return NaN;
+  // Форматы Supabase: "2026-03-05 06:16:46.086+00", "2026-03-05T06:16:46+00:00", "...Z"
+  let s=String(iso).trim();
+  s=s.replace(" ","T");           // пробел → T
+  s=s.replace(/\+00:00$/,"Z");   // +00:00 → Z
+  s=s.replace(/\+00$/,"Z");      // +00 → Z (без миллисекунд)
+  s=s.replace(/(\.\d+)\+00$/,"$1Z"); // .086+00 → .086Z
+  s=s.replace(/(\.\d+)\+00:00$/,"$1Z"); // .086+00:00 → .086Z
+  const t=Date.parse(s);
+  return isNaN(t)?Date.parse(iso):t;
+}
+
+function startTimer(iso){
+  stopTimer();const tok=timerTok;
+  const ms=parseIso(iso);
+  if(isNaN(ms)){console.warn("startTimer: bad iso=",iso);return;}
+  const elapsed=(Date.now()-ms)/1000;
+  if(elapsed>=QT){
+    tnum.textContent="0";tbar.style.transform="scaleX(0)";
+    tbar.style.background="linear-gradient(90deg,#ff5f7a,#c0392b)";return;
+  }
+  const tcirc=document.querySelector(".tcirc");
+  let lastLeft=QT+1;
+  function tick(){
+    if(timerTok!==tok)return;
+    const left=Math.max(0,Math.ceil(QT-(Date.now()-ms)/1000));
+    timeLeft=left;tnum.textContent=String(left);
+    tbar.style.transform="scaleX("+Math.max(0,left/QT)+")";
+    tbar.style.background=left<=5?"linear-gradient(90deg,#ff5f7a,#c0392b)":left<=10?"linear-gradient(90deg,#ffe080,#ffb300)":"linear-gradient(90deg,#4fdfff,#ff6ec7)";
+    if(left<=5){
+      if(tcirc)tcirc.classList.add("urgent");
+      if(left<lastLeft&&left>0)playTick();
+    }else{if(tcirc)tcirc.classList.remove("urgent");}
+    if(left===0&&lastLeft>0)playTimeUp();
+    lastLeft=left;
+    if(left<=0){stopTimer();if(!answered)onTimeout();}
+  }
+  tick();timerInt=setInterval(tick,200);
+}
+
+// ── РЕНДЕР ВОПРОСА ────────────────────────────────────────────
+function renderQ(){
+  const q=Q[curIdx];answered=false;selIdx=-1;changeCount=0;penalty=0;
+  waitRevealEl.classList.remove("show");revealBannerEl.className="reveal-banner";
+  const hint=$("change-hint");if(hint)hint.style.display="none";
+  optsEl.innerHTML="";qwait.style.display="none";qbody.style.display="block";
+  qtypeEl.textContent=q.tp==="svg"?"Иллюстрация":q.tp==="rebus"?"Ребус":"Вопрос";
+  qdiffEl.textContent=q.dif<=1?"★☆☆":q.dif===2?"★★☆":"★★★";
+  const p=pts(q.dif);qptsEl.textContent="+"+p+" очк"+(p===1?"о":p<5?"а":"ов");
+  qctr.textContent="Вопрос "+(curIdx+1)+" из "+Q.length;
+  pbar.style.width=(curIdx/Q.length*100)+"%";
+  qtextEl.textContent=q.q;qextraEl.textContent=q.ex||"";
+  if(q.tp==="svg"&&q.svg&&SVG[q.svg]){qillusEl.style.display="";qsvgEl.innerHTML=SVG[q.svg];qcapEl.textContent=q.cap||"";}
+  else qillusEl.style.display="none";
+  if(q.tp==="rebus"&&q.rp){rebusboxEl.style.display="";rfigEl.innerHTML=`<span class="rpart">${q.rp[0]}</span><span class="rop">+</span><span class="rpart">${q.rp[1]}</span>`;rnoteEl.textContent=q.rh||"";}
+  else rebusboxEl.style.display="none";
+  q.opts.forEach((text,i)=>{
+    const btn=document.createElement("button");btn.type="button";btn.className="opt";btn.dataset.i=String(i);
+    const b=document.createElement("div");b.className="obadge";b.textContent=String.fromCharCode(65+i);
+    const t=document.createElement("div");t.style.flex="1";t.textContent=text;
+    btn.appendChild(b);btn.appendChild(t);
+    // Первый клик — onOpt, повторный — onOptChange
+    btn.addEventListener("click",e=>{if(!answered)onOpt(e);else onOptChange(e);});
+    optsEl.appendChild(btn);
+  });
+  alertBtn.style.display="";
+}
+function showWaitPanel(){qwait.style.display="flex";qbody.style.display="none";optsEl.innerHTML="";waitRevealEl.classList.remove("show");revealBannerEl.className="reveal-banner";tnum.textContent="—";tbar.style.transform="scaleX(0)";alertBtn.style.display="none";}
+function onTimeout(){if(answered)return;UA[curIdx]={sel:-1,ci:Q[curIdx].ci,ok:false,t:QT};qAnswered++;optsEl.querySelectorAll(".opt").forEach(b=>b.disabled=true);answered=true;waitRevealEl.classList.add("show");}
+
+// ── ВЫБОР ОТВЕТА ──────────────────────────────────────────────
+let changeCount=0; // сколько раз менял ответ на этот вопрос
+let penalty=0;     // накопленный штраф (в очках)
+
+function onOpt(e){
+  ac();
+  const btn=e.currentTarget;if(btn.disabled)return;
+  const i=Number(btn.dataset.i),q=Q[curIdx];
+
+  // Уже ответил — предлагаем сменить
+  if(answered&&selIdx>=0&&selIdx!==i&&!waitRevealEl.classList.contains("show")){
+    // На самом деле answered=true уже, но кнопки не disabled — значит можно менять
+    // Этот блок не достигается т.к. кнопки disabled. Логика ниже.
+  }
+  if(answered)return;
+
+  // Первый ответ
+  answered=true;selIdx=i;
+  stopTimer();
+  const used=QT-Math.max(timeLeft,0);totalTime+=used;
+  qAnswered++;
+  UA[curIdx]={sel:i,ci:q.ci,ok:(i===q.ci),t:used,changed:0};
+  optsEl.querySelectorAll(".opt").forEach(b=>b.disabled=false); // пока ответ не раскрыт — можно менять
+  btn.classList.add("selected");
+  waitRevealEl.classList.add("show");
+  changeCount=0;
+  // Показываем подсказку о перевыборе
+  showChangeHint();
+  pushScore();
+}
+
+function showChangeHint(){
+  let hint=$("change-hint");
+  if(!hint){
+    hint=document.createElement("div");hint.id="change-hint";
+    hint.style.cssText="font-size:.74rem;padding:5px 9px;border-radius:8px;background:rgba(255,200,80,.08);border:1px solid rgba(255,200,80,.3);color:#ffe080;margin-top:4px;text-align:center;";
+    optsEl.parentNode.insertBefore(hint,optsEl.nextSibling);
+  }
+  hint.textContent="💡 Можно сменить ответ 1 раз без штрафа. Каждая следующая смена: −0.5 балла.";
+  hint.style.display="block";
+}
+
+function onOptChange(e){
+  const btn=e.currentTarget;if(btn.disabled)return;
+  const i=Number(btn.dataset.i);
+  if(!answered||i===selIdx)return; // не менять на тот же
+
+  changeCount++;
+  const penaltyNow=changeCount>1?0.5:0;
+  if(penaltyNow>0){
+    penalty+=penaltyNow;
+    // Показываем предупреждение со штрафом
+    const warn=document.createElement("div");
+    warn.style.cssText="position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);z-index:300;background:rgba(255,95,122,.15);border:2px solid rgba(255,95,122,.6);border-radius:14px;padding:16px 22px;text-align:center;max-width:320px;backdrop-filter:blur(8px);";
+    warn.innerHTML=`<div style="font-size:1rem;font-weight:750;color:#ff5f7a;margin-bottom:6px;">⚠️ Штраф за смену ответа</div><div style="font-size:.82rem;color:#ffb0b8;">Смена ответа #${changeCount}: −0.5 балла<br>Всего штраф: −${penalty} балл${penalty===1?"":"а"}</div><button class="btn btn-p" style="margin-top:10px;padding:5px 14px;font-size:.78rem;" onclick="this.parentNode.remove()">Понятно</button>`;
+    document.body.appendChild(warn);
+    setTimeout(()=>warn.remove(),4000);
+  }
+
+  // Снимаем старый выбор
+  optsEl.querySelectorAll(".opt").forEach(b=>b.classList.remove("selected"));
+  selIdx=i;
+  btn.classList.add("selected");
+  const q=Q[curIdx];
+  UA[curIdx]={sel:i,ci:q.ci,ok:(i===q.ci),t:UA[curIdx]?.t||0,changed:changeCount,penalty:penaltyNow};
+
+  // Обновить подсказку
+  const hint=$("change-hint");
+  if(hint){
+    if(changeCount===1)hint.textContent="⚠️ Следующая смена ответа: −0.5 балла.";
+    else hint.textContent=`⚠️ Смен ответа: ${changeCount}. Штраф: −${penalty} балла.`;
+  }
+  pushScore();
+}
+
+// ── РАСКРЫТИЕ ─────────────────────────────────────────────────
+function revealAnswer(){
+  const q=Q[curIdx];waitRevealEl.classList.remove("show");
+  const hint=$("change-hint");if(hint)hint.style.display="none";
+  const btns=optsEl.querySelectorAll(".opt");
+  btns.forEach(b=>{b.disabled=true;b.classList.remove("selected");}); // блокируем все после раскрытия
+  btns[q.ci]?.classList.add("correct");
+  const ua=UA[curIdx];
+  if(!ua||ua.sel===-1){revealBannerEl.textContent="⏱ Время вышло! Правильный ответ выделен зелёным.";revealBannerEl.className="reveal-banner timeout show";}
+  else if(ua.ok){
+    const p=pts(q.dif);
+    const earned=Math.max(0,p-penalty);
+    score+=earned;scoreEl.textContent=score;score2El.textContent=score;
+    const penStr=penalty>0?` (−${penalty} штраф)`:"";
+    revealBannerEl.textContent="✅ Верно! +"+earned+" очк"+(earned===1?"о":earned<5?"а":"ов")+penStr;
+    revealBannerEl.className="reveal-banner ok show";if(btns[q.ci])popPts(earned,btns[q.ci]);playOk();}
+  else{ua.sel>=0&&btns[ua.sel]?.classList.add("incorrect");revealBannerEl.textContent="❌ Неверно. Правильный ответ выделен зелёным.";revealBannerEl.className="reveal-banner err show";playErr();}
+}
+function popPts(p,el){const d=document.createElement("div");d.className="pts-popup";d.textContent="+"+p;const r=el.getBoundingClientRect();d.style.left=(r.left+r.width/2-18)+"px";d.style.top=(r.top+window.scrollY)+"px";document.body.appendChild(d);setTimeout(()=>d.remove(),950);}
+
+async function pushScore(){
+  if(!sb||!pName)return;
+  try{await sb.from("quiz_scores").upsert({game_id:GID,student_name:pName,team_name:pTeam,institution_name:pInst,score,questions_answered:qAnswered,updated_at:new Date().toISOString()},{onConflict:"game_id,student_name,team_name"});}catch(e){}
+}
+
+// ── SUPABASE STATE ────────────────────────────────────────────
+async function fetchState(){if(!sb)return undefined;try{const{data,error}=await sb.from("quiz_state").select("*").eq("game_id",GID).maybeSingle();if(error)return undefined;return data;}catch(e){return undefined;}}
+
+// ── CHECK BLOCK STATUS ────────────────────────────────────────
+async function checkBlocked(){
+  if(!sb||!pName)return;
+  try{
+    const{data}=await sb.from("quiz_players").select("chat_blocked").eq("game_id",GID).eq("student_name",pName).eq("team_name",pTeam).maybeSingle();
+    const blocked=data?.chat_blocked===true;
+    chatBlocked=blocked;
+    chatBlkNotice.style.display=blocked?"block":"none";
+    chatInputRow.style.display=blocked?"none":"flex";
+  }catch(e){}
+}
+
+// ── ПРИМЕНЕНИЕ СОСТОЯНИЯ ──────────────────────────────────────
+function applyState(s){
+  if(!registered)return;
+  const phase=s?.phase||"waiting";
+  const idx=typeof s?.current_index==="number"?s.current_index:0;
+  const at=s?.question_started_at||"";
+  const show=s?.show_answer===true;
+
+  // Обновить бейдж статуса
+  if(phase==="running"){statusBadge.textContent="▶ Игра идёт!";statusBadge.className="status-badge s-running";}
+  else if(phase==="paused"){statusBadge.textContent="⏸ Пауза";statusBadge.className="status-badge s-waiting";}
+  else if(phase==="ended"){statusBadge.textContent="✓ Завершено";statusBadge.className="status-badge s-waiting";}
+  else{statusBadge.textContent="⏳ Ожидание…";statusBadge.className="status-badge s-waiting";}
+
+  // ОЖИДАНИЕ
+  if(phase==="waiting"){
+    stopTimer();showWaitPanel();showOv(ovWait);hideOv(ovRes);
+    lastIdx=-1;lastAt="";lastShow=false;lastPhase="waiting";return;
+  }
+  // КОНЕЦ
+  if(phase==="ended"){
+    stopTimer();hideOv(ovWait);
+    if(!ovRes.classList.contains("active"))showResult();
+    lastPhase="ended";return;
+  }
+  // ПАУЗА
+  if(phase==="paused"){
+    stopTimer();tnum.textContent="⏸";tbar.style.transform="scaleX(0)";
+    hideOv(ovWait);lastPhase="paused";return;
+  }
+
+  // RUNNING — скрываем overlay ожидания
+  hideOv(ovWait);
+
+  // Новый вопрос (или первый после паузы с другим idx)
+  if(idx!==lastIdx){
+    stopTimer();
+    lastIdx=idx;curIdx=idx;lastShow=false;lastAt=at;
+    lastPhase="running";
+    renderQ();
+    if(at){
+      console.log("startTimer (new q) iso=",at);
+      startTimer(at);
+    }
+    return;
+  }
+
+  // Тот же вопрос, возобновились после паузы
+  if(lastPhase==="paused"&&phase==="running"){
+    lastPhase="running";
+    if(!answered&&!show&&at){
+      console.log("startTimer (resume) iso=",at);
+      startTimer(at);
+    }
+    return;
+  }
+
+  lastPhase="running";
+
+  // Раскрытие ответа
+  if(show&&!lastShow){
+    lastShow=true;stopTimer();
+    if(!answered){UA[curIdx]={sel:-1,ci:Q[curIdx].ci,ok:false,t:QT};qAnswered++;answered=true;}
+    revealAnswer();return;
+  }
+  if(!show&&lastShow){lastShow=false;}
+
+  // Перезапуск таймера (ведущий нажал «Старт» заново)
+  if(at&&at!==lastAt&&!show){
+    lastAt=at;answered=false;selIdx=-1;changeCount=0;penalty=0;
+    optsEl.querySelectorAll(".opt").forEach(b=>{b.disabled=false;b.classList.remove("selected","correct","incorrect");});
+    waitRevealEl.classList.remove("show");revealBannerEl.className="reveal-banner";
+    const hint=$("change-hint");if(hint)hint.style.display="none";
+    console.log("startTimer (restart) iso=",at);
+    startTimer(at);
+  }
+}
+
+async function syncLoop(){
+  const s=await fetchState();if(s!==undefined)applyState(s);
+  if(!sb||!pName)return;
+  // Обновляем last_seen И проверяем что нас не удалили
+  try{
+    const{data,error}=await sb.from("quiz_players")
+      .select("student_name,chat_blocked")
+      .eq("game_id",GID).eq("student_name",pName).eq("team_name",pTeam)
+      .maybeSingle();
+    if(!error&&data===null){
+      // Игрок удалён ведущим — блокируем игру
+      showKicked();return;
+    }
+    if(data){
+      // Обновляем last_seen
+      await sb.from("quiz_players").update({last_seen:new Date().toISOString()})
+        .eq("game_id",GID).eq("student_name",pName).eq("team_name",pTeam);
+      // Обновляем статус блокировки чата
+      const blocked=data.chat_blocked===true;
+      if(blocked!==chatBlocked){
+        chatBlocked=blocked;
+        chatBlkNotice.style.display=blocked?"block":"none";
+        chatInputRow.style.display=blocked?"none":"flex";
+      }
+    }
+  }catch(e){}
+}
+
+function showKicked(){
+  stopTimer();
+  if(syncInt){clearInterval(syncInt);syncInt=null;}
+  // Показываем overlay "удалён"
+  let ov=document.getElementById("ov-kicked");
+  if(!ov){
+    ov=document.createElement("div");ov.id="ov-kicked";
+    ov.style.cssText="position:fixed;inset:0;display:flex;align-items:center;justify-content:center;z-index:999;background:rgba(2,6,18,.92);";
+    ov.innerHTML=`<div style="text-align:center;padding:28px 22px;border-radius:18px;background:rgba(255,95,122,.1);border:2px solid rgba(255,95,122,.5);max-width:360px;">
+      <div style="font-size:2.5rem;margin-bottom:10px;">🚫</div>
+      <div style="font-size:1rem;font-weight:750;color:#ff5f7a;margin-bottom:8px;">Вы удалены из игры</div>
+      <div style="font-size:.82rem;color:#ffb0b8;margin-bottom:16px;">Ведущий удалил вас из сессии.<br>Обратитесь к ведущему для повторного участия.</div>
+      <button onclick="location.reload()" style="padding:8px 20px;border-radius:999px;border:1px solid rgba(79,223,255,.5);background:rgba(79,223,255,.1);color:#cff6ff;cursor:pointer;font-size:.82rem;">🔄 Перезагрузить</button>
+    </div>`;
+    document.body.appendChild(ov);
+  }
+  ov.style.display="flex";
+}
+
+// ── ЧАТ ───────────────────────────────────────────────────────
+function renderMsg(m,mine){
+  const isHost=m.sender_name==="ВЕДУЩИЙ";const isAlert=m.msg_type==="alert";
+  const div=document.createElement("div");
+  div.className="cmsg "+(isAlert?"alert-msg":isHost?"host":mine?"mine":"other");
+  div.dataset.id=m.id;
+  const t=new Date(m.created_at).toLocaleTimeString("ru",{hour:"2-digit",minute:"2-digit"});
+  div.innerHTML=`<div class="cname">${isHost?"🎙 ":""}<b>${m.sender_name}</b><span class="ctime">${t}</span></div>${filterMsg(m.message)}`;
+  return div;
+}
+async function loadChat(){
+  if(!sb)return;
+  try{const{data}=await sb.from("quiz_chat").select("*").eq("game_id",GID).order("created_at",{ascending:true}).limit(60);if(!data)return;chatMsgs.innerHTML="";data.forEach(m=>chatMsgs.appendChild(renderMsg(m,m.sender_name===pName)));chatMsgs.scrollTop=chatMsgs.scrollHeight;lastChatId=data.reduce((max,m)=>Math.max(max,m.id||0),0);}catch(e){}
+  chatReady=true;
+}
+async function sendChat(msg,type){
+  if(!sb||!pName||chatBlocked)return;
+  const clean=filterMsg(msg.trim());if(!clean)return;
+  try{await sb.from("quiz_chat").insert({game_id:GID,sender_name:pName,team_name:pTeam,message:clean,msg_type:type||"chat"});}catch(e){}
+}
+
+// ── РЕГИСТРАЦИЯ ───────────────────────────────────────────────
+async function register(){
+  ac(); // разблокировать аудио
+  if(pMode==="solo"){
+    pName=$("s-name").value.trim();pInst=$("s-inst").value.trim();
+    const grp=$("s-group").value.trim(),crs=$("s-course").value;
+    pTeam=grp;pExtra="Курс: "+crs;
+  }else{
+    pTeam=$("t-name").value.trim();pInst=$("t-inst").value.trim();
+    const grp=$("t-group").value.trim(),mem=$("t-members").value.trim();
+    pName=pTeam;pExtra="Группа: "+grp+" | Участники: "+mem;
+  }
+  if(!pName||!pTeam||!pInst)return;
+  hName.textContent=pMode==="solo"?pName:pTeam;
+  hTeam.textContent=pMode==="solo"?pTeam:"команда";
+  hTeamLbl.textContent=pMode==="solo"?"Группа:":"Режим:";
+  hInst.textContent=pInst;
+  $("qwait-name").textContent=pName;
+  readyInfo.innerHTML=[["Режим",pMode==="solo"?"Одиночный":"Команда"],["Имя / команда",pName],["Учреждение",pInst],["Доп. инфо",pExtra]].map(([l,v])=>`<div class="rinfo-row"><span>${l}</span><span style="font-size:.76rem;text-align:right;max-width:60%">${v}</span></div>`).join("");
+  registered=true;hideOv(ovReg);showOv(ovWait);
+  const avg=Q.reduce((s,q)=>s+(q.dif||2),0)/Q.length;
+  metaDiff.textContent=avg<1.7?"Уровень: базовый":avg<2.4?"Уровень: средний":"Уровень: продвинутый";
+  if(sb){try{await sb.from("quiz_players").upsert({game_id:GID,student_name:pName,team_name:pTeam,institution_name:pInst,extra_info:pExtra,mode:pMode,joined_at:new Date().toISOString(),last_seen:new Date().toISOString(),chat_blocked:false},{onConflict:"game_id,team_name,student_name"});}catch(e){console.error(e);}}
+  chatPanel.style.display="";
+  loadChat().then(()=>{
+    if(!sb)return;
+    sb.channel("chat_player_"+GID).on("postgres_changes",{event:"INSERT",schema:"public",table:"quiz_chat",filter:"game_id=eq."+GID},payload=>{
+      const m=payload.new;if(!m||m.id<=lastChatId)return;
+      // Проверяем адресацию: сообщение для всех или для нашей команды
+      if(m.target_team&&m.target_team!==pTeam)return;
+      chatMsgs.appendChild(renderMsg(m,m.sender_name===pName));if(m.id>lastChatId)lastChatId=m.id;chatMsgs.scrollTop=chatMsgs.scrollHeight;
+      if(m.sender_name!==pName){chatBadge.classList.add("show");playAlert();}
+    }).subscribe();
+    // Блокировка чата проверяется в syncLoop каждые 2 сек
+  });
+  if(syncInt)clearInterval(syncInt);
+  syncInt=setInterval(syncLoop,2000);
+  syncLoop();
+}
+
+// ── РЕЗУЛЬТАТ ─────────────────────────────────────────────────
+function gradeInfo(pct){if(pct>=90)return{m:"5",t:"Отлично!",d:"Блестящие знания арктического первопроходца!"};if(pct>=75)return{m:"4",t:"Хорошо",d:"Достойный результат. Немного повторить — и идеально."};if(pct>=50)return{m:"3",t:"Удовлетворительно",d:"Базовые знания есть, стоит повторить тему."};return{m:"2",t:"Нужно подтянуть",d:"Используйте квиз как план подготовки к Арктике."};}
+function showResult(){
+  stopTimer();
+  const total=Q.length,correct=UA.filter(a=>a&&a.ok).length,pct=Math.round(correct/total*100),g=gradeInfo(pct);
+  grade.textContent=g.m;rsub.textContent=g.t;rmsg.textContent=g.d;
+  rcorr.textContent=correct+" из "+total;rfsc.textContent=score+" оч.";rpct.textContent=pct+"%";
+  rpart.textContent=(pMode==="solo"?pName:pTeam)+" · "+pInst;
+  showOv(ovRes);playDone();
+  if(sb)try{sb.from("quiz_results").insert({game_id:GID,student_name:pName,team_name:pTeam,institution_name:pInst,score,total_questions:total,percent:pct,duration_sec:Math.round(totalTime),answers:UA,mode:pMode,extra_info:pExtra});}catch(e){}
+}
+function resetQuiz(){stopTimer();curIdx=0;score=0;scoreEl.textContent=0;score2El.textContent=0;totalTime=0;qAnswered=0;answered=false;selIdx=-1;lastIdx=-1;lastAt="";lastShow=false;for(let i=0;i<UA.length;i++)UA[i]=null;hideOv(ovRes);showOv(ovWait);showWaitPanel();}
+
+// ── PDF ───────────────────────────────────────────────────────
+function dlPdf(){
+  if(!window.jspdf?.jsPDF){alert("jsPDF не загружен.");return;}
+  const{jsPDF}=window.jspdf,doc=new jsPDF({unit:"mm",format:"a4"});
+  const now=new Date();
+  const dd=String(now.getDate()).padStart(2,"0"),mm=String(now.getMonth()+1).padStart(2,"0"),yyyy=now.getFullYear();
+  const total=Q.length,correct=UA.filter(a=>a&&a.ok).length,pct=Math.round(correct/total*100),g=gradeInfo(pct);
+  let y=15;
+  const W=186,L=12;
+  // Заголовок
+  doc.setFillColor(5,8,22);doc.rect(0,0,210,297,"F");
+  doc.setTextColor(79,223,255);doc.setFontSize(16);doc.setFont("helvetica","bold");
+  doc.text("КВИЗ ОБ АРКТИКЕ",L,y);y+=8;
+  doc.setTextColor(181,194,217);doc.setFontSize(9);doc.setFont("helvetica","normal");
+  doc.text("Результаты участия | "+dd+"."+mm+"."+yyyy,L,y);y+=10;
+  // Линия
+  doc.setDrawColor(79,223,255);doc.setLineWidth(.4);doc.line(L,y,L+W,y);y+=7;
+  // Данные участника
+  doc.setTextColor(255,211,107);doc.setFontSize(11);doc.setFont("helvetica","bold");doc.text("Участник",L,y);y+=6;
+  doc.setTextColor(247,251,255);doc.setFontSize(9);doc.setFont("helvetica","normal");
+  const info=pMode==="solo"?[["ФИО",pName],["Учреждение",pInst],["Группа/Курс",pExtra]]:
+    [["Команда",pTeam],["Учреждение",pInst],["Состав",pExtra]];
+  info.forEach(([l,v])=>{doc.setTextColor(181,194,217);doc.text(l+":",L,y);doc.setTextColor(247,251,255);doc.text(String(v),L+35,y);y+=5.5;});
+  y+=4;
+  // Результат
+  doc.setTextColor(255,211,107);doc.setFontSize(11);doc.setFont("helvetica","bold");doc.text("Результат",L,y);y+=6;
+  doc.setFont("helvetica","normal");doc.setFontSize(9);
+  [["Правильных ответов",correct+" из "+total],["Набрано очков",String(score)],["Процент",pct+"%"],["Оценка",g.m+" — "+g.t]].forEach(([l,v])=>{
+    doc.setTextColor(181,194,217);doc.text(l+":",L,y);doc.setTextColor(247,251,255);doc.text(v,L+55,y);y+=5.5;
+  });
+  y+=4;doc.setDrawColor(79,223,255);doc.line(L,y,L+W,y);y+=7;
+  // Детализация
+  doc.setTextColor(255,211,107);doc.setFontSize(11);doc.setFont("helvetica","bold");doc.text("Детализация по вопросам",L,y);y+=7;
+  doc.setFont("helvetica","normal");doc.setFontSize(8);
+  Q.forEach((q,i)=>{
+    if(y>270){doc.addPage();doc.setFillColor(5,8,22);doc.rect(0,0,210,297,"F");y=15;}
+    const ua=UA[i];const ok=ua&&ua.ok;const sel=ua&&ua.sel>=0?q.opts[ua.sel]:"Не ответил";
+    const mk=!ua||ua.sel<0?"—":ok?"✓":"✗";
+    doc.setTextColor(ok?97:(!ua||ua.sel<0)?200:255,ok?255:(!ua||ua.sel<0)?200:95,ok?178:(!ua||ua.sel<0)?80:122);
+    const lines=doc.splitTextToSize((i+1)+". "+q.q,W-8);
+    lines.forEach(l=>{doc.text(l,L,y);y+=4.5;});
+    doc.setTextColor(181,194,217);
+    doc.splitTextToSize("   Правильный: "+q.opts[q.ci],W-8).forEach(l=>{doc.text(l,L,y);y+=4.2;});
+    doc.setTextColor(ok?97:200,ok?255:200,ok?178:80);
+    doc.text("   "+mk+" Ответ: "+sel,L,y);y+=5.5;
+  });
+  // Подпись
+  if(y>275){doc.addPage();doc.setFillColor(5,8,22);doc.rect(0,0,210,297,"F");y=15;}
+  doc.setTextColor(79,223,255);doc.setFontSize(7);doc.text("Сформировано: "+dd+"."+mm+"."+yyyy+" | Разработчик: Широков А.Д.",L,285);
+  doc.save("Arktika_"+pName.replace(/[^a-zA-Zа-яА-ЯёЁ0-9]/g,"_").slice(0,30)+"_"+dd+mm+yyyy+".pdf");
+}
+
+// ── СНЕГ ─────────────────────────────────────────────────────
+(()=>{const s=$("snow");for(let i=0;i<22;i++){const f=document.createElement("div");f.className="flake";f.style.left=Math.random()*100+"%";f.style.animationDuration=(10+Math.random()*10)+"s";f.style.animationDelay=-(Math.random()*14)+"s";f.style.height=(4+Math.random()*5)+"px";s.appendChild(f);}})();
+
+// ── СОБЫТИЯ ───────────────────────────────────────────────────
+regBtn.addEventListener("click",register);
+restartBtn.addEventListener("click",resetQuiz);
+againBtn.addEventListener("click",()=>{hideOv(ovRes);resetQuiz();});
+pdfBtn.addEventListener("click",dlPdf);
+musicBtn.addEventListener("click",()=>{if(bgOn)stopBg();else startBg();});
+alertBtn.addEventListener("click",()=>{if(!pName||chatBlocked)return;playAlert();sendChat("🚨 Прошу внимания! Есть вопрос или проблема.","alert");alertBtn.disabled=true;alertBtn.textContent="✓ Отправлено";setTimeout(()=>{alertBtn.disabled=false;alertBtn.textContent="🚨 Вопрос!";},10000);});
+chatSendBtn.addEventListener("click",()=>{const t=chatInp.value.trim();if(!t)return;sendChat(t);chatInp.value="";});
+chatInp.addEventListener("keydown",e=>{if(e.key==="Enter"){const t=chatInp.value.trim();if(!t)return;sendChat(t);chatInp.value="";}});
+chatPanel.addEventListener("click",()=>chatBadge.classList.remove("show"));
+</script>
+</body>
+</html>
