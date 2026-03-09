@@ -1,0 +1,820 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+<title>🎲 Полярное Приключение</title>
+<link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@400;700;900&family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+:root{--bg:#020b18;--s1:rgba(5,18,42,.97);--ice:#4fdfff;--eco:#61ffb2;--gold:#ffd84d;--red:#ff5f7a;--purple:#a78bfa;--txt:#dff0ff;--muted:rgba(180,220,255,.45);--FH:'Unbounded',sans-serif;--FB:'Nunito',sans-serif;}
+html,body{width:100%;height:100%;overflow:hidden;font-family:var(--FB);background:var(--bg);color:var(--txt);}
+#bgC{position:fixed;inset:0;z-index:0;pointer-events:none;}
+#pC{position:fixed;inset:0;z-index:1;pointer-events:none;}
+.scr{position:fixed;inset:0;z-index:10;display:flex;flex-direction:column;align-items:center;justify-content:center;overflow-y:auto;}
+.scr.off{display:none!important;}
+
+/* SETUP */
+#S0{background:radial-gradient(ellipse at 50% 0%,rgba(79,223,255,.07) 0%,transparent 60%);}
+.s0-hero{text-align:center;padding:28px 16px 18px;}
+.s0-title{font-family:var(--FH);font-size:clamp(1.4rem,5vw,2.2rem);font-weight:900;line-height:1.15;background:linear-gradient(135deg,#4fdfff 0%,#a78bfa 45%,#ffd84d 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:6px;}
+.s0-sub{font-size:.8rem;color:var(--muted);}
+.s0-card{background:var(--s1);border:1px solid rgba(79,223,255,.14);border-radius:24px;padding:26px;width:min(500px,96vw);box-shadow:0 32px 80px rgba(0,0,0,.7);backdrop-filter:blur(24px);}
+.slabel{font-size:.6rem;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin-bottom:10px;}
+.sblock{margin-bottom:20px;}
+.th-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.th-btn{padding:13px 10px;border-radius:14px;border:2px solid rgba(255,255,255,.07);background:rgba(255,255,255,.03);cursor:pointer;text-align:center;transition:all .22s;font-family:var(--FB);}
+.th-btn.ta{border-color:var(--ice);background:rgba(79,223,255,.09);box-shadow:0 0 28px rgba(79,223,255,.16);}
+.th-btn.te{border-color:var(--eco);background:rgba(97,255,178,.07);box-shadow:0 0 28px rgba(97,255,178,.14);}
+.th-ico{font-size:1.9rem;display:block;margin-bottom:5px;}
+.th-nm{font-size:.85rem;font-weight:800;}
+.th-ds{font-size:.64rem;color:var(--muted);margin-top:3px;}
+.tm-list{display:flex;flex-direction:column;gap:7px;}
+.tm-row{display:flex;align-items:center;gap:9px;padding:9px 12px;border-radius:12px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06);}
+.tm-dot{width:11px;height:11px;border-radius:50%;flex-shrink:0;}
+.tm-inp{flex:1;background:transparent;border:none;color:var(--txt);font-size:.87rem;font-family:var(--FB);font-weight:700;outline:none;}
+.tm-inp::placeholder{color:var(--muted);font-weight:600;}
+.tm-del{background:none;border:none;color:var(--muted);cursor:pointer;font-size:.9rem;transition:color .15s;}
+.tm-del:hover{color:var(--red);}
+.btn-add{width:100%;padding:9px;margin-top:7px;border-radius:12px;border:1px dashed rgba(255,255,255,.1);background:transparent;color:var(--muted);cursor:pointer;font-size:.8rem;font-family:var(--FB);font-weight:700;transition:all .2s;}
+.btn-add:hover{border-color:var(--ice);color:var(--ice);}
+.len-row{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;}
+.len-btn{padding:10px 8px;border-radius:12px;border:2px solid rgba(255,255,255,.07);background:rgba(255,255,255,.03);cursor:pointer;text-align:center;transition:all .2s;font-family:var(--FB);}
+.len-btn.la{border-color:var(--gold);background:rgba(255,216,77,.07);}
+.len-n{font-size:1.2rem;font-weight:900;font-family:var(--FH);color:var(--gold);}
+.len-d{font-size:.62rem;color:var(--muted);margin-top:3px;}
+.aud-row{display:flex;gap:7px;flex-wrap:wrap;}
+.aud-btn{padding:7px 13px;border-radius:10px;border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.04);cursor:pointer;font-size:.73rem;font-family:var(--FB);font-weight:700;color:var(--muted);transition:all .2s;white-space:nowrap;}
+.aud-btn.aa{border-color:var(--ice);color:var(--ice);background:rgba(79,223,255,.08);}
+.aud-file-label{padding:7px 13px;border-radius:10px;border:1px dashed rgba(255,255,255,.1);background:rgba(255,255,255,.03);cursor:pointer;font-size:.73rem;font-family:var(--FB);font-weight:700;color:var(--muted);transition:all .2s;white-space:nowrap;display:inline-block;}
+.aud-file-label:hover{border-color:var(--purple);color:var(--purple);}
+#musicStatus{font-size:.67rem;color:var(--muted);margin-top:7px;min-height:14px;}
+.btn-start{width:100%;padding:15px;margin-top:6px;font-family:var(--FH);font-size:.93rem;font-weight:700;letter-spacing:.05em;background:linear-gradient(135deg,#4fdfff,#a78bfa);color:#010c1e;border:none;border-radius:14px;cursor:pointer;transition:all .3s;}
+.btn-start:hover{transform:translateY(-3px);box-shadow:0 16px 48px rgba(79,223,255,.38);}
+
+/* GAME */
+#S1{flex-direction:row;padding:0;overflow:hidden;}
+.board-wrap{flex:1;position:relative;overflow:hidden;}
+#isoC{width:100%;height:100%;display:block;cursor:grab;}
+#isoC:active{cursor:grabbing;}
+.gp{width:272px;flex-shrink:0;height:100vh;background:rgba(2,9,24,.97);border-left:1px solid rgba(79,223,255,.1);display:flex;flex-direction:column;overflow:hidden;}
+@media(max-width:680px){#S1{flex-direction:column;}.board-wrap{height:52vh;flex:none;}.gp{width:100%;height:48vh;border-left:none;border-top:1px solid rgba(79,223,255,.1);}}
+.gp-hd{padding:11px 14px 9px;border-bottom:1px solid rgba(255,255,255,.06);display:flex;align-items:center;justify-content:space-between;}
+.gp-logo{font-family:var(--FH);font-size:.74rem;font-weight:700;color:var(--ice);}
+.gp-rnd{font-size:.62rem;color:var(--muted);}
+.gp-music{display:flex;align-items:center;gap:6px;padding:7px 14px;border-bottom:1px solid rgba(255,255,255,.05);}
+.mc-btn{background:none;border:none;cursor:pointer;font-size:.95rem;line-height:1;padding:3px 5px;border-radius:7px;transition:background .15s;color:var(--txt);}
+.mc-btn:hover{background:rgba(255,255,255,.07);}
+.mc-vol{flex:1;-webkit-appearance:none;appearance:none;height:3px;background:rgba(255,255,255,.12);border-radius:99px;outline:none;cursor:pointer;}
+.mc-vol::-webkit-slider-thumb{-webkit-appearance:none;width:12px;height:12px;border-radius:50%;background:var(--ice);cursor:pointer;}
+.mc-lbl{font-size:.6rem;color:var(--muted);}
+.gp-cur{margin:10px 12px 0;padding:11px;border-radius:13px;border:2px solid rgba(255,255,255,.07);background:rgba(255,255,255,.02);text-align:center;}
+.gpc-lbl{font-size:.57rem;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);}
+.gpc-nm{font-family:var(--FH);font-size:.92rem;font-weight:900;margin:3px 0 2px;}
+.gpc-sub{font-size:.66rem;color:var(--muted);}
+.gp-teams{flex:1;overflow-y:auto;padding:7px 11px;display:flex;flex-direction:column;gap:5px;}
+.tc{display:flex;align-items:center;gap:8px;padding:7px 10px;border-radius:11px;border:1px solid rgba(255,255,255,.05);background:rgba(255,255,255,.02);transition:all .25s;}
+.tc.act{border-color:rgba(255,255,255,.22);background:rgba(255,255,255,.05);transform:scale(1.015);}
+.tc-av{width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.82rem;font-weight:900;font-family:var(--FH);flex-shrink:0;}
+.tc-inf{flex:1;min-width:0;}
+.tc-nm{font-size:.78rem;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.tc-st{font-size:.61rem;color:var(--muted);}
+.tc-ps{font-size:.6rem;padding:2px 6px;border-radius:99px;background:rgba(255,255,255,.05);color:var(--muted);}
+.gp-log{padding:0 11px;max-height:76px;overflow-y:auto;scrollbar-width:thin;}
+.lg-e{font-size:.63rem;color:var(--muted);padding:3px 0;border-bottom:1px solid rgba(255,255,255,.04);line-height:1.45;}
+.gp-dice{padding:11px 12px;border-top:1px solid rgba(255,255,255,.06);}
+
+/* 3D CSS DICE */
+.dice-scene{width:60px;height:60px;perspective:180px;margin:0 auto 10px;cursor:pointer;}
+.dice-cube{width:100%;height:100%;position:relative;transform-style:preserve-3d;transform:rotateX(-20deg) rotateY(30deg);transition:transform .7s cubic-bezier(.34,1.56,.64,1);}
+.dice-face{position:absolute;width:60px;height:60px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:1.7rem;border:2px solid rgba(79,223,255,.4);background:linear-gradient(135deg,rgba(10,30,70,.95),rgba(20,50,110,.95));box-shadow:inset 0 0 16px rgba(79,223,255,.12);}
+.df1{transform:translateZ(30px);}
+.df2{transform:rotateY(180deg) translateZ(30px);}
+.df3{transform:rotateY(90deg) translateZ(30px);}
+.df4{transform:rotateY(-90deg) translateZ(30px);}
+.df5{transform:rotateX(90deg) translateZ(30px);}
+.df6{transform:rotateX(-90deg) translateZ(30px);}
+.btn-roll{width:100%;padding:11px;font-family:var(--FH);font-size:.8rem;font-weight:700;border:none;border-radius:12px;cursor:pointer;transition:all .25s;letter-spacing:.04em;color:#010c1e;}
+.btn-roll.ri{background:linear-gradient(135deg,#4fdfff,#6b7aff);}
+.btn-roll.re{background:linear-gradient(135deg,#61ffb2,#2dd47a);}
+.btn-roll:disabled{opacity:.35;cursor:not-allowed;}
+
+/* OVERLAYS */
+.ov{position:fixed;inset:0;z-index:200;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.82);backdrop-filter:blur(10px);padding:14px;}
+.ov.off{display:none!important;}
+@keyframes popIn{from{transform:scale(.85) translateY(20px);opacity:0;}to{transform:scale(1) translateY(0);opacity:1;}}
+
+.qbox{background:rgba(3,14,38,.99);border:1px solid rgba(79,223,255,.22);border-radius:22px;padding:26px;width:min(600px,100%);box-shadow:0 40px 100px rgba(0,0,0,.9);animation:popIn .32s cubic-bezier(.34,1.56,.64,1);}
+.q-team{display:inline-flex;align-items:center;gap:6px;padding:4px 12px;border-radius:99px;font-size:.66rem;font-weight:800;letter-spacing:.06em;text-transform:uppercase;margin-bottom:10px;}
+.q-badge{font-size:.68rem;color:var(--muted);margin-bottom:12px;}
+.q-tw{height:5px;background:rgba(255,255,255,.07);border-radius:99px;margin-bottom:18px;overflow:hidden;}
+.q-tb{height:100%;border-radius:99px;transition:width .09s linear;}
+.q-txt{font-size:1.05rem;font-weight:800;line-height:1.55;margin-bottom:20px;}
+.q-opts{display:grid;grid-template-columns:1fr 1fr;gap:9px;}
+.q-opt{padding:13px 12px;border-radius:13px;border:2px solid rgba(255,255,255,.09);background:rgba(255,255,255,.03);cursor:pointer;font-size:.83rem;font-weight:700;line-height:1.4;transition:all .2s;text-align:center;font-family:var(--FB);color:var(--txt);}
+.q-opt:hover:not(:disabled){border-color:rgba(79,223,255,.5);background:rgba(79,223,255,.08);transform:translateY(-2px);}
+.q-opt:disabled{cursor:default;}
+.q-opt.ok{border-color:var(--eco)!important;background:rgba(97,255,178,.13)!important;color:var(--eco)!important;}
+.q-opt.bad{border-color:var(--red)!important;background:rgba(255,95,122,.08)!important;opacity:.65;}
+.q-fb{margin-top:14px;padding:12px 14px;border-radius:11px;font-size:.8rem;line-height:1.5;display:none;}
+.q-fb.sh{display:block;}
+.q-fb.ok{background:rgba(97,255,178,.07);border:1px solid rgba(97,255,178,.2);color:var(--eco);}
+.q-fb.bad{background:rgba(255,95,122,.07);border:1px solid rgba(255,95,122,.17);color:var(--red);}
+.q-next{width:100%;margin-top:14px;padding:12px;font-family:var(--FH);font-size:.82rem;font-weight:700;background:linear-gradient(135deg,#4fdfff,#a78bfa);color:#010c1e;border:none;border-radius:12px;cursor:pointer;display:none;transition:all .2s;}
+.q-next.sh{display:block;}
+.q-next:hover{transform:translateY(-2px);}
+
+.evbox{background:rgba(3,14,38,.99);border-radius:22px;padding:34px 26px;width:min(420px,100%);text-align:center;box-shadow:0 40px 100px rgba(0,0,0,.9);animation:popIn .3s cubic-bezier(.34,1.56,.64,1);}
+.ev-ico{font-size:3.5rem;display:block;margin-bottom:12px;animation:bIco .5s ease;}
+@keyframes bIco{0%{transform:scale(0);}60%{transform:scale(1.2);}100%{transform:scale(1);}}
+.ev-tt{font-family:var(--FH);font-size:1.2rem;font-weight:900;margin-bottom:9px;}
+.ev-ds{font-size:.86rem;color:var(--muted);line-height:1.65;margin-bottom:22px;}
+.ev-ok{padding:12px 30px;font-family:var(--FH);font-size:.82rem;font-weight:700;border:none;border-radius:12px;cursor:pointer;background:linear-gradient(135deg,#4fdfff,#a78bfa);color:#010c1e;transition:all .2s;}
+.ev-ok:hover{transform:translateY(-2px);}
+
+/* WIN */
+#S2{background:radial-gradient(ellipse at 50% 10%,rgba(97,255,178,.07) 0%,transparent 55%);}
+.win-wrap{display:flex;flex-direction:column;align-items:center;gap:16px;max-width:520px;width:100%;padding:28px 16px;}
+.win-trophy{font-size:4.5rem;animation:flt 2.8s ease-in-out infinite;}
+@keyframes flt{0%,100%{transform:translateY(0);}50%{transform:translateY(-16px);}}
+.win-h{font-family:var(--FH);font-size:clamp(1.3rem,4vw,1.9rem);font-weight:900;text-align:center;background:linear-gradient(135deg,var(--gold),#ff9f4d);-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+.win-sub{font-size:.79rem;color:var(--muted);text-align:center;}
+.win-card{background:var(--s1);border:1px solid rgba(79,223,255,.14);border-radius:20px;padding:20px;width:100%;}
+.pod-row{display:flex;align-items:center;gap:11px;padding:9px 0;border-bottom:1px solid rgba(255,255,255,.05);}
+.pod-row:last-child{border-bottom:none;}
+.pod-n{font-family:var(--FH);font-size:1rem;font-weight:900;width:28px;text-align:center;}
+.pg{color:var(--gold);}.ps{color:#c0ccd8;}.pb{color:#cd7f32;}
+.pod-av{width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.85rem;font-weight:900;font-family:var(--FH);}
+.pod-nm{flex:1;font-weight:800;font-size:.87rem;}
+.pod-rt{text-align:right;}
+.pod-pts{font-family:var(--FH);font-size:.95rem;font-weight:900;color:var(--gold);}
+.pod-ans{font-size:.61rem;color:var(--muted);}
+.win-btns{display:flex;gap:10px;width:100%;}
+.wb{flex:1;padding:12px;font-family:var(--FH);font-size:.78rem;font-weight:700;border:none;border-radius:12px;cursor:pointer;transition:all .2s;}
+.wb.p{background:linear-gradient(135deg,#4fdfff,#a78bfa);color:#010c1e;}
+.wb.s{background:rgba(255,255,255,.05);color:var(--txt);border:1px solid rgba(255,255,255,.1);}
+.wb:hover{transform:translateY(-2px);}
+
+.fscore{position:fixed;z-index:500;font-family:var(--FH);font-weight:900;font-size:1.4rem;pointer-events:none;animation:fUp 1.4s ease-out forwards;}
+@keyframes fUp{0%{transform:translateY(0);opacity:1;}100%{transform:translateY(-80px);opacity:0;}}
+::-webkit-scrollbar{width:3px;}::-webkit-scrollbar-thumb{background:rgba(255,255,255,.08);border-radius:99px;}
+</style>
+</head>
+<body>
+<canvas id="bgC"></canvas>
+<canvas id="pC"></canvas>
+
+<!-- SETUP -->
+<div class="scr" id="S0">
+  <div class="s0-hero">
+    <div class="s0-title">🎲 Полярное Приключение</div>
+    <div class="s0-sub">Изометрическая настольная игра · 2–4 команды</div>
+  </div>
+  <div class="s0-card">
+    <div class="sblock">
+      <div class="slabel">🌍 Тема</div>
+      <div class="th-row">
+        <div class="th-btn ta" id="tA" onclick="pickTheme('arctic')"><span class="th-ico">🧊</span><div class="th-nm">Арктика</div><div class="th-ds">Ледяной мир севера</div></div>
+        <div class="th-btn" id="tE" onclick="pickTheme('ecology')"><span class="th-ico">🌿</span><div class="th-nm">Экология</div><div class="th-ds">Природа и климат</div></div>
+      </div>
+    </div>
+    <div class="sblock">
+      <div class="slabel">🎯 Длина поля</div>
+      <div class="len-row">
+        <div class="len-btn la" id="l24" onclick="pickLen(24)"><div class="len-n">24</div><div class="len-d">~15 мин</div></div>
+        <div class="len-btn" id="l36" onclick="pickLen(36)"><div class="len-n">36</div><div class="len-d">~25 мин</div></div>
+        <div class="len-btn" id="l48" onclick="pickLen(48)"><div class="len-n">48</div><div class="len-d">~35 мин</div></div>
+      </div>
+    </div>
+    <div class="sblock">
+      <div class="slabel">👥 Команды (2–4)</div>
+      <div class="tm-list" id="tmList"></div>
+      <button class="btn-add" id="addBtn" onclick="addTeam()">+ Добавить команду</button>
+    </div>
+    <div class="sblock">
+      <div class="slabel">🎵 Фоновая музыка</div>
+      <div class="aud-row">
+        <div class="aud-btn aa" id="mA" onclick="pickMusic('arctic')">🧊 Арктика</div>
+        <div class="aud-btn" id="mE" onclick="pickMusic('ecology')">🌿 Природа</div>
+        <div class="aud-btn" id="mO" onclick="pickMusic('off')">🔇 Выкл</div>
+        <label class="aud-file-label">📂 Своя<input type="file" style="display:none" accept="audio/*" onchange="loadCustomAudio(this)"></label>
+      </div>
+      <div id="musicStatus">🎵 Арктическое сияние — процедурный синтез</div>
+    </div>
+    <button class="btn-start" onclick="startGame()">🚀 Начать игру!</button>
+  </div>
+  <div style="height:20px"></div>
+</div>
+
+<!-- GAME -->
+<div class="scr off" id="S1">
+  <div class="board-wrap"><canvas id="isoC"></canvas></div>
+  <div class="gp">
+    <div class="gp-hd"><div class="gp-logo" id="gpLogo">🧊 АРКТИКА</div><div class="gp-rnd" id="gpRnd">Ход 1</div></div>
+    <div class="gp-music">
+      <button class="mc-btn" id="mcPlay" onclick="toggleMusic()">⏸</button>
+      <span class="mc-lbl">🎵</span>
+      <input type="range" class="mc-vol" min="0" max="1" step="0.05" value="0.35" oninput="setVol(this.value)">
+    </div>
+    <div class="gp-cur"><div class="gpc-lbl">Ходит</div><div class="gpc-nm" id="gpcNm">—</div><div class="gpc-sub" id="gpcSub">Клетка 1</div></div>
+    <div class="gp-teams" id="gpTeams"></div>
+    <div class="gp-log" id="gpLog"></div>
+    <div class="gp-dice">
+      <div class="dice-scene" id="diceScene" onclick="doRoll()" title="Нажмите для броска">
+        <div class="dice-cube" id="diceCube">
+          <div class="dice-face df1">⚀</div>
+          <div class="dice-face df2">⚅</div>
+          <div class="dice-face df3">⚁</div>
+          <div class="dice-face df4">⚄</div>
+          <div class="dice-face df5">⚂</div>
+          <div class="dice-face df6">⚃</div>
+        </div>
+      </div>
+      <button class="btn-roll ri" id="rollBtn" onclick="doRoll()">🎲 Бросить кубик</button>
+    </div>
+  </div>
+</div>
+
+<!-- WIN -->
+<div class="scr off" id="S2">
+  <div class="win-wrap">
+    <div class="win-trophy">🏆</div>
+    <div class="win-h" id="winH">Победитель!</div>
+    <div class="win-sub" id="winSb">Игра завершена</div>
+    <div class="win-card" id="winPod"></div>
+    <div class="win-btns"><button class="wb p" onclick="doRestart()">🔄 Снова</button><button class="wb s" onclick="doClose()">🏠 В меню</button></div>
+  </div>
+</div>
+
+<!-- EVENT -->
+<div class="ov off" id="evOv">
+  <div class="evbox"><span class="ev-ico" id="evIco">⭐</span><div class="ev-tt" id="evTt">—</div><div class="ev-ds" id="evDs">—</div><button class="ev-ok" onclick="closeEv()">Понятно!</button></div>
+</div>
+
+<!-- QUESTION -->
+<div class="ov off" id="qOv">
+  <div class="qbox">
+    <div class="q-team" id="qTm">—</div>
+    <div class="q-badge" id="qBg">❓ Вопрос</div>
+    <div class="q-tw"><div class="q-tb" id="qBar" style="width:100%"></div></div>
+    <div class="q-txt" id="qTxt">—</div>
+    <div class="q-opts" id="qOpts"></div>
+    <div class="q-fb" id="qFb"></div>
+    <button class="q-next" id="qNxt" onclick="closeQ()">Продолжить →</button>
+  </div>
+</div>
+
+<script>
+'use strict';
+// ═══════════════════ AUDIO ENGINE ═══════════════════
+let AC,mGain,sGain,mNodes=[],mMode='arctic',mPlaying=true;
+function initAC(){
+  try{AC=new(window.AudioContext||window.webkitAudioContext)();
+  mGain=AC.createGain();mGain.gain.value=0.35;mGain.connect(AC.destination);
+  sGain=AC.createGain();sGain.gain.value=0.8;sGain.connect(AC.destination);}
+  catch(e){}
+}
+function rAC(){if(AC&&AC.state==='suspended')AC.resume();}
+function stopMusic(){mNodes.forEach(n=>{try{if(n.stop)n.stop(AC?AC.currentTime+0.2:0);}catch(e){}});mNodes=[];}
+
+function buildArctic(){
+  const t=AC.currentTime;
+  // Wind noise
+  const wb=AC.createBuffer(1,AC.sampleRate*4,AC.sampleRate);
+  const wd=wb.getChannelData(0);for(let i=0;i<wd.length;i++)wd[i]=(Math.random()*2-1)*.25;
+  const ws=AC.createBufferSource();ws.buffer=wb;ws.loop=true;
+  const wf=AC.createBiquadFilter();wf.type='bandpass';wf.frequency.value=600;wf.Q.value=0.4;
+  const wg=AC.createGain();wg.gain.value=0.016;ws.connect(wf);wf.connect(wg);wg.connect(mGain);ws.start();mNodes.push(ws,wg);
+  // Drone
+  [65.4,98,130.8].forEach((f,i)=>{
+    const o=AC.createOscillator();const g=AC.createGain();
+    o.type='sine';o.frequency.value=f;
+    g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(0.03-i*.008,t+4);
+    o.connect(g);g.connect(mGain);o.start(t);mNodes.push(o,g);
+  });
+  // Melody
+  const notes=[261.6,329.6,392,440,523.3,392,329.6,261.6];
+  let bi=0;
+  const tick=()=>{
+    if(!mPlaying)return;
+    const n=notes[bi%notes.length];const s=AC.currentTime;
+    const o=AC.createOscillator();const g=AC.createGain();
+    o.type='triangle';o.frequency.value=n*2;
+    g.gain.setValueAtTime(0,s);g.gain.linearRampToValueAtTime(0.04,s+0.1);g.gain.linearRampToValueAtTime(0,s+1.0);
+    o.connect(g);g.connect(mGain);o.start(s);o.stop(s+1.2);mNodes.push(o,g);
+    bi++;setTimeout(tick,bi%4===0?2200:1400);
+  };
+  setTimeout(tick,2500);
+}
+
+function buildEco(){
+  const t=AC.currentTime;
+  // Rain
+  const rb=AC.createBuffer(1,AC.sampleRate*3,AC.sampleRate);
+  const rd=rb.getChannelData(0);for(let i=0;i<rd.length;i++)rd[i]=(Math.random()*2-1)*.12;
+  const rs=AC.createBufferSource();rs.buffer=rb;rs.loop=true;
+  const rf=AC.createBiquadFilter();rf.type='highpass';rf.frequency.value=3500;
+  const rg=AC.createGain();rg.gain.value=0.025;rs.connect(rf);rf.connect(rg);rg.connect(mGain);rs.start();mNodes.push(rs,rg);
+  // Birds
+  const bird=()=>{
+    if(!mPlaying)return;
+    const s=AC.currentTime;const f=700+Math.random()*1200;
+    const o=AC.createOscillator();const g=AC.createGain();
+    o.type='sine';o.frequency.setValueAtTime(f,s);o.frequency.exponentialRampToValueAtTime(f*1.4,s+0.1);o.frequency.exponentialRampToValueAtTime(f*.9,s+.3);
+    g.gain.setValueAtTime(0,s);g.gain.linearRampToValueAtTime(0.06,s+.07);g.gain.linearRampToValueAtTime(0,s+.35);
+    o.connect(g);g.connect(mGain);o.start(s);o.stop(s+.45);mNodes.push(o,g);
+    setTimeout(bird,1500+Math.random()*3000);
+  };
+  setTimeout(bird,1000);
+  // Warm pads
+  [130.8,196,246.9].forEach((f,i)=>{
+    const o=AC.createOscillator();const g=AC.createGain();
+    o.type=i===0?'sine':'triangle';o.frequency.value=f;
+    g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(0.035-i*.008,t+3);
+    o.connect(g);g.connect(mGain);o.start(t);mNodes.push(o,g);
+  });
+}
+
+function playMusic(mode){
+  rAC();stopMusic();if(mode==='off')return;
+  mPlaying=true;
+  if(mode==='arctic')buildArctic();else buildEco();
+}
+function pickMusic(mode){
+  mMode=mode;['mA','mE','mO'].forEach(id=>document.getElementById(id).classList.remove('aa'));
+  const idMap={arctic:'mA',ecology:'mE',off:'mO'};
+  if(idMap[mode])document.getElementById(idMap[mode]).classList.add('aa');
+  const lb={arctic:'🎵 Арктическое сияние — синтез-атмосфера',ecology:'🎵 Лесной покой — птицы и дождь',off:'🔇 Музыка выключена'};
+  document.getElementById('musicStatus').textContent=lb[mode]||'';
+  rAC();playMusic(mode);
+}
+function toggleMusic(){
+  rAC();
+  if(mPlaying){mPlaying=false;stopMusic();document.getElementById('mcPlay').textContent='▶';}
+  else{mPlaying=true;playMusic(mMode);document.getElementById('mcPlay').textContent='⏸';}
+}
+function setVol(v){if(mGain)mGain.gain.setTargetAtTime(parseFloat(v),AC.currentTime,.3);}
+function loadCustomAudio(inp){
+  const f=inp.files[0];if(!f)return;rAC();
+  const r=new FileReader();
+  r.onload=e=>{AC.decodeAudioData(e.target.result,buf=>{
+    stopMusic();const src=AC.createBufferSource();src.buffer=buf;src.loop=true;
+    src.connect(mGain);src.start();mNodes.push(src);mPlaying=true;mMode='custom';
+    document.getElementById('musicStatus').textContent='🎵 '+f.name;
+    ['mA','mE','mO'].forEach(id=>document.getElementById(id).classList.remove('aa'));
+  });};r.readAsArrayBuffer(f);
+}
+
+// SFX
+function sfx(t){
+  if(!AC)return;rAC();const n=AC.currentTime;
+  const tone=(f,dur,wave,vol,start)=>{
+    const o=AC.createOscillator();const g=AC.createGain();
+    o.type=wave||'sine';o.frequency.value=f;
+    const s=n+(start||0);
+    g.gain.setValueAtTime(vol||.4,s);g.gain.exponentialRampToValueAtTime(.001,s+dur);
+    o.connect(g);g.connect(sGain);o.start(s);o.stop(s+dur+.05);
+  };
+  if(t==='roll'){
+    for(let i=0;i<7;i++){
+      const d=i*.08;
+      tone(150+Math.random()*250,.07,'square',.18,d);
+    }
+  }else if(t==='land'){tone(520,.1,'sine',.22);tone(660,.12,'sine',.15,.1);}
+  else if(t==='correct'){tone(523,.1,'sine',.4);tone(659,.1,'sine',.4,.12);tone(784,.25,'sine',.5,.24);}
+  else if(t==='wrong'){tone(330,.08,'sawtooth',.3);tone(277,.35,'sawtooth',.25,.1);}
+  else if(t==='bonus'){[523,659,784,1047].forEach((f,i)=>tone(f,.15,'sine',.45,i*.08));}
+  else if(t==='trap'){tone(220,.1,'sawtooth',.4);tone(185,.4,'sawtooth',.3,.1);}
+  else if(t==='skip'){tone(440,.3,'sine',.3);tone(330,.3,'sine',.2,.2);}
+  else if(t==='double'){[784,1047,1319].forEach((f,i)=>tone(f,.18,'triangle',.4,i*.1));}
+  else if(t==='win'){[523,659,784,1047,784,1047,1319].forEach((f,i)=>tone(f,.2,'sine',.5,i*.15));}
+  else if(t==='timeout'){tone(330,.5,'sawtooth',.3);}
+  else if(t==='click'){tone(800,.06,'sine',.2);}
+}
+
+// ═══════════════════ AURORA BG ═══════════════════
+(()=>{
+  const c=document.getElementById('bgC');const ctx=c.getContext('2d');let t=0;
+  const resize=()=>{c.width=innerWidth;c.height=innerHeight;};resize();window.addEventListener('resize',resize);
+  const draw=()=>{
+    ctx.clearRect(0,0,c.width,c.height);
+    for(let i=0;i<4;i++){
+      const yb=c.height*(.15+i*.06)+Math.sin(t*.3+i*2.1)*c.height*.055;
+      const g=ctx.createLinearGradient(0,yb-70,0,yb+70);
+      const h=[185,270,155,220][i];
+      g.addColorStop(0,'transparent');g.addColorStop(.45,`hsla(${h},85%,60%,.042)`);g.addColorStop(.55,`hsla(${h},85%,60%,.065)`);g.addColorStop(1,'transparent');
+      ctx.fillStyle=g;ctx.beginPath();ctx.moveTo(0,yb);
+      for(let x=0;x<=c.width;x+=16)ctx.lineTo(x,yb+Math.sin((x/c.width)*Math.PI*5+t*.5+i)*24);
+      ctx.lineTo(c.width,c.height);ctx.lineTo(0,c.height);ctx.closePath();ctx.fill();
+    }
+    ctx.fillStyle='rgba(210,235,255,.45)';
+    for(let i=0;i<100;i++){const sx=(Math.sin(i*137.508)*.5+.5)*c.width;const sy=(Math.sin(i*97.3)*.5+.5)*c.height*.6;const r=.35+Math.sin(t*1.3+i)*.28;ctx.beginPath();ctx.arc(sx,sy,r,0,Math.PI*2);ctx.fill();}
+    t+=.009;requestAnimationFrame(draw);
+  };draw();
+})();
+
+// ═══════════════════ PARTICLES ═══════════════════
+const pC=document.getElementById('pC');const pCtx=pC.getContext('2d');
+let particles=[];
+function resizeP(){pC.width=innerWidth;pC.height=innerHeight;}resizeP();window.addEventListener('resize',resizeP);
+function burst(x,y,color,n){for(let i=0;i<n;i++){const a=Math.random()*Math.PI*2;const s=2+Math.random()*7;particles.push({x,y,vx:Math.cos(a)*s,vy:Math.sin(a)*s-2,life:1,color,sz:2+Math.random()*4});}}
+(function animP(){pCtx.clearRect(0,0,pC.width,pC.height);particles=particles.filter(p=>p.life>0);
+particles.forEach(p=>{p.x+=p.vx;p.y+=p.vy;p.vy+=.15;p.life-=.023;pCtx.globalAlpha=p.life;pCtx.fillStyle=p.color;pCtx.beginPath();pCtx.arc(p.x,p.y,p.sz*p.life,0,Math.PI*2);pCtx.fill();});
+pCtx.globalAlpha=1;requestAnimationFrame(animP);})();
+
+// ═══════════════════ QUESTIONS ═══════════════════
+const QDB={
+arctic:[
+  {q:"Какой океан является самым маленьким и холодным?",o:["Тихий","Атлантический","Северный Ледовитый","Индийский"],a:2,e:"Северный Ледовитый океан — самый маленький (~14 млн км²) и холодный."},
+  {q:"Что такое полярная ночь?",o:["Очень холодная ночь","Период без восхода >24ч","Северное сияние","Суровая метель"],a:1,e:"Полярная ночь — период, когда солнце не поднимается >24 часов."},
+  {q:"Какой процент айсберга скрыт под водой?",o:["30%","50%","70%","~90%"],a:3,e:"~90% массы айсберга находится под водой."},
+  {q:"Где обитает белый медведь?",o:["Антарктида","Только Арктика","Оба полюса","Тайга"],a:1,e:"Белые медведи живут только в Арктике."},
+  {q:"Полярное сияние — Aurora Borealis — это:",o:["Взрывы на Солнце","Свечение верхних слоёв атмосферы","Отражение льда","Лунный свет"],a:1,e:"Полярное сияние — свечение верхних слоёв атмосферы от частиц солнечного ветра."},
+  {q:"Кто первым достиг Северного полюса?",o:["Нансен","Амундсен","Роберт Пири","Джон Росс"],a:2,e:"Роберт Пири — 6 апреля 1909 года."},
+  {q:"Стран в Арктическом совете:",o:["5","6","8","12"],a:2,e:"8 стран: Россия, США, Канада, Норвегия, Дания, Швеция, Финляндия, Исландия."},
+  {q:"Вечная мерзлота (пермафрост) — это:",o:["Замёрзший океан","Мёрзлые горные породы","Морской лёд","Ледник"],a:1,e:"Слой горных пород, постоянно находящихся ниже 0°C."},
+  {q:"«Арктика» от греческого — значит:",o:["Лёд","Север","Медведь","Холод"],a:2,e:"Ἄρκτος — медведь (по созвездию Большой Медведицы)."},
+  {q:"Нарвал — это:",o:["Рыба с бивнем","Кит с бивнем","Морской котик","Тюлень"],a:1,e:"Нарвал — арктический кит, у самцов спиральный бивень до 3 м."},
+  {q:"В 2007 году Россия установила флаг:",o:["На Северном полюсе","На дне Арктики","На айсберге","На острове Шпицберген"],a:1,e:"Глубоководная экспедиция «Арктика-2007» установила флаг РФ на дне Северного Ледовитого."},
+  {q:"Торосы — это:",o:["Айсберги","Нагромождения льда от сжатия","Паковый лёд","Морозные узоры"],a:1,e:"Торосы — хаотичные нагромождения обломков льда."},
+  {q:"Арктический лис — это:",o:["Росомаха","Песец","Горностай","Норка"],a:1,e:"Песец — арктический хищник с белым зимним мехом."},
+  {q:"При таянии вечной мерзлоты выделяется:",o:["Кислород","Азот","Метан","Водород"],a:2,e:"Метан (CH₄) — мощный парниковый газ из органики мерзлоты."},
+  {q:"Северный морской путь связывает:",o:["Европу и Африку","Европу и Азию через Арктику","Азию и Америку","Два полюса"],a:1,e:"СМП — кратчайший морской маршрут между Европой и Азией."},
+  {q:"Минимум арктического льда — когда?",o:["Зимой","Весной","В конце лета","Осенью"],a:2,e:"Арктический лёд тает летом и достигает минимума в сентябре."},
+  {q:"Тупик — это:",o:["Млекопитающее","Рыба","Морская птица с ярким клювом","Ракообразное"],a:2,e:"Тупик — арктическая морская птица, символ региона."},
+  {q:"Кольчатая нерпа дышит зимой через:",o:["Жабры","Лунки во льду","Поверхность воды","Кожу"],a:1,e:"Нерпа прогрызает и поддерживает продушины во льду."},
+  {q:"Длина полярного дня на полюсе:",o:["12 часов","1 месяц","~6 месяцев","Весь год"],a:2,e:"На Северном полюсе полярный день и ночь — по ~6 месяцев."},
+  {q:"Моржи используют бивни для:",o:["Охоты на рыбу","Рытья нор","Подъёма на лёд и обороны","Строительства"],a:2,e:"Моржи используют бивни для подъёма на лёд и борьбы."},
+],
+ecology:[
+  {q:"Парниковый эффект — это:",o:["Теплица для овощей","Удержание тепла атмосферой","Кислотный дождь","Разрушение озона"],a:1,e:"Нагрев поверхности Земли из-за задержки атмосферой теплового излучения."},
+  {q:"Главный антропогенный парниковый газ:",o:["O₂","N₂","CO₂","Ar"],a:2,e:"Углекислый газ (CO₂) — основной парниковый газ человечества."},
+  {q:"Биоразнообразие — это:",o:["Число биомов","Разнообразие видов живых организмов","Плотность населения","Число заповедников"],a:1,e:"Разнообразие жизни на Земле: видов, генов и экосистем."},
+  {q:"Пластиковый пакет разлагается:",o:["1 год","10 лет","100–500 лет","Никогда"],a:2,e:"100–500 лет в зависимости от типа пластика."},
+  {q:"Парижское соглашение принято в:",o:["2005","2010","2015","2020"],a:2,e:"Декабрь 2015 года, COP21 в Париже."},
+  {q:"Фотосинтез — это:",o:["Разложение органики","CO₂ → O₂ в растениях","Испарение воды","Питание грибов"],a:1,e:"Растения поглощают CO₂ и выделяют кислород за счёт энергии света."},
+  {q:"Красная книга — список:",o:["Вредных химикатов","Заповедников","Редких и исчезающих видов","Ядовитых растений"],a:2,e:"Перечень редких и исчезающих видов живых организмов."},
+  {q:"ESG: буква «E» — это:",o:["Energy","Environment","Ecology","Economic"],a:1,e:"Environment — окружающая среда. ESG: Environment, Social, Governance."},
+  {q:"Крупнейший тропический лес:",o:["Конго","Амазония","Борнео","Тайга"],a:1,e:"Амазония — крупнейший тропический лес (~5,5 млн км²)."},
+  {q:"Зелёная энергия — источники:",o:["Уголь и нефть","Солнце, ветер, вода","Атомная","Сланцевый газ"],a:1,e:"Возобновляемые источники: солнечная, ветровая, гидроэнергия."},
+  {q:"Батарейки нельзя выбрасывать в мусор, потому что:",o:["Слишком тяжёлые","Содержат токсичные металлы","Не горят","Это закон"],a:1,e:"Батарейки содержат ртуть, кадмий, свинец — сдавайте в пункты приёма."},
+  {q:"Земля потеплела с доиндустриальной эпохи на:",o:["0.2°C","0.6°C","1.1°C","2.5°C"],a:2,e:"По данным IPCC — ≈1.1–1.2°C."},
+  {q:"Углеродный след — это:",o:["Загрязнение шахт","Объём CO₂ от деятельности человека","Чёрный смог","Угольная пыль"],a:1,e:"Совокупный объём парниковых газов от деятельности человека."},
+  {q:"Леса занимают суши Земли:",o:["10%","20%","~31%","50%"],a:2,e:"~31% суши — примерно 4 млрд гектаров."},
+  {q:"Рециклинг — это:",o:["Сжигание отходов","Закапывание","Переработка в новое сырьё","Компостирование"],a:2,e:"Переработка отходов для создания нового сырья."},
+  {q:"Главная причина исчезновения видов:",o:["Метеориты","Разрушение среды обитания","Болезни","Хищники"],a:1,e:"Уничтожение естественной среды обитания — главная угроза биоразнообразию."},
+  {q:"Антропогенный — означает:",o:["Природный","Созданный человеком","Вулканический","Космический"],a:1,e:"Связанный с деятельностью человека (греч. ἄνθρωπος — человек)."},
+  {q:"Мировой океан поглощает CO₂:",o:["Не поглощает","~25%","50%","75%"],a:1,e:"Океан поглощает около 25% антропогенного CO₂."},
+  {q:"Экосистема — это:",o:["Только животные","Организмы + среда как единое целое","Только растения","Горный рельеф"],a:1,e:"Совокупность живых организмов и неживой среды, взаимодействующих вместе."},
+  {q:"Компостирование — это:",o:["Сжигание органики","Разложение органики в удобрение","Захоронение мусора","Химическая очистка"],a:1,e:"Разложение органических отходов в природное удобрение."},
+]
+};
+
+// ═══════════════════ CELL TYPES ═══════════════════
+const CPAT=['normal','question','question','bonus','question','question','trap','question','question','skip','question','double'];
+const CCFG={
+  normal: {top:'#1a3666',side:'#0d2244',ledge:'#071530',lbl:'',glow:null},
+  question:{top:'#0d2e60',side:'#071d40',ledge:'#03112a',lbl:'?',glow:'rgba(79,223,255,.65)'},
+  bonus:  {top:'#0a3818',side:'#062510',ledge:'#020e06',lbl:'⭐',glow:'rgba(97,255,178,.72)'},
+  trap:   {top:'#380d18',side:'#26070f',ledge:'#0e0306',lbl:'❄',glow:'rgba(255,95,122,.72)'},
+  skip:   {top:'#1c0d38',side:'#130726',ledge:'#070214',lbl:'🌀',glow:'rgba(167,139,250,.72)'},
+  double: {top:'#382800',side:'#261a00',ledge:'#0e0900',lbl:'✨',glow:'rgba(255,216,77,.75)'},
+  start:  {top:'#0a2816',side:'#061a0e',ledge:'#020805',lbl:'▶',glow:'rgba(97,255,178,.9)'},
+  finish: {top:'#281e00',side:'#1a1400',ledge:'#090700',lbl:'🏆',glow:'rgba(255,216,77,.95)'},
+};
+const TDEF=[
+  {color:'#4fdfff',bg:'rgba(79,223,255,.16)',name:'Синие'},
+  {color:'#ff5f7a',bg:'rgba(255,95,122,.16)',name:'Красные'},
+  {color:'#61ffb2',bg:'rgba(97,255,178,.16)',name:'Зелёные'},
+  {color:'#ffd84d',bg:'rgba(255,216,77,.16)',name:'Жёлтые'},
+];
+
+// ═══════════════════ GAME STATE ═══════════════════
+let theme='arctic',cellCnt=24,teams=[],curI=0,moves=0;
+let usedQ=new Set(),qTmr=null,pendDbl=false,busy=false,evCb=null;
+let setupT=[{name:'',ti:0},{name:'',ti:1}];
+
+// ═══════════════════ SETUP ═══════════════════
+function pickTheme(t){theme=t;sfx('click');
+  document.getElementById('tA').className='th-btn'+(t==='arctic'?' ta':'');
+  document.getElementById('tE').className='th-btn'+(t==='ecology'?' te':'');}
+function pickLen(n){cellCnt=n;sfx('click');
+  ['l24','l36','l48'].forEach(id=>document.getElementById(id).classList.remove('la'));
+  document.getElementById('l'+n).classList.add('la');}
+function renderSetup(){
+  const w=document.getElementById('tmList');w.innerHTML='';
+  setupT.forEach((t,i)=>{
+    const d=TDEF[t.ti];const el=document.createElement('div');el.className='tm-row';
+    el.innerHTML=`<div class="tm-dot" style="background:${d.color}"></div>
+      <input class="tm-inp" placeholder="${d.name}" value="${t.name}" oninput="setupT[${i}].name=this.value"/>
+      ${setupT.length>2?`<button class="tm-del" onclick="delT(${i})">✕</button>`:''}`;
+    w.appendChild(el);
+  });
+  document.getElementById('addBtn').style.display=setupT.length>=4?'none':'';
+}
+function addTeam(){if(setupT.length>=4)return;sfx('click');setupT.push({name:'',ti:setupT.length});renderSetup();}
+function delT(i){if(setupT.length<=2)return;sfx('click');setupT.splice(i,1);setupT.forEach((t,j)=>t.ti=j);renderSetup();}
+
+// ═══════════════════ ISO BOARD ═══════════════════
+let isoC,isoCtx,isoW,isoH,cells=[];
+let camX=0,camY=0,camZ=1,drag=false,dragS={x:0,y:0},isoTick=0;
+const TW=86,TH=50,TD=20;
+
+function cellType(i){if(i===0)return'start';if(i===cellCnt-1)return'finish';return CPAT[i%CPAT.length];}
+
+function buildLayout(){
+  cells=[];
+  const COLS=Math.min(8,Math.max(4,Math.ceil(Math.sqrt(cellCnt*1.7))));
+  for(let i=0;i<cellCnt;i++){
+    const row=Math.floor(i/COLS);
+    const col=row%2===0?i%COLS:(COLS-1-i%COLS);
+    const wx=col*TW-row*TW*.5;
+    const wy=row*TH*.78;
+    cells.push({row,col,wx,wy,type:cellType(i),idx:i,pulse:0});
+  }
+  const xs=cells.map(c=>c.wx),ys=cells.map(c=>c.wy);
+  const bw=Math.max(...xs)-Math.min(...xs)+TW;
+  const bh=Math.max(...ys)-Math.min(...ys)+TH+TD;
+  const sx=isoW/bw*.82,sy=isoH/bh*.82;
+  camZ=Math.min(sx,sy,1.6);
+  camX=isoW/2-(Math.min(...xs)+bw/2)*camZ;
+  camY=isoH/2-(Math.min(...ys)+bh/2)*camZ;
+}
+
+function drawTile(ctx,wx,wy,cfg,lbl,num,pulse,tick){
+  const x=wx,y=wy,hw=TW/2,hh=TH/2;
+  const gp=pulse*(0.5+0.5*Math.sin(tick*.1));
+  // shadow
+  ctx.save();ctx.globalAlpha=.28;ctx.fillStyle='rgba(0,0,0,.6)';
+  ctx.beginPath();ctx.ellipse(x+hw,y+TH+TD*.35,hw*.88,hh*.44,0,0,Math.PI*2);ctx.fill();ctx.restore();
+  // left face
+  ctx.fillStyle=cfg.side;ctx.strokeStyle=cfg.ledge;ctx.lineWidth=1;
+  ctx.beginPath();ctx.moveTo(x,y+hh);ctx.lineTo(x,y+hh+TD);ctx.lineTo(x+hw,y+TH+TD);ctx.lineTo(x+hw,y+TH);ctx.closePath();ctx.fill();ctx.stroke();
+  // right face
+  ctx.fillStyle=cfg.side+'cc';
+  ctx.beginPath();ctx.moveTo(x+hw,y+TH);ctx.lineTo(x+hw,y+TH+TD);ctx.lineTo(x+TW,y+hh+TD);ctx.lineTo(x+TW,y+hh);ctx.closePath();ctx.fill();ctx.stroke();
+  // top face glow
+  if(pulse>0&&cfg.glow){ctx.shadowColor=cfg.glow;ctx.shadowBlur=12+gp*12;}
+  ctx.fillStyle=cfg.top;ctx.strokeStyle=cfg.ledge;ctx.lineWidth=1.5;
+  ctx.beginPath();ctx.moveTo(x+hw,y);ctx.lineTo(x+TW,y+hh);ctx.lineTo(x+hw,y+TH);ctx.lineTo(x,y+hh);ctx.closePath();ctx.fill();ctx.stroke();
+  ctx.shadowBlur=0;
+  // glow overlay
+  if(pulse>0&&cfg.glow){ctx.save();ctx.globalAlpha=gp*.3;ctx.fillStyle=cfg.glow;ctx.beginPath();ctx.moveTo(x+hw,y);ctx.lineTo(x+TW,y+hh);ctx.lineTo(x+hw,y+TH);ctx.lineTo(x,y+hh);ctx.closePath();ctx.fill();ctx.restore();}
+  // top edge highlight
+  ctx.save();ctx.globalAlpha=.35;ctx.strokeStyle='rgba(255,255,255,.3)';ctx.lineWidth=1;
+  ctx.beginPath();ctx.moveTo(x+hw,y);ctx.lineTo(x+TW,y+hh);ctx.stroke();ctx.restore();
+  // number
+  ctx.save();ctx.font=`700 ${TW*.13}px Nunito,sans-serif`;ctx.textAlign='center';ctx.textBaseline='middle';
+  ctx.fillStyle='rgba(255,255,255,.32)';ctx.fillText(num,x+hw*.72,y+hh*.78);ctx.restore();
+  // label
+  if(lbl){ctx.save();ctx.font=`${TW*.21}px serif`;ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(lbl,x+hw,y+hh*1.08);ctx.restore();}
+}
+
+function drawToken(ctx,cell,ti,nT,tick){
+  const d=TDEF[ti];const hw=TW/2,hh=TH/2;
+  const offs=[
+    [{dx:0,dy:0}],
+    [{dx:-hw*.22,dy:-hh*.08},{dx:hw*.22,dy:-hh*.08}],
+    [{dx:-hw*.2,dy:-hh*.1},{dx:hw*.2,dy:-hh*.1},{dx:0,dy:hh*.12}],
+    [{dx:-hw*.2,dy:-hh*.12},{dx:hw*.2,dy:-hh*.12},{dx:-hw*.2,dy:hh*.12},{dx:hw*.2,dy:hh*.12}],
+  ];
+  const off=offs[nT-1][ti]||{dx:0,dy:0};
+  const bx=cell.wx+hw+off.dx;
+  const by=cell.wy+hh*.9+off.dy+Math.sin(tick*.07+ti*1.3)*3;
+  const r=TW*.13;
+  ctx.shadowColor=d.color;ctx.shadowBlur=14;
+  ctx.fillStyle=d.bg;ctx.strokeStyle=d.color;ctx.lineWidth=2;
+  ctx.beginPath();ctx.arc(bx,by,r,0,Math.PI*2);ctx.fill();ctx.stroke();
+  ctx.shadowBlur=0;
+  ctx.save();ctx.font=`900 ${r*.88}px Unbounded,sans-serif`;ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillStyle=d.color;ctx.fillText(teams[ti].name[0].toUpperCase(),bx,by);ctx.restore();
+}
+
+function drawISO(){
+  if(!isoCtx)return;isoCtx.clearRect(0,0,isoW,isoH);isoCtx.save();
+  isoCtx.translate(camX,camY);isoCtx.scale(camZ,camZ);isoTick++;
+  // path lines
+  isoCtx.save();isoCtx.globalAlpha=.09;isoCtx.strokeStyle='rgba(79,223,255,.5)';isoCtx.lineWidth=1.5;isoCtx.setLineDash([3,10]);
+  isoCtx.beginPath();cells.forEach((c,i)=>{const cx=c.wx+TW/2,cy=c.wy+TH/2;i===0?isoCtx.moveTo(cx,cy):isoCtx.lineTo(cx,cy);});isoCtx.stroke();isoCtx.setLineDash([]);isoCtx.restore();
+  // tiles sorted back→front
+  [...cells].sort((a,b)=>(a.row+a.col)-(b.row+b.col)).forEach(c=>{
+    drawTile(isoCtx,c.wx,c.wy,CCFG[c.type],CCFG[c.type].lbl,c.idx+1,c.pulse,isoTick);
+  });
+  // tokens
+  teams.forEach((_,ti)=>drawToken(isoCtx,cells[teams[ti].pos],ti,teams.length,isoTick));
+  isoCtx.restore();
+}
+
+function initISO(){
+  isoC=document.getElementById('isoC');isoCtx=isoC.getContext('2d');
+  const resize=()=>{const w=isoC.parentElement;isoW=isoC.width=w.clientWidth;isoH=isoC.height=w.clientHeight;buildLayout();};
+  resize();window.addEventListener('resize',resize);
+  isoC.addEventListener('mousedown',e=>{drag=true;dragS={x:e.clientX-camX,y:e.clientY-camY};});
+  isoC.addEventListener('mousemove',e=>{if(drag){camX=e.clientX-dragS.x;camY=e.clientY-dragS.y;}});
+  isoC.addEventListener('mouseup',()=>drag=false);isoC.addEventListener('mouseleave',()=>drag=false);
+  isoC.addEventListener('touchstart',e=>{const t=e.touches[0];drag=true;dragS={x:t.clientX-camX,y:t.clientY-camY};},{passive:true});
+  isoC.addEventListener('touchmove',e=>{if(drag){const t=e.touches[0];camX=t.clientX-dragS.x;camY=t.clientY-dragS.y;}},{passive:true});
+  isoC.addEventListener('touchend',()=>drag=false);
+  isoC.addEventListener('wheel',e=>{e.preventDefault();camZ*=e.deltaY>0?.92:1.08;camZ=Math.max(.3,Math.min(2.5,camZ));},{passive:false});
+  (function loop(){drawISO();requestAnimationFrame(loop);})();
+}
+
+// ═══════════════════ 3D DICE ═══════════════════
+const DICE_ROT={1:{x:0,y:0},2:{x:270,y:0},3:{x:0,y:90},4:{x:0,y:270},5:{x:90,y:0},6:{x:180,y:0}};
+let diceSpinning=false;
+function spinDice(val,cb){
+  if(diceSpinning)return;diceSpinning=true;
+  const cube=document.getElementById('diceCube');
+  const spins=2;
+  const rnd=DICE_ROT[val];
+  cube.style.transform=`rotateX(${-20+spins*360+rnd.x}deg) rotateY(${30+spins*360+rnd.y}deg)`;
+  setTimeout(()=>{diceSpinning=false;if(cb)cb();},700);
+}
+
+// ═══════════════════ PANEL ═══════════════════
+function renderPanel(){
+  const tl=document.getElementById('gpTeams');tl.innerHTML='';
+  teams.forEach((t,i)=>{
+    const d=TDEF[i];const el=document.createElement('div');
+    el.className='tc'+(i===curI?' act':'');el.id='tc'+i;
+    el.innerHTML=`<div class="tc-av" style="background:${d.bg};color:${d.color}">${t.name[0].toUpperCase()}</div>
+      <div class="tc-inf"><div class="tc-nm" style="color:${d.color}">${t.name}</div><div class="tc-st">⭐${t.score} · ✅${t.correct}</div></div>
+      <div class="tc-ps">Кл.${t.pos+1}</div>`;
+    tl.appendChild(el);
+  });
+}
+function updActive(){
+  const t=teams[curI],d=TDEF[curI];
+  document.getElementById('gpRnd').textContent='Ход '+(moves+1);
+  const n=document.getElementById('gpcNm');n.textContent=t.name;n.style.color=d.color;
+  document.getElementById('gpcSub').textContent=`Клетка ${t.pos+1} из ${cellCnt}`;
+  document.querySelectorAll('.tc').forEach((el,i)=>el.classList.toggle('act',i===curI));
+}
+function addLog(msg){
+  const gl=document.getElementById('gpLog');const e=document.createElement('div');e.className='lg-e';e.textContent=msg;gl.prepend(e);
+  while(gl.children.length>20)gl.removeChild(gl.lastChild);
+}
+function floatScore(txt,color){
+  const el=document.createElement('div');el.className='fscore';el.textContent=txt;el.style.color=color;
+  const tc=document.getElementById('tc'+curI);
+  if(tc){const r=tc.getBoundingClientRect();el.style.left=r.left+'px';el.style.top=r.top+'px';}
+  else{el.style.left='50%';el.style.top='40%';}
+  document.body.appendChild(el);setTimeout(()=>el.remove(),1500);
+}
+
+// ═══════════════════ DICE ROLL ═══════════════════
+function doRoll(){
+  if(busy)return;rAC();
+  const t=teams[curI];
+  if(t.skip){t.skip=false;addLog('🌀 '+t.name+' пропускает ход');nextTurn();return;}
+  busy=true;document.getElementById('rollBtn').disabled=true;
+  sfx('roll');
+  const val=Math.floor(Math.random()*6)+1;
+  spinDice(val,()=>{
+    moves++;addLog(`🎲 ${t.name} бросил ${val}`);
+    setTimeout(()=>doMove(val),300);
+  });
+}
+
+function doMove(steps){
+  const t=teams[curI];
+  const prev=t.pos;
+  t.pos=Math.min(t.pos+steps,cellCnt-1);
+  // animate token pulse on each traversed cell
+  let delay=0;
+  for(let i=prev+1;i<=t.pos;i++){
+    setTimeout((ci)=>{
+      cells[ci].pulse=1;sfx('land');
+      setTimeout(()=>{cells[ci].pulse=0;},400);
+    },delay,i);
+    delay+=160;
+  }
+  setTimeout(()=>{
+    renderPanel();updActive();addLog(`📍 ${t.name} → клетка ${t.pos+1}`);
+    if(t.pos>=cellCnt-1){setTimeout(()=>showWin(),700);return;}
+    landCell(t.pos);
+  },delay+200);
+}
+
+// ═══════════════════ CELL EVENTS ═══════════════════
+function landCell(pos){
+  const type=cellType(pos),t=teams[curI];
+  // particle burst at cell
+  const cell=cells[pos];const bx=camX+(cell.wx+TW/2)*camZ;const by=camY+(cell.wy+TH/2)*camZ;
+  if(type==='bonus'){sfx('bonus');burst(bx,by,'#61ffb2',18);t.score+=3;renderPanel();showEv('⭐','Бонус!',`${t.name} получает +3 очка за позицию!`,()=>nextTurn());}
+  else if(type==='trap'){sfx('trap');burst(bx,by,'#ff5f7a',14);t.pos=Math.max(0,t.pos-2);renderPanel();updActive();showEv('❄️','Ледяная ловушка!',`${t.name} откатывается на 2 клетки назад!`,()=>nextTurn());}
+  else if(type==='skip'){sfx('skip');burst(bx,by,'#a78bfa',12);t.skip=true;showEv('🌀','Буря!',`${t.name} попадает в полярную бурю — следующий ход пропускается!`,()=>nextTurn());}
+  else if(type==='double'){sfx('double');burst(bx,by,'#ffd84d',20);pendDbl=true;showEv('✨','Двойные очки!',`${t.name} попадает на особую клетку — за правильный ответ +4 очка!`,()=>showQ());}
+  else showQ();
+}
+
+// ═══════════════════ EVENTS ═══════════════════
+function showEv(ico,tt,ds,cb){
+  document.getElementById('evIco').textContent=ico;document.getElementById('evTt').textContent=tt;document.getElementById('evDs').textContent=ds;
+  document.getElementById('evOv').classList.remove('off');evCb=cb;
+}
+function closeEv(){document.getElementById('evOv').classList.add('off');const cb=evCb;evCb=null;if(cb)cb();}
+
+// ═══════════════════ QUESTION ═══════════════════
+function pickQ(){
+  const pool=QDB[theme];const avail=pool.map((_,i)=>i).filter(i=>!usedQ.has(i));
+  if(!avail.length){usedQ.clear();return pickQ();}
+  const idx=avail[Math.floor(Math.random()*avail.length)];usedQ.add(idx);return pool[idx];
+}
+function showQ(){
+  const q=pickQ(),t=teams[curI],d=TDEF[curI];
+  document.getElementById('qTm').textContent=t.name;
+  document.getElementById('qTm').style.cssText=`background:${d.bg};color:${d.color};border:1px solid ${d.color}44;`;
+  document.getElementById('qBg').textContent=pendDbl?'✨ Двойные очки — +4 за верный ответ':'❓ Вопрос — +2 за верный ответ';
+  document.getElementById('qTxt').textContent=q.q;
+  document.getElementById('qFb').className='q-fb';document.getElementById('qNxt').className='q-next';
+  const opts=document.getElementById('qOpts');opts.innerHTML='';
+  q.o.forEach((opt,i)=>{
+    const btn=document.createElement('button');btn.className='q-opt';btn.textContent=opt;
+    btn.onclick=()=>checkQ(i,q.a,q.e,pendDbl);opts.appendChild(btn);
+  });
+  document.getElementById('qOv').classList.remove('off');
+  let left=20;updBar(1);clearInterval(qTmr);
+  qTmr=setInterval(()=>{left--;updBar(left/20);if(left<=0){clearInterval(qTmr);timeoutQ(q.a);}},1000);
+}
+function updBar(f){
+  const b=document.getElementById('qBar');b.style.width=(f*100)+'%';
+  b.style.background=f>.5?'linear-gradient(90deg,#4fdfff,#a78bfa)':f>.25?'linear-gradient(90deg,#ffd84d,#ff9f4d)':'linear-gradient(90deg,#ff5f7a,#ff9f4d)';
+}
+function checkQ(sel,cor,exp,dbl){
+  clearInterval(qTmr);document.querySelectorAll('.q-opt').forEach(b=>b.disabled=true);
+  const t=teams[curI],d=TDEF[curI];
+  const fb=document.getElementById('qFb');
+  const tc=document.getElementById('tc'+curI);const r=tc?tc.getBoundingClientRect():{left:200,top:200};
+  if(sel===cor){
+    document.querySelectorAll('.q-opt')[sel].classList.add('ok');
+    const pts=dbl?4:2;t.score+=pts;t.correct++;
+    sfx('correct');burst(r.left+40,r.top+15,'#61ffb2',16);floatScore('+'+pts+'⭐','#61ffb2');
+    fb.textContent=`✅ Верно! +${pts} очка. ${exp}`;fb.className='q-fb sh ok';addLog(`✅ ${t.name} +${pts}`);
+  }else{
+    document.querySelectorAll('.q-opt')[sel].classList.add('bad');document.querySelectorAll('.q-opt')[cor].classList.add('ok');
+    t.wrong++;sfx('wrong');burst(r.left+40,r.top+15,'#ff5f7a',10);
+    fb.textContent=`❌ Неверно. ${exp}`;fb.className='q-fb sh bad';addLog(`❌ ${t.name}`);
+  }
+  pendDbl=false;renderPanel();document.getElementById('qNxt').className='q-next sh';
+}
+function timeoutQ(cor){
+  clearInterval(qTmr);sfx('timeout');document.querySelectorAll('.q-opt').forEach((b,i)=>{b.disabled=true;if(i===cor)b.classList.add('ok');});
+  teams[curI].wrong++;pendDbl=false;renderPanel();
+  const fb=document.getElementById('qFb');fb.textContent='⏰ Время вышло!';fb.className='q-fb sh bad';
+  document.getElementById('qNxt').className='q-next sh';
+}
+function closeQ(){clearInterval(qTmr);document.getElementById('qOv').classList.add('off');nextTurn();}
+
+// ═══════════════════ TURNS ═══════════════════
+function nextTurn(){
+  curI=(curI+1)%teams.length;busy=false;document.getElementById('rollBtn').disabled=false;
+  renderPanel();updActive();addLog('➡️ Ход: '+teams[curI].name);
+}
+
+// ═══════════════════ START / WIN ═══════════════════
+function startGame(){
+  if(!AC)initAC();rAC();
+  teams=setupT.map((t,i)=>({name:t.name.trim()||TDEF[i].name,ti:i,pos:0,score:0,correct:0,wrong:0,skip:false}));
+  curI=0;moves=0;usedQ.clear();busy=false;pendDbl=false;
+  document.getElementById('S0').classList.add('off');document.getElementById('S1').classList.remove('off');
+  const isEco=theme==='ecology';
+  document.getElementById('gpLogo').textContent=isEco?'🌿 ЭКОЛОГИЯ':'🧊 АРКТИКА';
+  const rb=document.getElementById('rollBtn');rb.className='btn-roll '+(isEco?'re':'ri');
+  initISO();renderPanel();updActive();addLog('🚀 Игра началась!');
+  playMusic(mMode);
+}
+
+function showWin(){
+  sfx('win');stopMusic();
+  const sorted=[...teams].sort((a,b)=>b.score-a.score||b.correct-a.correct);
+  document.getElementById('winH').textContent=sorted[0].name+' побеждает! 🎉';
+  document.getElementById('winSb').textContent='Тема: '+(theme==='arctic'?'Арктика':'Экология')+' · '+cellCnt+' клеток';
+  const pl=['🥇','🥈','🥉','4️⃣'];const pc=['pg','ps','pb',''];
+  document.getElementById('winPod').innerHTML=sorted.map((t,i)=>{
+    const d=TDEF[t.ti];
+    return`<div class="pod-row"><div class="pod-n ${pc[i]}">${pl[i]}</div>
+      <div class="pod-av" style="background:${d.bg};color:${d.color}">${t.name[0].toUpperCase()}</div>
+      <div class="pod-nm" style="color:${d.color}">${t.name}</div>
+      <div class="pod-rt"><div class="pod-pts">${t.score}⭐</div><div class="pod-ans">✅${t.correct} ❌${t.wrong}</div></div></div>`;
+  }).join('');
+  document.getElementById('S1').classList.add('off');document.getElementById('S2').classList.remove('off');
+  // confetti
+  for(let i=0;i<5;i++) setTimeout(()=>burst(innerWidth*Math.random(),innerHeight*.3,['#ffd84d','#4fdfff','#61ffb2','#ff5f7a','#a78bfa'][Math.floor(Math.random()*5)],22),i*200);
+}
+
+function doRestart(){
+  stopMusic();
+  document.getElementById('S2').classList.add('off');document.getElementById('S0').classList.remove('off');
+  setupT=[{name:'',ti:0},{name:'',ti:1}];renderSetup();
+}
+function doClose(){
+  stopMusic();
+  if(window.parent&&window.parent!==window)window.parent.postMessage('boardgame:close','*');
+  else window.location.href='hub.html';
+}
+
+// ═══════════════════ INIT ═══════════════════
+renderSetup();
+</script>
+</body>
+</html>
