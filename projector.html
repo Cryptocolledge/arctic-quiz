@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8"/>
+<title>Проектор — Арктический квиз</title>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<style>
+:root{--bg:#020a1a;--accent:#4fdfff;--ok:#61ffb2;--gold:#ffd36b;--text:#f7fbff;--muted:#7a9fc0;}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{width:100%;height:100%;background:var(--bg);overflow:hidden;}
+body{font-family:"Segoe UI",system-ui,sans-serif;color:var(--text);display:flex;flex-direction:column;height:100vh;}
+
+/* ТОП-BAR */
+.topbar{display:flex;align-items:center;justify-content:space-between;padding:12px 28px;background:rgba(5,14,34,.95);border-bottom:1px solid rgba(79,223,255,.15);flex-shrink:0;}
+.topbar-left{display:flex;align-items:center;gap:12px;}
+.logo{font-size:1.1rem;font-weight:900;letter-spacing:.07em;text-transform:uppercase;background:linear-gradient(90deg,#4fdfff,#61ffb2);-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+.qcounter{font-size:.85rem;color:var(--muted);padding:3px 10px;border-radius:999px;background:rgba(79,223,255,.08);border:1px solid rgba(79,223,255,.2);}
+.topbar-right{display:flex;align-items:center;gap:16px;}
+
+/* ПРОГРЕСС */
+.progress-bar{height:3px;background:rgba(255,255,255,.06);flex-shrink:0;}
+.progress-fill{height:100%;background:linear-gradient(90deg,#4fdfff,#61ffb2);transition:width .4s;}
+
+/* ОСНОВНАЯ ОБЛАСТЬ */
+.main{flex:1;display:flex;align-items:center;justify-content:center;padding:32px 5vw;overflow:hidden;}
+.question-block{width:100%;max-width:1100px;display:flex;flex-direction:column;gap:28px;}
+
+/* ВОПРОС */
+.q-meta{display:flex;gap:8px;align-items:center;flex-wrap:wrap;}
+.q-chip{padding:4px 12px;border-radius:999px;font-size:.85rem;background:rgba(4,14,38,.9);border:1px solid rgba(79,223,255,.6);color:#cff6ff;}
+.q-pts{padding:4px 12px;border-radius:999px;font-size:.85rem;font-weight:700;background:rgba(255,211,107,.1);border:1px solid rgba(255,211,107,.4);color:var(--gold);}
+.q-diff{padding:4px 10px;border-radius:999px;font-size:.85rem;border:1px solid rgba(255,255,255,.15);color:var(--muted);}
+.q-text{font-size:clamp(1.6rem,3.5vw,3rem);line-height:1.25;font-weight:800;color:#f0f8ff;}
+
+/* ИЛЛЮСТРАЦИЯ */
+.q-illus{display:flex;flex-direction:column;align-items:center;gap:8px;}
+.q-svg-wrap{background:rgba(8,18,40,.8);border:1px solid rgba(79,223,255,.2);border-radius:16px;padding:16px;display:flex;align-items:center;justify-content:center;max-height:260px;}
+.q-svg-wrap svg{max-height:220px;width:auto;}
+.q-caption{font-size:.85rem;color:var(--muted);font-style:italic;}
+
+/* РЕБУС */
+.rebus-box{display:flex;align-items:center;justify-content:center;gap:12px;padding:20px;background:rgba(8,18,40,.8);border:1px solid rgba(255,211,107,.2);border-radius:16px;}
+.rpart{font-size:clamp(1.4rem,3vw,2.4rem);font-weight:900;padding:10px 20px;border-radius:12px;background:rgba(255,211,107,.1);border:2px solid rgba(255,211,107,.4);color:var(--gold);letter-spacing:.05em;}
+.rop{font-size:1.8rem;font-weight:900;color:var(--muted);}
+.r-hint{font-size:.8rem;color:var(--muted);margin-top:4px;text-align:center;}
+
+/* ОТВЕТЫ — показываются только после раскрытия */
+.opts-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.opt-row{display:flex;align-items:center;gap:12px;padding:14px 18px;border-radius:14px;background:rgba(8,18,40,.8);border:2px solid rgba(255,255,255,.08);font-size:clamp(.9rem,1.8vw,1.4rem);transition:all .3s;}
+.opt-row.correct{border-color:var(--ok);background:rgba(97,255,178,.12);color:var(--ok);}
+.opt-letter{width:32px;height:32px;border-radius:8px;border:2px solid rgba(79,223,255,.4);display:flex;align-items:center;justify-content:center;font-size:.95rem;color:var(--accent);flex-shrink:0;font-weight:800;}
+.opt-row.correct .opt-letter{border-color:var(--ok);color:var(--ok);}
+
+/* ТАЙМЕР */
+.timer-section{display:flex;align-items:center;gap:16px;}
+.timer-num{font-size:clamp(2rem,5vw,4.5rem);font-weight:900;min-width:80px;text-align:center;font-variant-numeric:tabular-nums;color:var(--gold);line-height:1;}
+.timer-bar-wrap{flex:1;height:14px;background:rgba(255,255,255,.06);border-radius:999px;overflow:hidden;}
+.timer-bar{height:100%;border-radius:inherit;transition:width .3s linear;}
+.timer-lbl{font-size:.8rem;color:var(--muted);white-space:nowrap;}
+
+/* СТАТУС overlay */
+.status-ov{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(2,6,20,.96);z-index:50;flex-direction:column;gap:20px;text-align:center;}
+.status-icon{font-size:5rem;}
+.status-title{font-size:clamp(1.5rem,4vw,3rem);font-weight:900;background:linear-gradient(135deg,#4fdfff,#61ffb2);-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+.status-sub{font-size:1rem;color:var(--muted);max-width:400px;line-height:1.6;}
+
+/* REVEAL баннер */
+.reveal-banner{position:fixed;bottom:0;left:0;right:0;padding:16px 28px;text-align:center;font-size:1.1rem;font-weight:800;transform:translateY(100%);transition:transform .4s;}
+.reveal-banner.show{transform:translateY(0);}
+.reveal-banner.open{background:rgba(97,255,178,.15);border-top:2px solid rgba(97,255,178,.5);color:var(--ok);}
+
+/* Статистика ответивших */
+.answered-bar{display:flex;align-items:center;gap:10px;padding:8px 14px;background:rgba(8,18,40,.8);border-radius:999px;border:1px solid rgba(79,223,255,.2);}
+.answered-num{font-size:1rem;font-weight:800;color:#4fdfff;}
+.answered-bar-track{width:120px;height:6px;background:rgba(255,255,255,.07);border-radius:999px;overflow:hidden;}
+.answered-bar-fill{height:100%;background:linear-gradient(90deg,#4fdfff,#61ffb2);border-radius:inherit;transition:width .4s;}
+
+/* Лидер */
+.leader-chip{padding:4px 12px;border-radius:999px;background:rgba(255,211,107,.1);border:1px solid rgba(255,211,107,.3);font-size:.82rem;color:var(--gold);}
+
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}
+@keyframes fadeIn{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+.fade-in{animation:fadeIn .5s ease forwards;}
+
+/* ── АДАПТИВНОСТЬ ПРОЕКТОРА ── */
+@media(max-width:900px){
+  .topbar{padding:8px 16px;}
+  .q-text{font-size:clamp(1.2rem,4vw,2rem);}
+  .opts-grid{grid-template-columns:1fr!important;}
+  .opt-row{font-size:clamp(.85rem,2.5vw,1.2rem);}
+  .timer-num{font-size:clamp(1.8rem,5vw,3.5rem);}
+}
+@media(max-width:600px){
+  .topbar{flex-direction:column;align-items:flex-start;gap:6px;}
+  .topbar-right{flex-wrap:wrap;gap:8px;}
+  .main{padding:16px 12px;}
+}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="topbar-left">
+    <div class="logo" id="projTitle">🧊 Арктический квиз</div>
+    <div class="qcounter" id="projChip" style="font-size:.65rem;padding:2px 8px;border-radius:999px;background:rgba(79,223,255,.1);border:1px solid rgba(79,223,255,.25);color:#9fd8f0;letter-spacing:.07em;">АРКТИКА · ГЕОГРАФИЯ</div>
+    <div class="qcounter" id="qcounter">Вопрос —</div>
+    <div class="progress-bar" style="width:120px;border-radius:999px;overflow:hidden;align-self:center">
+      <div class="progress-fill" id="progFill" style="width:0%"></div>
+    </div>
+  </div>
+  <div class="topbar-right">
+    <div class="answered-bar" id="answeredBar" style="display:none">
+      <span style="font-size:.75rem;color:var(--muted)">Ответили</span>
+      <span class="answered-num" id="answeredNum">0/0</span>
+      <div class="answered-bar-track"><div class="answered-bar-fill" id="answeredFill" style="width:0%"></div></div>
+    </div>
+    <div class="leader-chip" id="leaderChip" style="display:none">🏆 <span id="leaderName">—</span></div>
+    <div style="font-size:.75rem;color:var(--muted)">ПРОЕКТОР</div>
+  </div>
+</div>
+
+<!-- STATUS OVERLAY -->
+<div class="status-ov" id="statusOv">
+  <div class="status-icon" id="statusIcon">🧊</div>
+  <div class="status-title" id="statusTitle">Арктический квиз</div>
+  <div class="status-sub" id="statusSub">Ожидаем начала игры…</div>
+  <div id="statusOnline" style="font-size:.85rem;color:var(--ok);margin-top:4px"></div>
+</div>
+
+<!-- MAIN CONTENT -->
+<div class="main" id="mainArea" style="display:none">
+  <div class="question-block fade-in" id="qBlock">
+
+    <div style="display:flex;align-items:flex-start;gap:20px;flex-wrap:wrap;">
+      <div style="flex:1;min-width:0;">
+        <div class="q-meta" id="qMeta"></div>
+        <div class="q-text" id="qText" style="margin-top:10px">…</div>
+      </div>
+      <!-- Иллюстрация или ребус -->
+      <div id="qVisual" style="flex-shrink:0;max-width:340px;display:none"></div>
+    </div>
+
+    <!-- Варианты (скрыты до раскрытия) -->
+    <div id="optsArea" style="display:none">
+      <div style="font-size:.75rem;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px" id="optsLabel">Варианты ответа</div>
+      <div class="opts-grid" id="optsGrid"></div>
+    </div>
+
+    <!-- Таймер -->
+    <div class="timer-section" id="timerSection">
+      <div style="font-size:.75rem;color:var(--muted);white-space:nowrap;">⏱ ОСТАЛОСЬ</div>
+      <div class="timer-num" id="timerNum">—</div>
+      <div class="timer-bar-wrap"><div class="timer-bar" id="timerBar" style="width:100%"></div></div>
+    </div>
+
+  </div>
+</div>
+
+<div class="reveal-banner" id="revealBanner"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"
+  onerror="console.warn('QR lib failed')"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"
+  onerror="loadSupabaseFallback()"></script>
+<script>
+'use strict';
+const SURL="https://arpbhbfyucpojvxipqng.supabase.co";
+const SKEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFycGJoYmZ5dWNwb2p2eGlwcW5nIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIyMTAwNTQsImV4cCI6MjA4Nzc4NjA1NH0.MQWcU9ph2sWNgbHbfDZ0qKEC1V1PzbI7I7TtQyPNyeg";
+const urlParams=new URLSearchParams(location.search);
+const GID=urlParams.get("gid")||"default"; // game_id из URL или default
+const urlCode=urlParams.get("code")||""; // код сессии — только для отображения
+
+const _SB_CDNS=["https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js","https://unpkg.com/@supabase/supabase-js@2/dist/umd/supabase.js"];
+let _sbIdx=0;
+function loadSupabaseFallback(){_sbIdx++;if(_sbIdx>=_SB_CDNS.length)return;const s=document.createElement("script");s.src=_SB_CDNS[_sbIdx];s.onerror=loadSupabaseFallback;document.head.appendChild(s);}
+
+const $=id=>document.getElementById(id);
+let sb=null;
+let lastState=null,timerInt=null,lastIdx=-1,QT=25;
+
+// ─ Вопросы (те же что у ведущего) ─────────────────────────────
+const Q_SPO=[{tp:"text",dif:2,q:"Назовите единственный океан, центральная часть которого совпадает с географическим Северным полюсом.",opts:["Атлантический","Северный Ледовитый","Тихий","Южный"],ci:1},{tp:"text",dif:2,q:"Арктика — это прежде всего…",opts:["Континент со льдом","Область вокруг Северного полюса: океан, острова и прибрежные территории","Только российские территории севернее 70-й параллели","Архипелаг в Норвегии"],ci:1},{tp:"svg",dif:1,q:"Крупнейший наземный хищник планеты и символ Арктики:",svg:"polar_bear",cap:"Единственный полностью морской медведь",opts:["Бурый медведь","Белый медведь","Гризли","Барибал"],ci:1},{tp:"text",dif:2,q:"Мхи, лишайники и карликовые кустарники — типичная растительность…",opts:["Тропического леса","Пустыни","Арктической тундры","Широколиственного леса"],ci:2},{tp:"text",dif:2,q:"Вечная мерзлота — это…",opts:["Сезонный промерзающий слой","Грунт, не оттаивающий тысячелетиями","Ледяной покров океана","Криоосадки высокогорий"],ci:1},{tp:"text",dif:3,q:"«Арктическое усиление» (Arctic Amplification) — это…",opts:["Рост магнитного поля у полюса","Потепление в Арктике в 2–4 раза быстрее среднепланетарного","Увеличение льда зимой","Рост давления над полярными широтами"],ci:1},{tp:"text",dif:2,q:"Какое из перечисленных морей НЕ относится к Северному Ледовитому океану?",opts:["Баренцево","Карское","Красное","Чукотское"],ci:2},{tp:"text",dif:2,q:"Какая из стран не имеет выхода к Арктике?",opts:["Россия","Канада","Норвегия","Германия"],ci:3},{tp:"text",dif:3,q:"Многолетний дрейфующий морской лёд толщиной 3–4 м называется…",opts:["Паковый лёд","Глетчер","Шельфовый лёд","Торос"],ci:0},{tp:"text",dif:2,q:"Полярный день — явление, при котором…",opts:["Солнце не поднимается над горизонтом","Солнце непрерывно светит более суток","Температура выше нуля весь год","Луна видна круглые сутки"],ci:1},{tp:"svg",dif:1,q:"Оптическое явление в атмосфере, вызванное взаимодействием солнечного ветра с магнитным полем Земли:",svg:"aurora",cap:"Видно выше 60-й параллели",opts:["Молния","Радуга","Северное сияние","Зарница"],ci:2},{tp:"text",dif:2,q:"Арктический зверь, меняющий окраску с бурой (лето) на белую (зима):",opts:["Белый медведь","Северный олень","Песец","Нарвал"],ci:2},{tp:"text",dif:2,q:"Граница Арктики условно проводится по…",opts:["Экватору","Северному полярному кругу (66°33′ с.ш.)","Тропику Рака","Меридиану 0°"],ci:1},{tp:"rebus",dif:2,q:"Плавучая ледяная гора — большая часть скрыта под водой:",rp:["АЙС","БЕРГ"],rh:"Англ. ice + нем. Berg (гора)",opts:["Ледник","Айсберг","Шельф","Торос"],ci:1},{tp:"text",dif:3,q:"Главная угроза таяния арктических льдов для человечества — это…",opts:["Исчезновение туристических маршрутов","Подъём уровня Мирового океана и дестабилизация климата","Сокращение пляжей","Снижение солёности рек"],ci:1},{tp:"svg",dif:2,q:"Ластоногое с парой длинных клыков, обитатель арктических льдин:",svg:"walrus",cap:"Единственный вид семейства моржовых",opts:["Тюлень","Морж","Морской котик","Касатка"],ci:1},{tp:"text",dif:2,q:"Коренные малочисленные народы российской Арктики — это…",opts:["Казаки и поморы","Ненцы, чукчи, эвенки, эскимосы","Скандинавы и финны","Казахи и буряты"],ci:1},{tp:"text",dif:3,q:"Российские дрейфующие станции «Северный полюс» ведут…",opts:["Добычу нефти","Круглогодичные наблюдения: метеорология, океанология, ледовая обстановка","Контроль судоходства","Военные учения"],ci:1},{tp:"text",dif:3,q:"Северный Ледовитый океан уникален тем, что он…",opts:["Самый солёный","Почти полностью окружён материками и покрыт льдом круглый год","Наименее изучен","Не имеет течений"],ci:1},{tp:"rebus",dif:2,q:"Природная зона с вечной мерзлотой и карликовой растительностью:",rp:["ТУН","ДРА"],rh:"К северу от тайги",opts:["Тайга","Тундра","Степь","Лесостепь"],ci:1},{tp:"text",dif:3,q:"Атомные ледоколы России обеспечивают работу…",opts:["Рыбопромыслового флота","Круизов","Северного морского пути — кратчайшего маршрута Европа–Азия","Военных баз"],ci:2},{tp:"text",dif:3,q:"Почему нефтяные разливы в Арктике особенно опасны?",opts:["Нефть там безвредна","Микроорганизмы почти не работают в холоде — восстановление занимает десятилетия","Там нет организмов","Нефть образует лёд"],ci:1},{tp:"svg",dif:2,q:"Единственный кит с прямым спиральным бивнем — «единорог морей»:",svg:"narwhal",cap:"Арктический вид, бивень — увеличенный зуб",opts:["Кашалот","Нарвал","Белуга","Гринда"],ci:1},{tp:"text",dif:3,q:"Снежная буря с ветром выше 15 м/с в Арктике — это…",opts:["Муссон","Ураган","Пурга","Смерч"],ci:2},{tp:"text",dif:3,q:"Арктическая зима характеризуется…",opts:["Температурой около +5°C","Морозом до −50°C, сильными ветрами, скудными осадками","Частыми грозами","Тёплым течением"],ci:1},{tp:"rebus",dif:2,q:"Световое явление полярного неба:",rp:["СЕВЕРНОЕ","СИЯНИЕ"],rh:"Наблюдается с сентября по март",opts:["Полярная ночь","Северное сияние","Полярный день","Ледяная дуга"],ci:1},{tp:"text",dif:3,q:"Тёплое атлантическое течение, смягчающее климат Норвегии и Баренцева моря:",opts:["Куросио","Гольфстрим","Северо-Тихоокеанское","Лабрадорское"],ci:1},{tp:"text",dif:3,q:"Стратегическая ценность Арктики определяется…",opts:["Пляжами","Запасами нефти, газа, редких металлов и контролем над СМП","Дешёвой гидроэнергией","Отсутствием льда"],ci:1},{tp:"text",dif:3,q:"Зимой площадь морского льда в Арктике по сравнению с летом…",opts:["Одинакова","Уменьшается","Увеличивается примерно в 2,5 раза","Полностью исчезает"],ci:2},{tp:"text",dif:3,q:"На каком принципе основана работа атомного ледокола в отличие от дизельного?",opts:["Использует солнечную энергию","Ядерный реактор даёт практически неограниченную автономность плавания","Работает на сжиженном газе","Движется только по воде, не ломая лёд"],ci:1}];
+const Q_SCHOOL=[{tp:"text",dif:1,q:"Где находится Северный полюс?",opts:["В центре Африки","В центре Северного Ледовитого океана","На вершине Эвереста","В Антарктиде"],ci:1},{tp:"svg",dif:1,q:"Какое животное является символом Арктики?",svg:"polar_bear",cap:"Крупнейший наземный хищник планеты",opts:["Бурый медведь","Белый медведь","Лев","Тигр"],ci:1},{tp:"text",dif:1,q:"Какой океан омывает Северный полюс?",opts:["Тихий","Атлантический","Северный Ледовитый","Индийский"],ci:2},{tp:"text",dif:1,q:"Как называется явление, когда солнце не заходит несколько суток подряд?",opts:["Солнечное затмение","Полярный день","Ночная радуга","Белая ночь"],ci:1},{tp:"text",dif:1,q:"Полярная ночь — это когда…",opts:["Солнце не поднимается над горизонтом несколько суток","Идёт снег","Очень холодно","Нет электричества"],ci:0},{tp:"svg",dif:1,q:"Красивое природное явление на ночном небе — разноцветные световые дуги:",svg:"aurora",cap:"Одно из самых зрелищных природных явлений",opts:["Молния","Радуга","Северное сияние","Салют"],ci:2},{tp:"text",dif:1,q:"Как называется природная зона с мхами, лишайниками и вечной мерзлотой?",opts:["Саванна","Тайга","Тундра","Пустыня"],ci:2},{tp:"text",dif:2,q:"Что такое айсберг?",opts:["Высокая гора","Плавучая глыба льда","Ледяной домик","Снежная буря"],ci:1},{tp:"text",dif:1,q:"Какой цвет имеет мех белого медведя на самом деле (цвет волоска)?",opts:["Белый","Жёлтый","Прозрачный","Серый"],ci:2},{tp:"text",dif:2,q:"Какой зверь Арктики меняет цвет шубки с бурого летом на белый зимой?",opts:["Белый медведь","Морж","Песец","Нарвал"],ci:2},{tp:"rebus",dif:1,q:"Сложи два слова вместе:",rp:["АЙС","БЕРГ"],rh:"Плавучая ледяная гора в море",opts:["Ледник","Айсберг","Шельф","Сугроб"],ci:1},{tp:"text",dif:1,q:"Какое животное с длинными клыками живёт на льдинах Арктики?",opts:["Тюлень","Котик","Морж","Дельфин"],ci:2},{tp:"text",dif:2,q:"Как называют снежную бурю с сильным ветром в Арктике?",opts:["Муссон","Ураган","Пурга","Тайфун"],ci:2},{tp:"text",dif:1,q:"Сколько примерно длится зима в Арктике?",opts:["2 месяца","5 месяцев","9–10 месяцев","Круглый год"],ci:2},{tp:"svg",dif:2,q:"Кит с длинным спиральным рогом — «единорог морей»:",svg:"narwhal",cap:"Обитает в арктических водах",opts:["Дельфин","Белуга","Нарвал","Касатка"],ci:2},{tp:"text",dif:2,q:"Почему белый медведь хорошо плавает?",opts:["У него нет шерсти","Лапы работают как вёсла, а шерсть не намокает","Он очень лёгкий","Он надувается как шарик"],ci:1},{tp:"text",dif:1,q:"Кто живёт в Арктике — пингвины или белые медведи?",opts:["Оба","Только пингвины","Только белые медведи","Никто"],ci:2},{tp:"text",dif:2,q:"Что такое вечная мерзлота?",opts:["Снег, который не тает летом","Грунт, который никогда полностью не оттаивает","Ледяной покров океана","Замёрзшая река"],ci:1},{tp:"rebus",dif:1,q:"Природная зона Арктики:",rp:["ТУН","ДРА"],rh:"Там растут мхи и лишайники",opts:["Тайга","Тундра","Степь","Пустыня"],ci:1},{tp:"text",dif:2,q:"Какое растение НЕ растёт в тундре?",opts:["Мох","Карликовая берёза","Лишайник","Пальма"],ci:3},{tp:"text",dif:2,q:"Чем питается белый медведь в основном?",opts:["Рыбой и тюленями","Ягодами и мхом","Только снегом","Птицами"],ci:0},{tp:"text",dif:1,q:"Как называется маршрут для кораблей вдоль берегов России на севере?",opts:["Великий шёлковый путь","Северный морской путь","Транссибирская магистраль","Путь из варяг в греки"],ci:1},{tp:"text",dif:2,q:"Какая страна имеет самое длинное арктическое побережье?",opts:["США","Норвегия","Россия","Канада"],ci:2},{tp:"svg",dif:1,q:"Что изображено на картинке?",svg:"walrus",cap:"Семейство моржовых",opts:["Тюлень","Дельфин","Морж","Котик"],ci:2},{tp:"text",dif:2,q:"Почему в Арктике так холодно?",opts:["Там нет солнца вообще","Солнечные лучи падают под маленьким углом и слабо греют","Там дует особый холодный ветер","Там живут ледяные великаны"],ci:1},{tp:"rebus",dif:1,q:"Красивое явление в небе:",rp:["СЕВЕРНОЕ","СИЯНИЕ"],rh:"Разноцветные дуги в ночном небе",opts:["Полярная ночь","Северное сияние","Полярный день","Радуга"],ci:1},{tp:"text",dif:2,q:"Что происходит с льдами Арктики из-за глобального потепления?",opts:["Они растут","Они тают и уменьшаются","Они становятся крепче","Ничего не происходит"],ci:1},{tp:"text",dif:2,q:"Как называют коренных жителей российской Арктики?",opts:["Казаки","Ненцы, чукчи, эвенки","Скандинавы","Поляки"],ci:1},{tp:"text",dif:2,q:"Зачем России нужны атомные ледоколы?",opts:["Для рыбалки","Чтобы проводить корабли по Северному морскому пути","Для военных игр","Для туристов"],ci:1},{tp:"text",dif:2,q:"Какая часть айсберга скрыта под водой?",opts:["Одна четверть","Половина","Примерно 7/8 (около 87%)","Айсберг плавает целиком на поверхности"],ci:2}];
+
+// SVG иллюстрации (упрощённые для проектора)
+const SVG_URLS={
+  polar_bear:`<svg viewBox="0 0 200 180" xmlns="http://www.w3.org/2000/svg"><ellipse cx="100" cy="130" rx="65" ry="45" fill="#e8f4f8"/><circle cx="100" cy="72" r="38" fill="#e8f4f8"/><circle cx="82" cy="62" r="12" fill="#d0e8f0"/><circle cx="118" cy="62" r="12" fill="#d0e8f0"/><circle cx="88" cy="66" r="5" fill="#1a2a3a"/><circle cx="112" cy="66" r="5" fill="#1a2a3a"/><ellipse cx="100" cy="82" rx="9" ry="6" fill="#c8dce8"/><circle cx="100" cy="84" r="3" fill="#4a6a7a"/><line x1="90" y1="84" x2="70" y2="88" stroke="#7a9aaa" stroke-width="1.5"/><line x1="90" y1="86" x2="72" y2="92" stroke="#7a9aaa" stroke-width="1.5"/><line x1="110" y1="84" x2="130" y2="88" stroke="#7a9aaa" stroke-width="1.5"/></svg>`,
+  aurora:`<svg viewBox="0 0 200 160" xmlns="http://www.w3.org/2000/svg"><rect width="200" height="160" fill="#020a18"/><path d="M0 80 Q50 20 100 60 Q150 100 200 40" stroke="#00ff88" stroke-width="3" fill="none" opacity=".7"/><path d="M0 100 Q60 40 120 80 Q160 110 200 60" stroke="#4fdfff" stroke-width="2.5" fill="none" opacity=".6"/><path d="M20 120 Q80 60 140 95 Q170 115 200 80" stroke="#a78bfa" stroke-width="2" fill="none" opacity=".5"/><circle cx="30" cy="140" r="1.5" fill="white" opacity=".8"/><circle cx="80" cy="145" r="1" fill="white" opacity=".6"/><circle cx="130" cy="138" r="1.5" fill="white" opacity=".9"/><circle cx="170" cy="143" r="1" fill="white" opacity=".7"/></svg>`,
+  walrus:`<svg viewBox="0 0 200 180" xmlns="http://www.w3.org/2000/svg"><ellipse cx="100" cy="125" rx="70" ry="50" fill="#8b6a50"/><circle cx="100" cy="72" r="42" fill="#8b6a50"/><circle cx="84" cy="62" r="6" fill="#2a1a0a"/><circle cx="116" cy="62" r="6" fill="#2a1a0a"/><ellipse cx="100" cy="82" rx="16" ry="10" fill="#7a5a40"/><line x1="92" y1="75" x2="70" y2="80" stroke="#5a4a3a" stroke-width="1.5"/><line x1="108" y1="75" x2="130" y2="80" stroke="#5a4a3a" stroke-width="1.5"/><line x1="95" y1="88" x2="93" y2="118" stroke="#f0f0e0" stroke-width="4" stroke-linecap="round"/><line x1="105" y1="88" x2="107" y2="118" stroke="#f0f0e0" stroke-width="4" stroke-linecap="round"/></svg>`,
+  narwhal:`<svg viewBox="0 0 220 160" xmlns="http://www.w3.org/2000/svg"><ellipse cx="110" cy="95" rx="80" ry="35" fill="#6a9ab8"/><ellipse cx="95" cy="88" rx="62" ry="26" fill="#7ab0cc"/><circle cx="60" cy="88" r="5" fill="#1a2a3a"/><path d="M55 82 L5 60" stroke="#8ab8cc" stroke-width="5" stroke-linecap="round"/><path d="M190 95 L220 110 L190 112 Z" fill="#6a9ab8"/><path d="M110 68 L125 30" stroke="#c8d8e8" stroke-width="6" stroke-linecap="round" opacity=".9"/></svg>`
+};
+
+let Q=Q_SPO;
+
+function pts(d){return d<=1?1:d===2?2:3;}
+
+// ── ТАЙМЕР ────────────────────────────────────────────────────
+function parseTs(iso){if(!iso)return NaN;let s=String(iso).trim();s=s.replace(" ","T");s=s.replace(/\+00:00$/,"Z");s=s.replace(/\+00$/,"Z");s=s.replace(/(\.\d+)\+00$/,"$1Z");s=s.replace(/(\.\d+)\+00:00$/,"$1Z");const t=Date.parse(s);return isNaN(t)?Date.parse(iso):t;}
+
+function stopTimer(){if(timerInt){clearInterval(timerInt);timerInt=null;}}
+
+function startTimer(at){
+  stopTimer();
+  const ms=parseTs(at);
+  if(isNaN(ms)) return;
+  const qt=lastState?.game_timer||QT;
+  function tick(){
+    const left=Math.max(0,Math.ceil(qt-(Date.now()-ms)/1000));
+    $("timerNum").textContent=String(left);
+    $("timerBar").style.width=Math.max(0,left/qt*100)+"%";
+    const bar=$("timerBar");
+    if(left<=5){bar.style.background="linear-gradient(90deg,#ff5f7a,#c0392b)";}
+    else if(left<=10){bar.style.background="linear-gradient(90deg,#ffe080,#ffb300)";}
+    else{bar.style.background="linear-gradient(90deg,#4fdfff,#ff6ec7)";}
+    if(left<=0) stopTimer();
+  }
+  tick(); timerInt=setInterval(tick,200);
+}
+
+// ── РЕНДЕР ВОПРОСА ────────────────────────────────────────────
+function renderQ(s){
+  const idx=s.current_index;
+  const q=Q[Math.max(0,Math.min(Q.length-1,idx))]; if(!q) return;
+  const show=s.show_answer===true;
+  const qVis=s.question_visible!==false;
+
+  const mainArea=$("mainArea");
+  mainArea.style.display="flex";
+  $("statusOv").style.display="none";
+
+  // Meta
+  const p=pts(q.dif);
+  $("qMeta").innerHTML=`<span class="q-chip">${q.tp==="svg"?"Иллюстрация":q.tp==="rebus"?"Ребус":"Вопрос"}</span><span class="q-pts">+${p} очк${p===1?"о":p<5?"а":"ов"}</span><span class="q-diff">${q.dif<=1?"★☆☆":q.dif===2?"★★☆":"★★★"}</span>`;
+  $("qcounter").textContent=`Вопрос ${idx+1} / ${Q.length}`;
+  $("progFill").style.width=((idx+1)/Q.length*100)+"%";
+
+  // Текст вопроса
+  $("qText").textContent=q.q;
+
+  // Визуальный блок
+  const vis=$("qVisual"); vis.innerHTML=""; vis.style.display="none";
+  if(q.tp==="svg"&&q.svg&&SVG_URLS[q.svg]){
+    vis.style.display="";
+    vis.innerHTML=`<div class="q-illus"><div class="q-svg-wrap">${SVG_URLS[q.svg]}</div>${q.cap?`<div class="q-caption">${q.cap}</div>`:""}</div>`;
+  } else if(q.tp==="rebus"&&q.rp){
+    vis.style.display="";
+    vis.innerHTML=`<div><div class="rebus-box"><span class="rpart">${q.rp[0]}</span><span class="rop">+</span><span class="rpart">${q.rp[1]}</span></div>${q.rh?`<div class="r-hint">${q.rh}</div>`:""}</div>`;
+  }
+
+  // Варианты — показываем всегда, правильный подсвечивается после раскрытия
+  const optsArea=$("optsArea");
+  optsArea.style.display="";
+  $("optsGrid").innerHTML=q.opts.map((o,i)=>{
+    const isCorrect = show && i===q.ci;
+    return `<div class="opt-row${isCorrect?" correct":""}" style="${!show?"opacity:.92":""}"><div class="opt-letter">${String.fromCharCode(65+i)}</div><div>${o}</div></div>`;
+  }).join("");
+
+  // Таймер
+  if(s.phase==="running"&&s.question_started_at&&qVis){
+    startTimer(s.question_started_at);
+  } else if(!qVis){
+    stopTimer(); $("timerNum").textContent="🔒"; $("timerBar").style.width="100%";
+  } else {
+    stopTimer(); $("timerNum").textContent="—";
+  }
+
+  // Reveal баннер
+  const rb=$("revealBanner");
+  if(show){rb.textContent="✅ Ответ раскрыт — см. варианты";rb.className="reveal-banner open show";}
+  else{rb.className="reveal-banner";}
+}
+
+// ── APPLY STATE ───────────────────────────────────────────────
+let lastShow=false;
+
+function applyState(s){
+  if(!s){showStatusScreen("⏳","Ожидание","Игра ещё не началась…");return;}
+  lastState=s;
+  const qmode=s.quiz_mode||"spo";
+  Q=qmode==="school"?Q_SCHOOL:Q_SPO;
+  if(s.game_timer) QT=s.game_timer;
+
+  const phase=s.phase||"waiting";
+  const idx=s.current_index??0;
+  const show=s.show_answer===true;
+  const rt=s.round_type||"";
+
+  if(phase==="waiting"){showStatusScreen("⏳","Ожидание","Ждём старта игры…");stopTimer();return;}
+  if(phase==="ended"){showStatusScreen("🏆","Игра завершена","Благодарим за участие!");stopTimer();return;}
+  if(phase==="paused"){
+    // Остаёмся на вопросе, показываем паузу
+    $("timerNum").textContent="⏸";
+    stopTimer(); return;
+  }
+  if(rt==="blitz_start"||rt==="betting_chips"||rt==="betting_open"||rt==="betting_reveal"){
+    showStatusScreen("🎮",rt==="blitz_start"?"Блиц-раунд":"Раунд ставок","Участники отвечают на своих устройствах…");
+    stopTimer(); return;
+  }
+
+  // Новый вопрос
+  if(idx!==lastIdx||(show!==lastShow)){
+    lastIdx=idx; lastShow=show;
+    renderQ(s);
+    // Обновляем статистику
+    refreshAnsweredCount();
+    refreshLeader();
+  } else if(s.question_visible===true&&lastState?.question_visible===false){
+    renderQ(s);
+  }
+}
+
+function showStatusScreen(icon,title,sub){
+  $("mainArea").style.display="none";
+  $("statusOv").style.display="flex";
+  $("statusIcon").textContent=icon;
+  $("statusTitle").textContent=title;
+  $("statusSub").textContent=sub;
+  stopTimer();
+}
+
+// ── ДАННЫЕ ────────────────────────────────────────────────────
+async function refreshAnsweredCount(){
+  if(!sb) return;
+  try{
+    const idx=lastState?.current_index;if(typeof idx!=="number")return;
+    const {data:scores}=await sb.from("quiz_scores").select("questions_answered").eq("game_id",GID);
+    const {data:players}=await sb.from("quiz_players").select("student_name").eq("game_id",GID);
+    const total=players?.length||0;
+    const answered=(scores||[]).filter(r=>r.questions_answered>idx).length;
+    const bar=$("answeredBar"); bar.style.display="";
+    $("answeredNum").textContent=answered+"/"+total;
+    $("answeredFill").style.width=(total>0?answered/total*100:0)+"%";
+    // Онлайн-счётчик в статус-оверлее
+    const online=(players||[]).length;
+    $("statusOnline").textContent=online>0?`👥 ${online} участников`:"";
+  }catch(e){}
+}
+
+async function refreshLeader(){
+  if(!sb) return;
+  try{
+    const {data}=await sb.from("quiz_scores").select("student_name,team_name,score").eq("game_id",GID).order("score",{ascending:false}).limit(1);
+    if(data&&data[0]){
+      $("leaderChip").style.display="";
+      $("leaderName").textContent=(data[0].team_name||data[0].student_name||"—")+" · "+data[0].score;
+    }
+  }catch(e){}
+}
+
+// ── ИНИЦИАЛИЗАЦИЯ ────────────────────────────────────────────
+async function init(){
+  // Ждём SDK
+  let tries=0;
+  while(!window.supabase?.createClient&&tries<40){
+    await new Promise(r=>setTimeout(r,250)); tries++;
+  }
+  if(!window.supabase?.createClient){
+    $("statusSub").textContent="⚠️ SDK не загружен. Проверьте интернет и обновите страницу."; return;
+  }
+  sb=window.supabase.createClient(SURL,SKEY);
+  // Первый запрос
+  try{const{data}=await sb.from("quiz_state").select("*").eq("game_id",GID).maybeSingle();applyState(data);}catch(e){}
+  // Поллинг
+  setInterval(async()=>{
+    try{const{data}=await sb.from("quiz_state").select("*").eq("game_id",GID).maybeSingle();applyState(data);}catch(e){}
+  },1000);
+  setInterval(()=>{if(lastState?.phase==="running"){refreshAnsweredCount();refreshLeader();}},3000);
+}
+
+// Полноэкранный режим по клику
+document.addEventListener("click",()=>{
+  if(!document.fullscreenElement) document.documentElement.requestFullscreen?.();
+});
+document.addEventListener("keydown",e=>{
+  if(e.key==="Escape"&&document.fullscreenElement) document.exitFullscreen?.();
+  if(e.key==="f"||e.key==="F") document.documentElement.requestFullscreen?.();
+});
+
+init();
+</script>
+</body>
+</html>
