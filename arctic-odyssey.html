@@ -1,0 +1,832 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>🧊 Арктическая Одиссея</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+:root{
+  --bg:#020c1a;--s1:rgba(4,18,46,.97);--ice:#4fdfff;--eco:#61ffb2;
+  --gold:#ffd84d;--red:#ff5f7a;--purple:#a78bfa;--orange:#ff9f4d;
+  --txt:#dff0ff;--muted:rgba(180,220,255,.45);
+  --p1:#4fdfff;--p2:#ff5f7a;--p3:#61ffb2;--p4:#ffd84d;
+}
+html,body{width:100%;min-height:100%;font-family:Arial,sans-serif;background:var(--bg);color:var(--txt);overflow-x:hidden;}
+#bgC{position:fixed;inset:0;z-index:0;pointer-events:none;}
+.snw{position:fixed;top:-20px;z-index:1;pointer-events:none;color:rgba(200,230,255,.6);animation:snf linear infinite;}
+@keyframes snf{0%{transform:translateY(-20px) rotate(0);opacity:.7}100%{transform:translateY(105vh) rotate(540deg);opacity:0}}
+.scr{position:relative;z-index:10;min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:16px;}
+.scr.off{display:none!important;}
+
+/* ── MENU ── */
+.logo{font-family:Georgia,serif;font-size:clamp(1.8rem,5vw,2.9rem);font-weight:bold;
+  background:linear-gradient(135deg,#4fdfff,#a78bfa,#ffd84d);-webkit-background-clip:text;-webkit-text-fill-color:transparent;
+  text-align:center;line-height:1.2;margin-bottom:6px;}
+.sub{color:var(--muted);font-size:.84rem;text-align:center;margin-bottom:22px;}
+.card{background:var(--s1);border:1px solid rgba(79,223,255,.18);border-radius:22px;
+  padding:26px;width:min(460px,96vw);box-shadow:0 28px 70px rgba(0,0,0,.7);backdrop-filter:blur(20px);}
+.mbtn{display:block;width:100%;padding:13px;margin-bottom:9px;border-radius:12px;border:none;
+  font-size:.9rem;font-weight:700;cursor:pointer;transition:all .22s;font-family:Arial,sans-serif;}
+.mbtn.pri{background:linear-gradient(135deg,#4fdfff,#a78bfa);color:#010c1e;}
+.mbtn.pri:hover{transform:translateY(-3px);box-shadow:0 12px 32px rgba(79,223,255,.4);}
+.mbtn.sec{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);color:var(--txt);}
+.mbtn.sec:hover{border-color:rgba(79,223,255,.35);}
+.mrow{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px;}
+.mmode{padding:10px 8px;border-radius:11px;border:2px solid rgba(255,255,255,.07);background:rgba(255,255,255,.03);cursor:pointer;text-align:center;transition:all .2s;}
+.mmode.on{border-color:var(--ice);background:rgba(79,223,255,.09);}
+.mmode em{font-size:1.4rem;display:block;margin-bottom:3px;font-style:normal;}
+.mmode b{font-size:.78rem;display:block;color:var(--txt);}
+.mmode small{font-size:.6rem;color:var(--muted);}
+.slbl{font-size:.58rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-bottom:8px;}
+.pslots{display:flex;flex-direction:column;gap:6px;margin-bottom:14px;}
+.pslot{display:flex;align-items:center;gap:8px;padding:8px 11px;border-radius:10px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.06);}
+.pdot{width:11px;height:11px;border-radius:50%;flex-shrink:0;}
+.pinp{flex:1;background:transparent;border:none;color:var(--txt);font-size:.84rem;font-weight:700;outline:none;}
+.pinp::placeholder{color:var(--muted);}
+.ptog{background:none;border:1px solid rgba(255,255,255,.1);border-radius:6px;color:var(--muted);font-size:.66rem;padding:3px 8px;cursor:pointer;transition:all .15s;}
+.ptog.on{border-color:var(--eco);color:var(--eco);background:rgba(97,255,178,.08);}
+
+/* ── RULES ── */
+.rbox{background:var(--s1);border:1px solid rgba(79,223,255,.15);border-radius:20px;padding:26px;width:min(580px,96vw);max-height:82vh;overflow-y:auto;}
+.rbox h2{font-family:Georgia,serif;font-size:1.35rem;color:var(--ice);margin-bottom:16px;text-align:center;}
+.rbox h3{font-size:.78rem;font-weight:700;color:var(--gold);margin:13px 0 4px;text-transform:uppercase;letter-spacing:.07em;}
+.rbox p,.rbox li{font-size:.8rem;color:var(--muted);line-height:1.65;}
+.rbox ul{padding-left:15px;}
+.cleg{display:grid;grid-template-columns:repeat(2,1fr);gap:6px;margin:8px 0;}
+.cli{display:flex;align-items:center;gap:7px;padding:7px 9px;border-radius:9px;background:rgba(255,255,255,.04);}
+.cli span{font-size:1.15rem;}.cli small{font-size:.72rem;color:var(--muted);}
+
+/* ── GAME LAYOUT ── */
+#gScr{flex-direction:row;align-items:stretch;justify-content:flex-start;padding:8px;gap:8px;min-height:100vh;}
+.gleft{width:185px;flex-shrink:0;display:flex;flex-direction:column;gap:6px;}
+.gpan{background:rgba(2,10,28,.95);border:1px solid rgba(79,223,255,.09);border-radius:13px;padding:11px;}
+.gptit{font-size:.56rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-bottom:7px;}
+.pcard{display:flex;align-items:center;gap:6px;padding:6px 8px;border-radius:8px;border:1px solid rgba(255,255,255,.04);background:rgba(255,255,255,.02);transition:all .2s;margin-bottom:4px;}
+.pcard.act{border-color:rgba(255,255,255,.22);background:rgba(255,255,255,.06);transform:scale(1.02);}
+.pav{width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.7rem;font-weight:700;flex-shrink:0;}
+.pinf{flex:1;min-width:0;}
+.pnm{font-size:.72rem;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.psc{font-size:.6rem;color:var(--muted);}
+.ebw{height:8px;background:rgba(255,255,255,.07);border-radius:99px;overflow:hidden;margin:4px 0;}
+.ebb{height:100%;border-radius:99px;background:linear-gradient(90deg,#61ffb2,#a7ff78);transition:width .6s;}
+.elbl{display:flex;justify-content:space-between;font-size:.62rem;color:var(--muted);}
+.resrow{display:flex;gap:4px;flex-wrap:wrap;margin-top:3px;}
+.resico{font-size:.85rem;padding:2px 5px;border-radius:6px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.1);}
+.dwrap{text-align:center;padding:5px;}
+.d3d{font-size:2.6rem;display:inline-block;cursor:pointer;user-select:none;filter:drop-shadow(0 0 10px rgba(79,223,255,.4));transition:transform .1s;}
+.d3d.spin{animation:droll .5s ease;}
+@keyframes droll{0%{transform:rotate(0) scale(1)}25%{transform:rotate(90deg) scale(1.2)}75%{transform:rotate(270deg) scale(1.1)}100%{transform:rotate(360deg) scale(1)}}
+.rbtn{width:100%;padding:9px;border-radius:9px;border:none;font-size:.78rem;font-weight:700;background:linear-gradient(135deg,#4fdfff,#6b7aff);color:#010c1e;cursor:pointer;transition:all .2s;margin-top:6px;font-family:Arial,sans-serif;}
+.rbtn:hover:not(:disabled){transform:translateY(-2px);}
+.rbtn:disabled{opacity:.35;cursor:not-allowed;}
+.abtn{width:100%;padding:8px;border-radius:9px;border:none;font-size:.76rem;font-weight:700;cursor:pointer;transition:all .2s;font-family:Arial,sans-serif;}
+.abtn.et{background:linear-gradient(135deg,#ff5f7a,#c44);color:#fff;}
+.abtn.et:hover{transform:translateY(-2px);}
+.mhint{font-size:.68rem;color:var(--ice);text-align:center;min-height:17px;line-height:1.4;}
+.gctr{flex:1;display:flex;flex-direction:column;align-items:center;gap:6px;}
+#bWrap{position:relative;width:min(500px,100%);aspect-ratio:1;}
+#bC{width:100%;height:100%;border-radius:14px;cursor:default;}
+.gright{width:185px;flex-shrink:0;display:flex;flex-direction:column;gap:6px;}
+.glog{overflow-y:auto;max-height:190px;scrollbar-width:thin;}
+.lge{font-size:.62rem;color:var(--muted);padding:3px 0;border-bottom:1px solid rgba(255,255,255,.04);line-height:1.4;}
+.lge.g{color:#61ffb2;}.lge.b{color:#ff5f7a;}.lge.i{color:#4fdfff;}.lge.w{color:#ffd84d;}
+
+/* ── MODAL ── */
+.mov{position:fixed;inset:0;z-index:500;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.86);backdrop-filter:blur(12px);padding:12px;}
+.mov.off{display:none;}
+@keyframes mIn{from{transform:scale(.87) translateY(16px);opacity:0}to{transform:scale(1) translateY(0);opacity:1}}
+.mbox{background:rgba(2,10,32,.99);border:1px solid rgba(79,223,255,.2);border-radius:20px;padding:22px;width:min(500px,100%);animation:mIn .3s cubic-bezier(.34,1.56,.64,1);max-height:90vh;overflow-y:auto;}
+.mtit{font-family:Georgia,serif;font-size:1.2rem;font-weight:bold;margin-bottom:4px;text-align:center;}
+.msub{font-size:.76rem;color:var(--muted);text-align:center;margin-bottom:14px;}
+.mico{font-size:2.8rem;text-align:center;display:block;margin-bottom:8px;animation:bico .45s ease;}
+@keyframes bico{0%{transform:scale(0)}60%{transform:scale(1.2)}100%{transform:scale(1)}}
+.ctag{display:inline-block;padding:2px 11px;border-radius:99px;font-size:.6rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;margin-bottom:8px;}
+.factbox{background:rgba(79,223,255,.05);border:1px solid rgba(79,223,255,.14);border-radius:11px;padding:11px;margin-bottom:13px;}
+.factlbl{font-size:.56rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--ice);margin-bottom:5px;}
+.factxt{font-size:.82rem;color:var(--txt);line-height:1.6;}
+/* threat choices */
+.tch-lbl{font-size:.6rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--orange);margin-bottom:7px;}
+.tchs{display:flex;flex-direction:column;gap:5px;margin-bottom:11px;}
+.tch{padding:10px 12px;border-radius:10px;border:2px solid rgba(255,159,77,.22);background:rgba(255,159,77,.04);cursor:pointer;font-size:.8rem;font-weight:700;color:var(--txt);transition:all .2s;text-align:left;font-family:Arial,sans-serif;}
+.tch:hover{border-color:rgba(255,159,77,.6);background:rgba(255,159,77,.09);}
+.tch.ok{border-color:var(--eco)!important;background:rgba(97,255,178,.1)!important;color:var(--eco)!important;}
+.tch.bad{border-color:var(--red)!important;opacity:.55;}
+/* quiz */
+.qsep{border-top:1px solid rgba(255,255,255,.06);margin:12px 0 12px;}
+.qlbl{font-size:.6rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--gold);margin-bottom:8px;}
+.qbar{height:4px;background:rgba(255,255,255,.07);border-radius:99px;margin-bottom:10px;overflow:hidden;}
+.qbarb{height:100%;border-radius:99px;transition:width .1s linear;background:linear-gradient(90deg,#4fdfff,#a78bfa);}
+.qq{font-size:.9rem;font-weight:700;line-height:1.5;margin-bottom:10px;}
+.qopts{display:flex;flex-direction:column;gap:5px;margin-bottom:9px;}
+.qopt{padding:9px 12px;border-radius:9px;border:2px solid rgba(255,255,255,.09);background:rgba(255,255,255,.04);cursor:pointer;font-size:.79rem;font-weight:700;text-align:left;transition:all .2s;color:var(--txt);font-family:Arial,sans-serif;}
+.qopt:hover:not(:disabled){border-color:rgba(79,223,255,.5);background:rgba(79,223,255,.07);}
+.qopt:disabled{cursor:default;}
+.qopt.ok{border-color:var(--eco)!important;background:rgba(97,255,178,.1)!important;color:var(--eco)!important;}
+.qopt.bad{border-color:var(--red)!important;opacity:.6;}
+.qres{padding:9px 11px;border-radius:9px;font-size:.77rem;line-height:1.5;display:none;margin-bottom:9px;}
+.qres.sh{display:block;}
+.qres.ok{background:rgba(97,255,178,.07);border:1px solid rgba(97,255,178,.16);color:var(--eco);}
+.qres.bad{background:rgba(255,95,122,.07);border:1px solid rgba(255,95,122,.14);color:var(--red);}
+/* continue */
+.cnxt{width:100%;padding:11px;border-radius:11px;border:none;font-size:.82rem;font-weight:700;background:linear-gradient(135deg,#4fdfff,#a78bfa);color:#010c1e;cursor:pointer;transition:all .2s;display:none;font-family:Arial,sans-serif;margin-top:4px;}
+.cnxt.sh{display:block;}
+.cnxt:hover{transform:translateY(-2px);}
+/* win */
+.wtroph{font-size:3.5rem;text-align:center;display:block;animation:flt 2s ease-in-out infinite;}
+@keyframes flt{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
+.wpod{display:flex;flex-direction:column;gap:6px;margin:12px 0;}
+.wprow{display:flex;align-items:center;gap:9px;padding:8px 11px;border-radius:10px;background:rgba(255,255,255,.04);}
+.wpmed{font-size:1.05rem;width:26px;text-align:center;}
+.wpnm{flex:1;font-weight:700;font-size:.82rem;}
+.wppt{font-weight:700;color:var(--gold);font-size:.82rem;}
+.shbtn{width:100%;padding:10px;border-radius:10px;border:1px solid rgba(79,223,255,.25);background:rgba(79,223,255,.07);color:var(--ice);font-size:.78rem;font-weight:700;cursor:pointer;margin-top:6px;transition:all .2s;}
+.shbtn:hover{background:rgba(79,223,255,.13);}
+/* badge */
+.btoast{position:fixed;bottom:18px;right:18px;z-index:600;background:rgba(2,10,32,.97);border:1px solid rgba(255,216,77,.3);border-radius:12px;padding:11px 15px;display:flex;align-items:center;gap:10px;animation:tIn .4s cubic-bezier(.34,1.56,.64,1);}
+.btoast.out{animation:tOut .3s ease forwards;}
+@keyframes tIn{from{transform:translateX(120%);opacity:0}to{transform:translateX(0);opacity:1}}
+@keyframes tOut{to{transform:translateX(120%);opacity:0}}
+.fsc{position:fixed;z-index:400;font-weight:700;font-size:1.1rem;pointer-events:none;animation:fscUp 1.2s ease-out forwards;}
+@keyframes fscUp{0%{transform:translateY(0);opacity:1}100%{transform:translateY(-60px);opacity:0}}
+::-webkit-scrollbar{width:3px;}::-webkit-scrollbar-thumb{background:rgba(255,255,255,.09);border-radius:99px;}
+@media(max-width:660px){#gScr{flex-direction:column!important;}.gleft,.gright{width:100%!important;}#bWrap{width:min(340px,100%)!important;}}
+</style>
+</head>
+<body>
+<canvas id="bgC"></canvas>
+<div id="snwBox"></div>
+
+<!-- MENU -->
+<div class="scr" id="mScr">
+  <div class="logo">🧊 Арктическая<br>Одиссея</div>
+  <div class="sub">Настольная игра · Спаси Арктику · 2–4 игрока</div>
+  <div class="card">
+    <div class="slbl">Режим</div>
+    <div class="mrow">
+      <div class="mmode on" id="mdS" onclick="setMode('school')"><em>🎒</em><b>Школьный</b><small>Подсказки · Легче</small></div>
+      <div class="mmode" id="mdU" onclick="setMode('student')"><em>🎓</em><b>Студенческий</b><small>Таймер · Сложнее</small></div>
+    </div>
+    <div class="slbl">Игроки (2–4)</div>
+    <div class="pslots" id="pslots"></div>
+    <button class="mbtn pri" onclick="startGame()">🚀 Начать игру!</button>
+    <button class="mbtn sec" onclick="SS('rScr')">📖 Правила</button>
+  </div>
+</div>
+
+<!-- RULES -->
+<div class="scr off" id="rScr">
+  <div class="rbox">
+    <h2>📖 Правила «Арктической Одиссеи»</h2>
+    <h3>🎯 Цель</h3>
+    <p>Два пути победы: <b>довести Экологию до 100%</b> вместе, или первым набрать <b>50 личных очков</b>.</p>
+    <h3>🗺️ Типы клеток</h3>
+    <div class="cleg">
+      <div class="cli"><span>🌿</span><small><b>Тундра</b> — ресурс Жизнь + факт о растениях</small></div>
+      <div class="cli"><span>🐾</span><small><b>Животное</b> — Quiz + бонус или штраф</small></div>
+      <div class="cli"><span>⚡</span><small><b>Угроза</b> — Выбери как спасти Арктику!</small></div>
+      <div class="cli"><span>🏔️</span><small><b>Ледник</b> — Доп. ход или спец-карта</small></div>
+      <div class="cli"><span>🏗️</span><small><b>Проект</b> — Построй станцию (3 ресурса)</small></div>
+      <div class="cli"><span>🏕️</span><small><b>Лагерь</b> — База, +2 очка</small></div>
+    </div>
+    <h3>🌿 Ресурсы</h3>
+    <p>На тундре и леднике собирай ресурсы (🌱🐟❄). Собери 3 разных → на клетке Проект построй Эко-Станцию → +20% экологии, +20 очков!</p>
+    <h3>⚡ Угрозы</h3>
+    <p>Выбери 1 из 3 вариантов спасения. Правильный — нейтрализует угрозу. Неверный — штраф экологии.</p>
+    <h3>🏆 Очки</h3>
+    <ul>
+      <li>Ресурс: <b>+3 очка</b></li><li>Quiz верно: <b>+10 очков + экология +6%</b></li>
+      <li>Угроза нейтрализована: <b>+8 очков</b></li><li>Эко-Станция: <b>+20 очков + экология +20%</b></li>
+    </ul>
+    <button class="mbtn pri" style="margin-top:16px;" onclick="SS('mScr')">← Назад</button>
+  </div>
+</div>
+
+<!-- GAME -->
+<div class="scr off" id="gScr">
+  <div class="gleft">
+    <div class="gpan"><div class="gptit">Игроки</div><div id="pCards"></div></div>
+    <div class="gpan">
+      <div class="gptit">🌿 Экология планеты</div>
+      <div class="ebw"><div class="ebb" id="ecoB" style="width:20%"></div></div>
+      <div class="elbl"><span id="ecoV">20%</span><span>цель: 100%</span></div>
+    </div>
+    <div class="gpan">
+      <div class="gptit">🎒 Ресурсы (<span id="curPName">—</span>)</div>
+      <div class="resrow" id="resRow">—</div>
+      <button class="abtn" id="buildBtn" style="background:linear-gradient(135deg,#61ffb2,#2dd47a);color:#010c1e;margin-top:7px;display:none;" onclick="tryBuild()">🏗️ Построить станцию!</button>
+    </div>
+    <div class="gpan">
+      <div class="gptit">🎲 Кубик</div>
+      <div class="dwrap"><div class="d3d" id="dice" onclick="doRoll()">🎲</div>
+      <button class="rbtn" id="rBtn" onclick="doRoll()">Бросить кубик</button></div>
+    </div>
+    <div class="gpan" style="text-align:center;">
+      <div class="mhint" id="mHint">Нажмите «Бросить кубик»</div>
+      <button class="abtn et" id="etBtn" style="display:none;margin-top:6px;" onclick="endTurn()">✅ Завершить ход</button>
+      <button class="mbtn sec" style="margin-top:7px;font-size:.68rem;padding:7px;" onclick="goMenu()">🔄 Меню</button>
+    </div>
+  </div>
+  <div class="gctr">
+    <div style="font-size:.68rem;color:var(--muted);text-align:center;" id="turnLbl">—</div>
+    <div id="bWrap"><canvas id="bC"></canvas></div>
+  </div>
+  <div class="gright">
+    <div class="gpan" style="flex:1"><div class="gptit">📋 Лог ходов</div><div class="glog" id="gLog"></div></div>
+    <div class="gpan"><div class="gptit">🏅 Бейджи</div><div id="bArea" style="font-size:1rem;min-height:26px;"></div></div>
+    <div class="gpan"><div class="gptit">🏆 Рекорды</div><div id="lbBoard" style="font-size:.68rem;color:var(--muted);"></div></div>
+  </div>
+</div>
+
+<!-- POPUP MODAL -->
+<div class="mov off" id="popMov">
+  <div class="mbox" id="popBox"></div>
+</div>
+
+<!-- WIN MODAL -->
+<div class="mov off" id="wMov">
+  <div class="mbox">
+    <span class="wtroph">🏆</span>
+    <div class="mtit" id="wTit" style="margin-top:8px;">Победа!</div>
+    <div class="msub" id="wSub">—</div>
+    <div class="wpod" id="wPod"></div>
+    <button class="shbtn" onclick="shareResult()">🔗 Поделиться</button>
+    <button class="mbtn pri" style="margin-top:7px;" onclick="goMenu()">← В главное меню</button>
+  </div>
+</div>
+
+<script>
+// ═══ AURORA + SNOW ═══
+(()=>{
+  const c=document.getElementById('bgC'),x=c.getContext('2d');let t=0;
+  const r=()=>{c.width=innerWidth;c.height=innerHeight;};r();window.addEventListener('resize',r);
+  const d=()=>{
+    x.clearRect(0,0,c.width,c.height);
+    x.fillStyle='rgba(200,230,255,.45)';
+    for(let i=0;i<110;i++){const sx=(Math.sin(i*137.5)*.5+.5)*c.width,sy=(Math.sin(i*97.3)*.5+.5)*c.height*.6,rr=.28+Math.sin(t*1.2+i)*.22;x.beginPath();x.arc(sx,sy,rr,0,Math.PI*2);x.fill();}
+    for(let i=0;i<4;i++){
+      const yb=c.height*(.1+i*.055)+Math.sin(t*.28+i*2.1)*c.height*.05;
+      const g=x.createLinearGradient(0,yb-65,0,yb+65),h=[185,270,155,220][i];
+      g.addColorStop(0,'transparent');g.addColorStop(.45,`hsla(${h},85%,60%,.038)`);g.addColorStop(.55,`hsla(${h},85%,60%,.06)`);g.addColorStop(1,'transparent');
+      x.fillStyle=g;x.beginPath();x.moveTo(0,yb);
+      for(let px=0;px<=c.width;px+=14)x.lineTo(px,yb+Math.sin((px/c.width)*Math.PI*5+t*.5+i)*20);
+      x.lineTo(c.width,c.height);x.lineTo(0,c.height);x.closePath();x.fill();}
+    t+=.008;requestAnimationFrame(d);};d();
+})();
+(()=>{const b=document.getElementById('snwBox'),fl=['❄','❅','❆','·','*'];
+  for(let i=0;i<26;i++){const e=document.createElement('div');e.className='snw';e.textContent=fl[i%fl.length];
+    e.style.cssText=`left:${Math.random()*100}vw;font-size:${.45+Math.random()*.7}rem;animation-duration:${6+Math.random()*11}s;animation-delay:${-Math.random()*12}s`;
+    b.appendChild(e);}})();
+
+// ═══ HELPERS ═══
+function SS(id){['mScr','rScr','gScr'].forEach(s=>document.getElementById(s).classList.add('off'));document.getElementById(id).classList.remove('off');}
+function SM(id){document.getElementById(id).classList.remove('off');}
+function HM(id){document.getElementById(id).classList.add('off');}
+
+// ═══ CONSTANTS ═══
+const PCOLORS=['#4fdfff','#ff5f7a','#61ffb2','#ffd84d'];
+const PNAMES=['Игрок 1','Игрок 2','Игрок 3','Игрок 4'];
+const DICE=['⚀','⚁','⚂','⚃','⚄','⚅'];
+const CTYPES=['camp','tundra','animal','threat','glacier','project','tundra','animal','threat','glacier',
+  'tundra','project','animal','threat','tundra','glacier','animal','threat','project','tundra',
+  'animal','glacier','threat','tundra','animal','project','threat','glacier','tundra','animal',
+  'threat','tundra','glacier','project','animal','threat','tundra','glacier','animal','threat',
+  'tundra','project','glacier','animal','threat','tundra','animal','glacier','project'];
+const CICO={camp:'🏕️',tundra:'🌿',animal:'🐾',threat:'⚡',glacier:'🏔️',project:'🏗️'};
+const CCOL={camp:'rgba(20,80,50,.85)',tundra:'rgba(10,55,25,.85)',animal:'rgba(10,30,80,.85)',threat:'rgba(80,25,10,.85)',glacier:'rgba(5,35,85,.85)',project:'rgba(45,15,80,.85)'};
+const CBRD={camp:'rgba(97,255,178,.55)',tundra:'rgba(100,210,100,.5)',animal:'rgba(79,223,255,.6)',threat:'rgba(255,95,122,.65)',glacier:'rgba(79,200,255,.55)',project:'rgba(167,139,250,.65)'};
+
+// ═══ GAME DATA ═══
+const ANIMALS=[
+  {n:'Белый медведь',i:'🐻‍❄️',f:'Белый медведь может прыгнуть в воду с высоты 2 м за тюленем! Его шерсть прозрачная, а кожа — чёрная, чтобы поглощать солнечное тепло.',
+   qs:{q:'Какого цвета кожа белого медведя?',o:['Белого','Чёрного','Серого','Розового'],a:1,e:'Чёрная кожа поглощает тепло солнца — важнейшее преимущество в Арктике!'},
+   qu:{q:'На сколько км белый медведь учует тюленя подо льдом?',o:['До 1 км','До 5 км','До 32 км','До 100 км'],a:2,e:'32 км и сквозь метровый лёд! Непревзойдённый охотник.'}},
+  {n:'Нарвал',i:'🦄',f:'Нарвал — единорог морей. Его бивень — видоизменённый зуб до 3 м с миллионами нервных окончаний. Нарвал «ощупывает» им воду, чуя температуру и соленость.',
+   qs:{q:'Что такое «рог» нарвала?',o:['Настоящий рог','Видоизменённый зуб','Коралл','Кость носа'],a:1,e:'Это левый верхний клык, закрученный по спирали — природный сенсор!'},
+   qu:{q:'Для чего нарвал использует бивень?',o:['Для борьбы','Для охоты','Как сенсор воды','Для плавания'],a:2,e:'Бивень — сенсорный орган с 10 млн нервных окончаний!'}},
+  {n:'Арктическая крачка',i:'🐦',f:'Арктическая крачка совершает самые длинные миграции на Земле — 70–90 тыс. км в год от Арктики до Антарктики и обратно! За жизнь пролетает расстояние до Луны 3 раза.',
+   qs:{q:'Куда летит крачка на зиму?',o:['В Африку','В Антарктику','В Азию','Остаётся'],a:1,e:'Из Арктики в Антарктику — рекорд среди всех животных!'},
+   qu:{q:'Сколько км в год летит арктическая крачка?',o:['~10 000','~30 000','70–90 000','~200 000'],a:2,e:'70–90 тысяч км! За 30 лет — 3 пути до Луны и обратно.'}},
+  {n:'Кольчатая нерпа',i:'🦭',f:'Нерпа прогрызает во льду «продушины» — лунки для дыхания — и поддерживает их всю зиму когтями. Ныряет на 300 м и не дышит 40 минут!',
+   qs:{q:'Зачем нерпа прогрызает дырки во льду?',o:['Ловить рыбу','Чтобы дышать','Спрятаться','Играть'],a:1,e:'Нерпы — млекопитающие, им нужен воздух!'},
+   qu:{q:'Как глубоко ныряет нерпа?',o:['50 м','150 м','300 м','1000 м'],a:2,e:'300 м и 40 минут без воздуха! Её кровь содержит в 5 раз больше гемоглобина.'}},
+  {n:'Песец',i:'🦊',f:'Песец меняет цвет меха: зимой белоснежный, летом — серо-бурый. Единственный хищник, выживающий при -50°C без укрытия благодаря уникальному двойному меху.',
+   qs:{q:'Как меняется мех песца зимой?',o:['Рыжим','Белым','Серым','Не меняется'],a:1,e:'Белый зимой — маскировка в снегу!'},
+   qu:{q:'При какой температуре песец живёт без укрытия?',o:['-20°C','-30°C','-50°C','-70°C'],a:2,e:'До -50°C без укрытия — рекорд среди хищников!'}},
+  {n:'Морж',i:'🦭',f:'Моржи используют бивни как ледорубы — чтобы вылезать на лёд. Один морж съедает до 50 кг моллюсков в день, находя их в темноте чувствительными усами-вибриссами.',
+   qs:{q:'Для чего моржи используют бивни?',o:['Только для борьбы','Вылезать на лёд и защищаться','Только для охоты','Рыть ямы'],a:1,e:'Бивни — многофункциональный инструмент!'},
+   qu:{q:'Сколько кг моллюсков съедает морж за день?',o:['1 кг','10 кг','30 кг','До 50 кг'],a:3,e:'50 кг в день! Находит их усами-вибриссами в полной темноте.'}},
+  {n:'Полярная сова',i:'🦉',f:'Полярная сова охотится днём в полярный день. Самец кормит самку во время гнездования, принося до 12 леммингов за раз. Одна сова съедает ~1600 леммингов в год!',
+   qs:{q:'Когда охотится полярная сова?',o:['Только ночью','Только утром','Может и днём','На рассвете'],a:2,e:'В Арктике бывает полярный день — ночи нет месяцами!'},
+   qu:{q:'Сколько леммингов в год съедает одна сова?',o:['~50','~200','~1600','~5000'],a:2,e:'1600 леммингов! Сова — ключевой регулятор численности грызунов.'}},
+  {n:'Гренландский кит',i:'🐋',f:'Гренландский кит живёт более 200 лет — рекорд среди млекопитающих! В найденных китах обнаруживают гарпуны XIX века. Его мозг — самый большой среди всех животных (до 8 кг).',
+   qs:{q:'Сколько лет живёт гренландский кит?',o:['20–30','50–70','Более 200','Около 100'],a:2,e:'200+ лет! В китах находили гарпуны времён Наполеона.'},
+   qu:{q:'Чем уникален мозг гренландского кита?',o:['Самый маленький','Самый большой у животных','Умеет регенерировать','Не спит'],a:1,e:'До 8 кг — самый крупный мозг в животном мире!'}},
+];
+
+const THREATS=[
+  {i:'🌊',n:'Таяние льда',f:'Арктика тает в 4 раза быстрее остальной планеты. За 40 лет морской лёд потерял 75% объёма!',dmg:12,
+   ch:[{t:'⚡ Перейти на возобновляемую энергию',ok:true,e:'Снижение CO₂ — главный способ замедлить таяние. Солнце и ветер спасут Арктику!'},
+       {t:'🌱 Посадить мангровые леса',ok:false,e:'Мангровые леса важны, но не останавливают арктическое таяние напрямую.'},
+       {t:'🚢 Запретить суда в Арктике',ok:false,e:'Это поможет лишь немного. Главная проблема — глобальные выбросы CO₂.'}],
+   qs:{q:'На сколько % сократился объём арктического льда за 40 лет?',o:['На 25%','На 50%','На 75%','На 90%'],a:2,e:'75% объёма! Летом Арктика может стать свободной ото льда к 2050 году.'},
+   qu:{q:'Что такое «арктическое усиление»?',o:['Усиление сияния','Потепление быстрее в 2–4 раза','Рост ледников','Усиление течений'],a:1,e:'Таяние льда снижает отражение солнца — самоускоряющийся процесс!'}},
+  {i:'🛢️',n:'Разлив нефти',f:'Нефть в холодной воде разлагается в 10–15 раз медленнее. Один разлив уничтожает экосистему на десятилетия.',dmg:15,
+   ch:[{t:'🚫 Запретить бурение в Арктике',ok:true,e:'Лучшее решение — не добывать нефть там, где катастрофа неустранима!'},
+       {t:'🧹 Отправить уборочные суда',ok:false,e:'Механическая уборка убирает лишь 10–15% нефти в ледяной воде.'},
+       {t:'🔥 Сжечь нефть на воде',ok:false,e:'Сжигание создаёт токсичный дым. Вредит атмосфере.'}],
+   qs:{q:'Что происходит с нефтью в холодной воде?',o:['Испаряется','Разлагается в 10–15 раз медленнее','Тонет','Превращается в лёд'],a:1,e:'Холод консервирует нефть — катастрофа на десятилетия!'},
+   qu:{q:'Какой % птиц мог погибнуть после разлива Exxon Valdez?',o:['~1%','~10%','До 30%','До 90%'],a:2,e:'До 30% некоторых популяций! Экосистема восстанавливалась 25+ лет.'}},
+  {i:'🏭',n:'Выбросы CO₂',f:'Концентрация CO₂ выросла с 280 до 420+ ppm — рекорд за 3 миллиона лет! Каждый год 37+ млрд тонн CO₂.',dmg:10,
+   ch:[{t:'🔋 Электрифицировать транспорт + ВИЭ',ok:true,e:'Транспорт и энергетика дают 70% выбросов. Электромобили + солнечные панели — путь вперёд!'},
+       {t:'🌳 Посадить триллион деревьев',ok:false,e:'Деревья поглощают CO₂, но недостаточно быстро. Нужны прямые сокращения выбросов.'},
+       {t:'❄ Охлаждать Арктику искусственно',ok:false,e:'Геоинженерия нестабильна. Лечить симптом, а не причину — плохая стратегия.'}],
+   qs:{q:'Когда CO₂ был последний раз таким высоким?',o:['100 лет назад','10 000 лет назад','1 млн лет назад','3 млн лет назад'],a:3,e:'420+ ppm — такого не было 3 миллиона лет назад!'},
+   qu:{q:'Сколько млрд тонн CO₂ в год выбрасывает человечество?',o:['~5','~15','37+','~100'],a:2,e:'37+ миллиардов тонн ежегодно — по 4,7 т на каждого человека.'}},
+  {i:'🗑️',n:'Пластик в океане',f:'Ежегодно 8–10 млн тонн пластика в океане. Микропластик найден в арктическом снегу и в крови 77% людей!',dmg:8,
+   ch:[{t:'🚫 Запретить одноразовый пластик',ok:true,e:'40% пластика — одноразовый. Запрет работает в ЕС и снижает загрязнение морей!'},
+       {t:'🌊 Фильтровать весь океан',ok:false,e:'Нереально в масштабах мирового океана. Нужна профилактика, а не уборка.'},
+       {t:'🔥 Сжигать весь пластик',ok:false,e:'Сжигание пластика выделяет токсичные диоксины. Опаснее, чем оставить в земле.'}],
+   qs:{q:'Сколько лет разлагается пластиковый пакет?',o:['1–5 лет','20–30 лет','100–200 лет','400–500 лет'],a:3,e:'400–500 лет! За это время сменится 20 поколений людей.'},
+   qu:{q:'Что обнаружили в крови 77% обследованных людей?',o:['Нефтепродукты','Микропластик','Пестициды','Тяжёлые металлы'],a:1,e:'Микропластик в крови! Долгосрочные последствия для здоровья изучаются.'}},
+  {i:'🌡️',n:'Таяние мерзлоты',f:'Вечная мерзлота хранит вдвое больше углерода, чем в атмосфере. При таянии выделяется метан — газ в 86 раз мощнее CO₂ за 20 лет!',dmg:14,
+   ch:[{t:'📉 Срочно сократить глобальные выбросы',ok:true,e:'Единственный реальный способ — замедлить потепление у источника. Каждые 0.1°C важны!'},
+       {t:'🌬️ Управлять облаками для охлаждения',ok:false,e:'Экспериментальная геоинженерия может нарушить осадки. Слишком рискованно!'},
+       {t:'🥶 Законсервировать мерзлоту',ok:false,e:'Технически невозможно в масштабах Сибири и Канады.'}],
+   qs:{q:'Что такое вечная мерзлота?',o:['Вечный снег','Постоянно замёрзшие горные породы','Замёрзший океан','Ледник'],a:1,e:'Пермафрост — слой пород ниже 0°C. Покрывает 25% суши Земли!'},
+   qu:{q:'Во сколько раз метан мощнее CO₂ за 20 лет?',o:['В 2 раза','В 10 раз','В 28 раз','В 86 раз'],a:3,e:'86 раз! Выброс метана из мерзлоты — одна из главных «климатических бомб».'}},
+];
+
+const TUNDRA=[
+  {f:'В Арктике растёт более 1700 видов растений! Они выживают при -60°C. Арктический мох фотосинтезирует почти при 0°C.',r:'🌱',
+   qs:{q:'Сколько видов растений в Арктике?',o:['Менее 100','~500','Более 1700','Более 10 000'],a:2,e:'1700+ видов! Арктика — не пустыня, а разнообразный мир стойких растений.'},
+   qu:{q:'При какой температуре мох фотосинтезирует?',o:['+15°C','+5°C','Чуть выше 0°C','Любой'],a:2,e:'Почти при 0°C! Это позволяет использовать редкие тёплые дни арктического лета.'}},
+  {f:'Ягель (олений мох) растёт 3–5 мм в год, живёт 300–400 лет. После вытаптывания ему нужно 50–100 лет для восстановления.',r:'🌿',
+   qs:{q:'Сколько лет нужно ягелю для восстановления?',o:['1–2 года','10 лет','50–100 лет','300 лет'],a:2,e:'50–100 лет! Один олень должен постоянно менять пастбища.'},
+   qu:{q:'Сколько мм в год растёт ягель?',o:['1 см','3–5 мм','1 мм','10 мм'],a:1,e:'3–5 мм в год — медленнее ногтя! Но живёт 300–400 лет.'}},
+  {f:'Инуиты используют шкуры тюленей для непромокаемой одежды уже тысячи лет. Их язык имеет 50+ слов для разных видов снега и льда.',r:'❄️',
+   qs:{q:'Как называются коренные жители Арктики (Канада/Гренландия)?',o:['Викинги','Инуиты','Ненцы','Чукчи'],a:1,e:'Инуиты — коренные жители арктической Северной Америки.'},
+   qu:{q:'Сколько слов для снега у инуитов?',o:['5–10','~20','50+','~100'],a:2,e:'50+ слов! Язык отражает жизненно важные различия видов снега.'}},
+  {f:'Арктическая тундра — огромный «холодильник» для углерода. В почве хранится вдвое больше CO₂, чем сейчас в атмосфере всей Земли.',r:'🌱',
+   qs:{q:'Что хранит тундра в почве?',o:['Нефть и газ','Огромные запасы углерода','Пресную воду','Редкие металлы'],a:1,e:'Замёрзшая тундра — гигантский резервуар углерода!'},
+   qu:{q:'Во сколько раз больше углерода в мерзлоте, чем в атмосфере?',o:['Одинаково','В 2 раза','В 5 раз','В 10 раз'],a:1,e:'В 2 раза больше! Таяние мерзлоты может удвоить CO₂ в атмосфере.'}},
+  {f:'Северное сияние (Aurora Borealis) — свечение атмосферы на высоте 100–300 км. Зелёный цвет — кислород, синий/фиолетовый — азот.',r:'🌿',
+   qs:{q:'На какой высоте образуется северное сияние?',o:['1–5 км','10–30 км','100–300 км','1000+ км'],a:2,e:'100–300 км — это ионосфера! Заряженные частицы солнечного ветра.'},
+   qu:{q:'Какой газ даёт зелёный цвет северного сияния?',o:['Азот','Аргон','Кислород','Гелий'],a:2,e:'Кислород на высоте 100–150 км даёт зелёный и красный цвета!'}},
+];
+
+const GLACIERS=[
+  {f:'В ледниках Гренландии хранится 10% пресной воды Земли. Полное таяние поднимет уровень моря на 7 метров — под водой окажутся Лондон и Нью-Йорк!',bonus:'extra'},
+  {f:'Самому старому льду Арктики — более 5 миллионов лет! Внутри него пузырьки древнего воздуха. Учёные бурят ледяные керны, читая историю климата за миллионы лет.',bonus:'block'},
+  {f:'Полярная ночь в Арктике длится до 6 месяцев. На Северном полюсе солнце полгода не заходит и полгода не встаёт. Животные полностью адаптированы к этому.',bonus:'extra'},
+  {f:'Арктика — дом для 21 000 видов животных, растений и микробов. 4 млн человек называют Арктику домом, включая коренные народы, живущие там 30+ тысяч лет.',bonus:'extra'},
+  {f:'Гренландский ледяной щит весит 2,85 квадриллиона кг и давит на земную кору так, что центр Гренландии ниже уровня моря!',bonus:'block'},
+];
+
+// ═══ STATE ═══
+const SLOTS=[{on:true},{on:true},{on:false},{on:false}];
+let MODE='school',players=[],curP=0,ecoLevel=20;
+let rolled=false,diceVal=0,qTmr=null;
+let CELLS=[];let bCv,bCtx,bW,bH;
+
+// ═══ MENU ═══
+function initMenu(){
+  const c=document.getElementById('pslots');c.innerHTML='';
+  SLOTS.forEach((s,i)=>{
+    const d=document.createElement('div');d.className='pslot';
+    d.innerHTML=`<div class="pdot" style="background:${PCOLORS[i]}"></div>
+      <input class="pinp" id="pn${i}" placeholder="${PNAMES[i]}" value="${PNAMES[i]}">
+      <button class="ptog ${s.on?'on':''}" id="pt${i}" onclick="togSlot(${i})">${s.on?'Вкл':'Выкл'}</button>`;
+    c.appendChild(d);});
+  renderLB();
+}
+function togSlot(i){
+  if(SLOTS[i].on&&SLOTS.filter(s=>s.on).length<=2)return;
+  SLOTS[i].on=!SLOTS[i].on;
+  const b=document.getElementById('pt'+i);b.textContent=SLOTS[i].on?'Вкл':'Выкл';b.className='ptog'+(SLOTS[i].on?' on':'');
+}
+function setMode(m){MODE=m;document.getElementById('mdS').className='mmode'+(m==='school'?' on':'');document.getElementById('mdU').className='mmode'+(m==='student'?' on':'');}
+
+// ═══ BOARD BUILD ═══
+function buildCells(){
+  CELLS=[];const N=7,total=N*N;
+  const grid=Array.from({length:N},()=>Array(N).fill(-1));
+  let top=0,bot=N-1,left=0,right=N-1,idx=0;
+  while(idx<total){
+    for(let c=left;c<=right&&idx<total;c++)grid[top][c]=idx++;top++;
+    for(let r=top;r<=bot&&idx<total;r++)grid[r][right]=idx++;right--;
+    for(let c=right;c>=left&&idx<total;c--)grid[bot][c]=idx++;bot--;
+    for(let r=bot;r>=top&&idx<total;r--)grid[r][left]=idx++;left++;
+  }
+  const ord=[];for(let r=0;r<N;r++)for(let c=0;c<N;c++)ord[grid[r][c]]={r,c};
+  for(let i=0;i<49;i++)CELLS.push({idx:i,row:ord[i].r,col:ord[i].c,type:CTYPES[i]||'tundra'});
+}
+
+function initBoard(){
+  bCv=document.getElementById('bC');bCtx=bCv.getContext('2d');
+  const resize=()=>{
+    const w=document.getElementById('bWrap');
+    const sz=Math.min(w.clientWidth,w.clientHeight,500);
+    bCv.width=sz;bCv.height=sz;bW=bH=sz;
+  };
+  resize();window.addEventListener('resize',()=>{resize();drawBoard();});
+  buildCells();
+  bCv.addEventListener('click',onBoardClick);
+}
+
+function cellRect(cell){
+  const N=7,pad=7,cw=(bW-pad*2)/N,ch=(bH-pad*2)/N;
+  return{x:pad+cell.col*cw,y:pad+cell.row*ch,w:cw,h:ch};
+}
+
+function drawBoard(){
+  if(!bCtx)return;
+  bCtx.clearRect(0,0,bW,bH);
+  const bg=bCtx.createRadialGradient(bW/2,bH/2,0,bW/2,bH/2,bW*.6);
+  bg.addColorStop(0,'rgba(5,20,55,.96)');bg.addColorStop(1,'rgba(2,8,24,.99)');
+  bCtx.fillStyle=bg;bCtx.beginPath();bCtx.roundRect(0,0,bW,bH,14);bCtx.fill();
+
+  // path
+  if(CELLS.length>1){
+    bCtx.save();bCtx.setLineDash([3,7]);bCtx.strokeStyle='rgba(79,223,255,.1)';bCtx.lineWidth=1.2;
+    bCtx.beginPath();
+    CELLS.forEach((c,i)=>{const r=cellRect(c);const cx=r.x+r.w/2,cy=r.y+r.h/2;i===0?bCtx.moveTo(cx,cy):bCtx.lineTo(cx,cy);});
+    bCtx.stroke();bCtx.setLineDash([]);bCtx.restore();
+  }
+
+  CELLS.forEach((cell,ci)=>{
+    const r=cellRect(cell);
+    const ins=2.5,cx=r.x+ins,cy=r.y+ins,cw=r.w-ins*2,ch=r.h-ins*2;
+    // glow if current player is on this cell
+    const anyHere=players.some(p=>p.pos===ci);
+    bCtx.save();
+    if(anyHere){bCtx.shadowColor='rgba(255,255,255,.5)';bCtx.shadowBlur=12;}
+    bCtx.fillStyle=CCOL[cell.type]||'rgba(10,30,60,.85)';
+    bCtx.strokeStyle=CBRD[cell.type]||'rgba(79,223,255,.4)';
+    bCtx.lineWidth=1.2;
+    bCtx.beginPath();bCtx.roundRect(cx,cy,cw,ch,5);bCtx.fill();bCtx.stroke();
+    bCtx.restore();
+    // number
+    bCtx.save();bCtx.font=`bold ${cw*.16}px Arial`;bCtx.textAlign='center';bCtx.textBaseline='top';bCtx.fillStyle='rgba(255,255,255,.2)';
+    bCtx.fillText(ci+1,cx+cw/2,cy+1);bCtx.restore();
+    // icon
+    bCtx.font=`${cw*.35}px serif`;bCtx.textAlign='center';bCtx.textBaseline='middle';
+    bCtx.fillText(CICO[cell.type]||'?',cx+cw/2,cy+ch*.58);
+    // start label
+    if(ci===0){bCtx.save();bCtx.font=`bold ${cw*.14}px Arial`;bCtx.textAlign='center';bCtx.textBaseline='bottom';bCtx.fillStyle='rgba(97,255,178,.75)';bCtx.fillText('СТАРТ',cx+cw/2,cy+ch-1);bCtx.restore();}
+  });
+  drawTokens();
+}
+
+function drawTokens(){
+  if(!players.length)return;
+  const byPos={};players.forEach((p,i)=>{byPos[p.pos]=byPos[p.pos]||[];byPos[p.pos].push(i);});
+  Object.entries(byPos).forEach(([pos,pis])=>{
+    const cell=CELLS[parseInt(pos)];if(!cell)return;
+    const r=cellRect(cell);const ins=2.5,cx=r.x+ins,cy=r.y+ins,cw=r.w-ins*2,ch=r.h-ins*2;
+    const offs=[[.5,.28],[.28,.28,.72,.28],[.28,.2,.72,.2,.5,.52],[.28,.2,.72,.2,.28,.52,.72,.52]];
+    const oa=offs[pis.length-1]||[.5,.28,.5,.28];
+    pis.forEach((pi,j)=>{
+      const ox=oa[j*2],oy=oa[j*2+1];
+      const tx=cx+cw*ox,ty=cy+ch*oy,tr=Math.min(cw,ch)*.155;
+      bCtx.save();bCtx.shadowColor=PCOLORS[pi];bCtx.shadowBlur=9;
+      bCtx.fillStyle=PCOLORS[pi]+'33';bCtx.strokeStyle=PCOLORS[pi];bCtx.lineWidth=2;
+      bCtx.beginPath();bCtx.arc(tx,ty,tr,0,Math.PI*2);bCtx.fill();bCtx.stroke();
+      bCtx.shadowBlur=0;
+      bCtx.font=`bold ${tr*.88}px Arial`;bCtx.textAlign='center';bCtx.textBaseline='middle';
+      bCtx.fillStyle=PCOLORS[pi];bCtx.fillText(players[pi].name[0].toUpperCase(),tx,ty);
+      bCtx.restore();
+    });
+  });
+}
+
+function onBoardClick(){}// movement is automatic
+
+// ═══ GAME START ═══
+function startGame(){
+  players=SLOTS.map((s,i)=>s.on?{name:document.getElementById('pn'+i).value.trim()||PNAMES[i],
+    color:PCOLORS[i],idx:i,pos:0,score:0,res:[],badges:[],skipNext:false}:null).filter(Boolean);
+  if(players.length<2){alert('Минимум 2 игрока!');return;}
+  curP=0;ecoLevel=20;rolled=false;
+  SS('gScr');
+  setTimeout(()=>{initBoard();renderAll();addLog('🚀 Игра «Арктическая Одиссея» началась!','i');},100);
+}
+function goMenu(){if(confirm('Вернуться в меню?')){HM('popMov');HM('wMov');SS('mScr');initMenu();}}
+
+// ═══ RENDER PANEL ═══
+function renderAll(){renderPlayers();updateEco();renderRes();renderLB();}
+function renderPlayers(){
+  const c=document.getElementById('pCards');c.innerHTML='';
+  players.forEach((p,i)=>{
+    const d=document.createElement('div');d.className='pcard'+(i===curP?' act':'');
+    d.innerHTML=`<div class="pav" style="background:${p.color}33;color:${p.color}">${p.name[0].toUpperCase()}</div>
+      <div class="pinf"><div class="pnm" style="color:${p.color}">${p.name}</div>
+      <div class="psc">⭐${p.score} · Кл.${p.pos+1}</div></div>`;
+    c.appendChild(d);});
+  const p=players[curP];
+  document.getElementById('turnLbl').textContent=`Ход: ${p.name}`;
+  document.getElementById('turnLbl').style.color=p.color;
+  document.getElementById('curPName').textContent=p.name;
+  document.getElementById('bArea').textContent=p.badges.join(' ');
+}
+function updateEco(){
+  const v=Math.max(0,Math.min(100,Math.round(ecoLevel)));
+  document.getElementById('ecoB').style.width=v+'%';
+  document.getElementById('ecoV').textContent=v+'%';
+  if(v>=100)setTimeout(()=>showWin('eco'),600);
+}
+function renderRes(){
+  const p=players[curP];
+  const area=document.getElementById('resRow');
+  area.innerHTML=p.res.length?p.res.map(r=>`<span class="resico">${r}</span>`).join(''):'<span style="color:var(--muted);font-size:.72rem">Пусто</span>';
+  const has3=new Set(p.res).size>=3;
+  document.getElementById('buildBtn').style.display=has3&&CELLS[p.pos].type==='project'?'block':'none';
+}
+function addLog(msg,cls){
+  const gl=document.getElementById('gLog');
+  const d=document.createElement('div');d.className='lge '+(cls||'');d.textContent=msg;
+  gl.prepend(d);while(gl.children.length>35)gl.removeChild(gl.lastChild);
+}
+
+// ═══ DICE ═══
+function doRoll(){
+  if(rolled){setHint('Уже бросили! Ждите события...');return;}
+  const p=players[curP];
+  if(p.skipNext){p.skipNext=false;addLog(`🌪️ ${p.name} пропускает ход!`,'b');showEndBtn();return;}
+  const dice=document.getElementById('dice');
+  dice.classList.add('spin');
+  document.getElementById('rBtn').disabled=true;
+  sfx('roll');
+  setTimeout(()=>{
+    diceVal=Math.floor(Math.random()*6)+1;
+    dice.textContent=DICE[diceVal-1];
+    dice.classList.remove('spin');
+    rolled=true;
+    const newPos=(players[curP].pos+diceVal)%CELLS.length;
+    addLog(`🎲 ${p.name} бросил ${diceVal}`,'i');
+    setHint(`Выпало ${diceVal} — перемещаю...`);
+    drawBoard();
+    setTimeout(()=>movePlayer(newPos),500);
+  },500);
+}
+
+function movePlayer(ci){
+  const p=players[curP];p.pos=ci;
+  drawBoard();sfx('move');
+  const cell=CELLS[ci];
+  addLog(`📍 ${p.name} → ${CICO[cell.type]} клетка ${ci+1}`);
+  renderPlayers();
+  setTimeout(()=>landCell(cell),350);
+}
+
+// ═══ CELL LANDING ═══
+function landCell(cell){
+  const p=players[curP];
+  if(cell.type==='camp'){
+    p.score+=2;ecoLevel+=1;updateEco();renderPlayers();
+    floatScore('+2⭐',p.color);addLog(`🏕️ ${p.name} в лагере +2 очка`,'g');
+    showPopup('camp',{ico:'🏕️',title:'Базовый лагерь',sub:'+2 очка за возвращение на базу',
+      fact:'Арктика — дом для 4 миллионов человек! Коренные народы — инуиты, ненцы, чукчи — живут здесь десятки тысяч лет.'});
+  } else if(cell.type==='tundra'){
+    const card=TUNDRA[Math.floor(Math.random()*TUNDRA.length)];
+    p.score+=3;p.res.push(card.r);ecoLevel+=2;
+    if(p.res.length>6)p.res.shift();
+    updateEco();renderPlayers();renderRes();
+    floatScore('+3⭐ '+card.r,p.color);addLog(`🌿 ${p.name} собрал ресурс ${card.r} +3 очка`,'g');
+    showPopup('tundra',{ico:'🌿',title:'Тундра',sub:`Ресурс ${card.r} получен! +3 очка`,
+      fact:card.f,quiz:MODE==='school'?card.qs:card.qu});
+  } else if(cell.type==='animal'){
+    const card=ANIMALS[Math.floor(Math.random()*ANIMALS.length)];
+    showPopup('animal',{ico:card.i,title:'Встреча: '+card.n,sub:'Верный ответ: +10 очков, +6% экологии',
+      fact:card.f,quiz:MODE==='school'?card.qs:card.qu,
+      onRight:()=>{p.score+=10;ecoLevel+=6;updateEco();renderPlayers();floatScore('+10⭐',p.color);addLog(`✅ ${p.name} спас ${card.n}! +10 очков, +6% экологии`,'g');checkBadges(p);},
+      onWrong:()=>{ecoLevel-=3;updateEco();addLog(`❌ ${p.name} не знал ответа. -3% экологии`,'b');}});
+  } else if(cell.type==='threat'){
+    const card=THREATS[Math.floor(Math.random()*THREATS.length)];
+    ecoLevel-=card.dmg*.5;updateEco();
+    addLog(`⚡ Угроза: ${card.n}! -${Math.round(card.dmg*.5)}% экологии`,'b');
+    showPopup('threat',{ico:card.i,title:'Угроза: '+card.n,sub:'Выбери способ спасения Арктики!',
+      fact:card.f,choices:card.ch,quiz:MODE==='school'?card.qs:card.qu,
+      onRight:()=>{const p2=players[curP];p2.score+=8;ecoLevel+=card.dmg*.6;updateEco();renderPlayers();floatScore('+8⭐',p2.color);addLog(`🛡️ ${p2.name} нейтрализовал угрозу! +8 очков`,'g');checkBadges(p2);},
+      onWrong:()=>{ecoLevel-=card.dmg*.3;updateEco();addLog(`😞 Неверное решение. -${Math.round(card.dmg*.3)}% экологии`,'b');}});
+  } else if(cell.type==='glacier'){
+    const card=GLACIERS[Math.floor(Math.random()*GLACIERS.length)];
+    p.res.push('❄');if(p.res.length>6)p.res.shift();
+    renderRes();
+    const bonusTxt=card.bonus==='extra'?'🎁 Бонусный ход! Бросите ещё раз.':'🛡️ Блокировка! Следующая угроза не повредит.';
+    if(card.bonus==='extra'){setTimeout(()=>{rolled=false;document.getElementById('rBtn').disabled=false;setHint('🎁 Бонусный ход!');},100);}
+    addLog(`🏔️ ${p.name} исследовал ледник. Ресурс ❄ + ${card.bonus==='extra'?'доп. ход':'блокировка'}`,'w');
+    showPopup('glacier',{ico:'🏔️',title:'Исследование ледника',sub:bonusTxt,fact:card.f});
+  } else if(cell.type==='project'){
+    renderRes();
+    const has3=new Set(p.res).size>=3;
+    showPopup('project',{ico:'🏗️',title:'Экологический проект',
+      sub:has3?'У тебя есть 3 разных ресурса — можно построить станцию!':'Нужны 3 разных ресурса (🌱🐟❄) для строительства.',
+      fact:'Экологические станции в Арктике изучают изменение климата и помогают защищать животных. Их данные используют учёные всего мира!'});
+  }
+  if(p.score>=50)setTimeout(()=>showWin('score'),800);
+}
+
+function tryBuild(){
+  const p=players[curP];
+  if(new Set(p.res).size<3)return;
+  p.res=[];p.score+=20;ecoLevel+=20;updateEco();renderPlayers();renderRes();
+  floatScore('+20⭐',p.color);addLog(`🏗️ ${p.name} построил Эко-Станцию! +20 очков, +20% экологии`,'g');
+  showBadge({ico:'🏗️',name:'Инженер',desc:'Построил Эко-Станцию!'});
+  document.getElementById('buildBtn').style.display='none';
+  if(p.score>=50)setTimeout(()=>showWin('score'),800);
+}
+
+// ═══ POPUP ENGINE ═══
+let popCb=null,qDone=false;
+function showPopup(type,opts){
+  const box=document.getElementById('popBox');
+  const colors={camp:'rgba(97,255,178,.7)',tundra:'rgba(100,210,100,.7)',animal:'rgba(79,223,255,.7)',
+    threat:'rgba(255,95,122,.7)',glacier:'rgba(79,200,255,.7)',project:'rgba(167,139,250,.7)'};
+  const tagCols={camp:'background:rgba(97,255,178,.1);border:1px solid rgba(97,255,178,.3);color:#61ffb2',
+    tundra:'background:rgba(100,210,100,.1);border:1px solid rgba(100,210,100,.3);color:#7eed7e',
+    animal:'background:rgba(79,223,255,.1);border:1px solid rgba(79,223,255,.3);color:#4fdfff',
+    threat:'background:rgba(255,95,122,.1);border:1px solid rgba(255,95,122,.3);color:#ff5f7a',
+    glacier:'background:rgba(79,200,255,.1);border:1px solid rgba(79,200,255,.3);color:#4fc8ff',
+    project:'background:rgba(167,139,250,.1);border:1px solid rgba(167,139,250,.3);color:#a78bfa'};
+  const tagNames={camp:'Лагерь',tundra:'Тундра',animal:'Животное',threat:'Угроза',glacier:'Ледник',project:'Проект'};
+  qDone=false;popCb=null;
+  let html=`<span class="mico">${opts.ico}</span>
+    <div style="text-align:center;margin-bottom:6px"><span class="ctag" style="${tagCols[type]}">${tagNames[type]}</span></div>
+    <div class="mtit">${opts.title}</div>
+    <div class="msub">${opts.sub}</div>
+    <div class="factbox"><div class="factlbl">💡 Факт об Арктике</div><div class="factxt">${opts.fact}</div></div>`;
+
+  // threat choices
+  if(opts.choices){
+    html+=`<div class="tch-lbl">⚡ Выбери способ спасения:</div><div class="tchs">`;
+    opts.choices.forEach((ch,i)=>{
+      html+=`<button class="tch" id="tch${i}" onclick="pickThreat(${i})">${ch.t}</button>`;
+    });
+    html+=`</div>`;
+  }
+
+  // quiz section
+  if(opts.quiz){
+    const q=opts.quiz;
+    const timerSec=MODE==='student'?10:99;
+    html+=`<div class="qsep"></div><div class="qlbl">❓ Проверь знания</div>`;
+    if(MODE==='student')html+=`<div class="qbar"><div class="qbarb" id="qBarB" style="width:100%"></div></div>`;
+    html+=`<div class="qq">${q.q}</div><div class="qopts">`;
+    q.o.forEach((op,i)=>html+=`<button class="qopt" id="qo${i}" onclick="pickQ(${i},${q.a},'${encodeURIComponent(q.e)}')">${op}</button>`);
+    html+=`</div><div class="qres" id="qRes"></div>`;
+  }
+
+  html+=`<button class="cnxt" id="cNxt" onclick="closePopup()">Продолжить →</button>`;
+  box.innerHTML=html;
+  popCb={onRight:opts.onRight,onWrong:opts.onWrong,threat:opts.choices};
+
+  // auto-show continue if no quiz and no choices
+  if(!opts.quiz&&!opts.choices)document.getElementById('cNxt').classList.add('sh');
+
+  SM('popMov');
+  // timer
+  if(opts.quiz&&MODE==='student'){
+    let left=10;clearInterval(qTmr);
+    qTmr=setInterval(()=>{
+      left-=.1;const pct=Math.max(0,left/10*100);
+      const b=document.getElementById('qBarB');if(b)b.style.width=pct+'%';
+      if(b)b.style.background=pct>50?'linear-gradient(90deg,#4fdfff,#a78bfa)':pct>25?'linear-gradient(90deg,#ffd84d,#ff9f4d)':'linear-gradient(90deg,#ff5f7a,#ff9f4d)';
+      if(left<=0){clearInterval(qTmr);if(!qDone)timeoutQ();}
+    },100);
+  }
+}
+
+function pickThreat(i){
+  if(qDone)return;
+  const ch=popCb.threat[i];
+  document.querySelectorAll('.tch').forEach((b,j)=>{b.disabled=true;if(j===i)b.classList.add(ch.ok?'ok':'bad');});
+  const res=document.getElementById('qRes');
+  if(res){res.textContent=(ch.ok?'✅ ':'❌ ')+ch.e;res.className='qres sh '+(ch.ok?'ok':'bad');res.style.display='block';}
+  if(ch.ok&&popCb.onRight)popCb.onRight();
+  else if(!ch.ok&&popCb.onWrong)popCb.onWrong();
+  qDone=true;
+  document.getElementById('cNxt').classList.add('sh');
+}
+
+function pickQ(sel,cor,expEnc){
+  if(qDone)return;qDone=true;clearInterval(qTmr);
+  const exp=decodeURIComponent(expEnc);
+  document.querySelectorAll('.qopt').forEach((b,i)=>{b.disabled=true;if(i===cor)b.classList.add('ok');else if(i===sel)b.classList.add('bad');});
+  const res=document.getElementById('qRes');
+  const ok=sel===cor;
+  res.textContent=(ok?'✅ Верно! ':'❌ Неверно. ')+exp;
+  res.className='qres sh '+(ok?'ok':'bad');
+  if(ok&&popCb&&popCb.onRight)popCb.onRight();
+  else if(!ok&&popCb&&popCb.onWrong)popCb.onWrong();
+  sfx(ok?'correct':'wrong');
+  document.getElementById('cNxt').classList.add('sh');
+}
+
+function timeoutQ(){
+  if(qDone)return;qDone=true;
+  document.querySelectorAll('.qopt').forEach(b=>b.disabled=true);
+  const res=document.getElementById('qRes');
+  if(res){res.textContent='⏰ Время вышло!';res.className='qres sh bad';}
+  if(popCb&&popCb.onWrong)popCb.onWrong();
+  document.getElementById('cNxt').classList.add('sh');
+}
+
+function closePopup(){
+  clearInterval(qTmr);HM('popMov');showEndBtn();
+}
+
+// ═══ END TURN ═══
+function showEndBtn(){document.getElementById('etBtn').style.display='block';setHint('Нажмите «Завершить ход»');}
+function setHint(t){document.getElementById('mHint').textContent=t;}
+
+function endTurn(){
+  rolled=false;diceVal=0;
+  document.getElementById('rBtn').disabled=false;
+  document.getElementById('etBtn').style.display='none';
+  document.getElementById('dice').textContent='🎲';
+  curP=(curP+1)%players.length;
+  setHint('Нажмите «Бросить кубик»');
+  addLog(`➡️ Ход: ${players[curP].name}`,'i');
+  renderAll();drawBoard();
+}
+
+// ═══ BADGES ═══
+const BDEFS=[
+  {id:'eco50',ico:'🌿',n:'Эко-активист',d:'Экология 50%',check:()=>ecoLevel>=50},
+  {id:'pts20',ico:'⭐',n:'Исследователь',d:'20 очков набрано',check:p=>p.score>=20},
+  {id:'pts50',ico:'🏆',n:'Эко-герой',d:'50 очков — победа!',check:p=>p.score>=50},
+  {id:'res3',ico:'🎒',n:'Коллектор',d:'3 разных ресурса',check:p=>new Set(p.res).size>=3},
+];
+function checkBadges(p){
+  BDEFS.forEach(b=>{if(!p.badges.includes(b.ico)&&b.check(p)){p.badges.push(b.ico);showBadge(b);}});
+}
+function showBadge(b){
+  const el=document.createElement('div');el.className='btoast';
+  el.innerHTML=`<div style="font-size:1.6rem">${b.ico}</div><div><div style="font-weight:700;color:var(--gold);font-size:.78rem">🏅 ${b.n}</div><div style="color:var(--muted);font-size:.68rem">${b.d}</div></div>`;
+  document.body.appendChild(el);sfx('badge');
+  setTimeout(()=>{el.classList.add('out');setTimeout(()=>el.remove(),400);},3000);
+}
+
+// ═══ WIN ═══
+function showWin(reason){
+  clearInterval(qTmr);
+  const sorted=[...players].sort((a,b)=>b.score-a.score);
+  document.getElementById('wTit').textContent=reason==='eco'?'🌿 Арктика спасена!':'🏆 Победитель!';
+  document.getElementById('wSub').textContent=reason==='eco'
+    ?'Команда совместно достигла 100% экологии!'
+    :`${sorted[0].name} первым набрал 50+ очков!`;
+  const medals=['🥇','🥈','🥉','4️⃣'];
+  document.getElementById('wPod').innerHTML=sorted.map((p,i)=>
+    `<div class="wprow"><div class="wpmed">${medals[i]}</div>
+    <div class="wpnm" style="color:${p.color}">${p.name}</div>
+    <div class="wppt">${p.score}⭐</div></div>`).join('');
+  sfx('win');SM('wMov');saveLB(sorted[0]);
+}
+
+// ═══ LEADERBOARD ═══
+function saveLB(w){
+  const lb=JSON.parse(localStorage.getItem('arctic_lb')||'[]');
+  lb.unshift({name:w.name,score:w.score,date:new Date().toLocaleDateString()});
+  lb.splice(5);localStorage.setItem('arctic_lb',JSON.stringify(lb));
+}
+function renderLB(){
+  const lb=JSON.parse(localStorage.getItem('arctic_lb')||'[]');
+  document.getElementById('lbBoard').innerHTML=lb.length
+    ?lb.map((e,i)=>`${i+1}. ${e.name}: ${e.score}⭐`).join('<br>'):'Рекордов пока нет';
+}
+
+// ═══ SHARE ═══
+function shareResult(){
+  const s=[...players].sort((a,b)=>b.score-a.score);
+  const url=`${location.origin}${location.pathname}?w=${encodeURIComponent(s[0].name)}&s=${s[0].score}&e=${Math.round(ecoLevel)}`;
+  if(navigator.share)navigator.share({title:'Арктическая Одиссея',url});
+  else navigator.clipboard.writeText(url).then(()=>alert('Ссылка скопирована!')).catch(()=>prompt('Ссылка:',url));
+}
+
+// ═══ FLOAT SCORE ═══
+function floatScore(txt,color){
+  const el=document.createElement('div');el.className='fsc';el.textContent=txt;el.style.color=color;
+  const bw=document.getElementById('bWrap').getBoundingClientRect();
+  el.style.left=(bw.left+bw.width/2-24)+'px';el.style.top=(bw.top+bw.height*.4)+'px';
+  document.body.appendChild(el);setTimeout(()=>el.remove(),1300);
+}
+
+// ═══ SFX ═══
+let _AC;
+function gAC(){if(!_AC)_AC=new(window.AudioContext||window.webkitAudioContext)();if(_AC.state==='suspended')_AC.resume();return _AC;}
+function tn(f,dur,vol,wave,s){try{const ac=gAC(),t=ac.currentTime+(s||0),o=ac.createOscillator(),g=ac.createGain();o.type=wave||'sine';o.frequency.value=f;g.gain.setValueAtTime(vol||.3,t);g.gain.exponentialRampToValueAtTime(.001,t+dur);o.connect(g);g.connect(ac.destination);o.start(t);o.stop(t+dur+.05);}catch(e){}}
+function sfx(t){
+  if(t==='roll'){for(let i=0;i<6;i++)tn(150+Math.random()*200,.07,.15,'square',i*.08);}
+  else if(t==='move'){tn(440,.08,'sine',.2);tn(550,.1,'sine',.15,.09);}
+  else if(t==='correct'){tn(523,.1,'sine',.4);tn(659,.1,'sine',.4,.12);tn(784,.25,'sine',.5,.24);}
+  else if(t==='wrong'){tn(330,.08,'sawtooth',.3);tn(277,.35,'sawtooth',.25,.1);}
+  else if(t==='badge'){[523,659,784,1047].forEach((f,i)=>tn(f,.15,'sine',.4,i*.08));}
+  else if(t==='win'){[523,659,784,1047,784,1047,1319].forEach((f,i)=>tn(f,.2,'sine',.5,i*.15));}
+}
+
+// ═══ INIT ═══
+initMenu();
+</script>
+</body>
+</html>
