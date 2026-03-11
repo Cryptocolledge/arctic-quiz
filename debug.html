@@ -1,0 +1,580 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>🔧 QuizHub Диагностика</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg:#04080f;--panel:#0a1428;--border:rgba(79,223,255,.15);
+  --ice:#4fdfff;--ok:#5dffb0;--err:#ff5f7a;--warn:#ffd84d;
+  --muted:rgba(180,220,255,.45);--txt:#ddf4ff;
+  --font:'Segoe UI',system-ui,sans-serif;
+}
+body{font-family:var(--font);background:var(--bg);color:var(--txt);min-height:100vh;padding:16px;}
+h1{font-size:1.3rem;font-weight:900;letter-spacing:.04em;
+  background:linear-gradient(90deg,#4fdfff,#5dffb0);-webkit-background-clip:text;-webkit-text-fill-color:transparent;
+  margin-bottom:4px;}
+.subtitle{font-size:.74rem;color:var(--muted);margin-bottom:18px;}
+.section{background:var(--panel);border:1px solid var(--border);border-radius:14px;
+  padding:14px 16px;margin-bottom:12px;}
+.sec-title{font-size:.6rem;font-weight:800;letter-spacing:.14em;text-transform:uppercase;
+  color:var(--muted);margin-bottom:10px;display:flex;align-items:center;gap:8px;}
+.sec-title span{flex:1;}
+.badge{padding:2px 8px;border-radius:999px;font-size:.58rem;font-weight:800;letter-spacing:.08em;}
+.badge.ok{background:rgba(93,255,176,.15);border:1px solid rgba(93,255,176,.4);color:var(--ok);}
+.badge.err{background:rgba(255,95,122,.15);border:1px solid rgba(255,95,122,.4);color:var(--err);}
+.badge.warn{background:rgba(255,216,77,.1);border:1px solid rgba(255,216,77,.3);color:var(--warn);}
+.badge.run{background:rgba(79,223,255,.1);border:1px solid rgba(79,223,255,.3);color:var(--ice);
+  animation:pulse .8s ease-in-out infinite;}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+.check-row{display:flex;align-items:flex-start;gap:10px;padding:7px 0;
+  border-bottom:1px solid rgba(255,255,255,.04);font-size:.8rem;}
+.check-row:last-child{border-bottom:none;}
+.ci{width:20px;height:20px;border-radius:50%;display:flex;align-items:center;
+  justify-content:center;font-size:.7rem;flex-shrink:0;margin-top:1px;}
+.ci.ok{background:rgba(93,255,176,.2);color:var(--ok);}
+.ci.err{background:rgba(255,95,122,.2);color:var(--err);}
+.ci.warn{background:rgba(255,216,77,.1);color:var(--warn);}
+.ci.run{background:rgba(79,223,255,.1);color:var(--ice);animation:pulse .8s ease-in-out infinite;}
+.check-body{flex:1;}
+.check-name{font-weight:700;margin-bottom:2px;}
+.check-detail{font-size:.71rem;color:var(--muted);line-height:1.5;}
+.check-detail.err{color:#ff9aae;}
+.check-detail.ok{color:#9affd7;}
+.check-detail.warn{color:#ffe9a0;}
+.copy-box{background:rgba(0,0,0,.5);border:1px solid rgba(255,255,255,.08);border-radius:9px;
+  padding:10px 12px;font-family:'Courier New',monospace;font-size:.7rem;color:#b0d4ff;
+  white-space:pre-wrap;word-break:break-all;margin-top:8px;max-height:220px;overflow-y:auto;
+  cursor:pointer;position:relative;user-select:all;}
+.copy-box::after{content:"click to copy";position:absolute;top:5px;right:8px;
+  font-size:.52rem;color:rgba(255,255,255,.2);font-family:var(--font);}
+.copy-box:hover::after{color:var(--ice);}
+.copy-box.copied::after{content:"copied!";color:var(--ok);}
+.btn-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px;}
+.btn{padding:8px 18px;border-radius:10px;border:none;font:.8rem/1 var(--font);
+  font-weight:800;cursor:pointer;transition:all .2s;letter-spacing:.02em;}
+.btn.pri{background:linear-gradient(135deg,#4fdfff,#5dffb0);color:#050e22;}
+.btn.pri:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(79,223,255,.3);}
+.btn.sec{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);color:var(--txt);}
+.btn.sec:hover{border-color:rgba(79,223,255,.5);}
+.btn:disabled{opacity:.35;cursor:not-allowed;transform:none!important;}
+.progress-bar{height:3px;border-radius:999px;background:rgba(255,255,255,.06);margin:8px 0 2px;overflow:hidden;}
+.progress-fill{height:100%;border-radius:999px;transition:width .4s ease;
+  background:linear-gradient(90deg,#4fdfff,#5dffb0);}
+.progress-label{font-size:.6rem;color:var(--muted);text-align:right;}
+.stat-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:8px;}
+.stat-box{background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06);
+  border-radius:10px;padding:10px;text-align:center;}
+.stat-val{font-size:1.4rem;font-weight:900;}
+.stat-val.ok{color:var(--ok);}.stat-val.err{color:var(--err);}.stat-val.warn{color:var(--warn);}
+.stat-lbl{font-size:.58rem;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-top:2px;}
+.err-summary{background:rgba(255,95,122,.06);border:1px solid rgba(255,95,122,.2);
+  border-radius:10px;padding:12px 14px;margin-top:10px;font-size:.78rem;}
+.err-summary h3{color:var(--err);font-size:.72rem;margin-bottom:8px;font-weight:800;}
+.err-line{padding:4px 0;border-bottom:1px solid rgba(255,95,122,.08);display:flex;gap:8px;font-size:.72rem;}
+.err-line:last-child{border-bottom:none;}
+.paste-hint{font-size:.72rem;color:var(--ice);margin-bottom:8px;padding:8px 12px;
+  background:rgba(79,223,255,.06);border:1px solid rgba(79,223,255,.18);border-radius:8px;}
+.log-entry{font-size:.68rem;padding:2px 0;border-bottom:1px solid rgba(255,255,255,.03);}
+.log-entry.err{color:#ff9aae;}.log-entry.ok{color:#9affd7;}.log-entry.warn{color:#ffe9a0;}.log-entry.info{color:#b0d4ff;}
+.log-time{color:rgba(255,255,255,.25);margin-right:6px;}
+</style>
+</head>
+<body>
+<h1>🔧 QuizHub Диагностика</h1>
+<p class="subtitle">Запусти → получи отчёт → скинь разработчику 🧊</p>
+
+<div class="section">
+  <div class="sec-title"><span>⚡ Управление</span></div>
+  <div class="btn-row">
+    <button class="btn pri" id="btnRunAll" onclick="runAll()">▶ Полная проверка</button>
+    <button class="btn sec" id="btnCopyReport" onclick="copyReport()" disabled>📋 Скопировать отчёт</button>
+    <button class="btn sec" onclick="clearJsErrors()">🗑 Очистить JS ошибки</button>
+  </div>
+  <div class="progress-bar"><div class="progress-fill" id="progressFill" style="width:0%"></div></div>
+  <div class="progress-label" id="progressLabel">Нажмите «Полная проверка»</div>
+</div>
+
+<div class="section" id="summarySection" style="display:none">
+  <div class="sec-title"><span>📊 Итоги</span><span id="summaryBadge" class="badge"></span></div>
+  <div class="stat-grid">
+    <div class="stat-box"><div class="stat-val ok" id="okCount">0</div><div class="stat-lbl">✅ Ок</div></div>
+    <div class="stat-box"><div class="stat-val err" id="errCount">0</div><div class="stat-lbl">❌ Ошибок</div></div>
+    <div class="stat-box"><div class="stat-val warn" id="warnCount">0</div><div class="stat-lbl">⚠ Предупреждений</div></div>
+  </div>
+  <div id="errSummaryBox"></div>
+</div>
+
+<div class="section">
+  <div class="sec-title"><span>🗄 Supabase / БД</span><span id="dbBadge" class="badge" style="display:none"></span></div>
+  <div id="dbChecks"></div>
+</div>
+<div class="section">
+  <div class="sec-title"><span>🎮 quiz_state</span><span id="stateBadge" class="badge" style="display:none"></span></div>
+  <div id="stateChecks"></div>
+</div>
+<div class="section">
+  <div class="sec-title"><span>👥 quiz_players</span><span id="playersBadge" class="badge" style="display:none"></span></div>
+  <div id="playersChecks"></div>
+</div>
+<div class="section">
+  <div class="sec-title"><span>🏆 quiz_scores</span><span id="scoresBadge" class="badge" style="display:none"></span></div>
+  <div id="scoresChecks"></div>
+</div>
+<div class="section">
+  <div class="sec-title"><span>💬 quiz_chat</span><span id="chatBadge" class="badge" style="display:none"></span></div>
+  <div id="chatChecks"></div>
+</div>
+<div class="section">
+  <div class="sec-title"><span>📁 Файлы проекта</span><span id="filesBadge" class="badge" style="display:none"></span></div>
+  <div id="filesChecks"></div>
+</div>
+<div class="section">
+  <div class="sec-title"><span>🐛 JS ошибки (перехваченные)</span><span id="jsBadge" class="badge" style="display:none"></span></div>
+  <div id="jsErrors"><div style="font-size:.75rem;color:var(--muted);padding:6px 0">
+    Открой hub.html в соседней вкладке — ошибки появятся здесь автоматически
+  </div></div>
+</div>
+<div class="section" id="reportBox" style="display:none">
+  <div class="sec-title"><span>📋 Отчёт для разработчика</span></div>
+  <p class="paste-hint">👇 Кликни на блок — скопируй — отправь разработчику</p>
+  <div class="copy-box" id="reportText" onclick="selectAndCopy(this)"></div>
+</div>
+<div class="section">
+  <div class="sec-title"><span>📜 Лог</span></div>
+  <div id="logBox" style="max-height:180px;overflow-y:auto;"></div>
+</div>
+
+<script>
+const SURL="https://arpbhbfyucpojvxipqng.supabase.co";
+const SKEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFycGJoYmZ5dWNwb2p2eGlwcW5nIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIyMTAwNTQsImV4cCI6MjA4Nzc4NjA1NH0.MQWcU9ph2sWNgbHbfDZ0qKEC1V1PzbI7I7TtQyPNyeg";
+const GID="default";
+const FILES=["hub.html","presenter.html","observer.html","projector.html","profiles.html","facts.html","admin.html","arctic-odyssey.html","index.html","debug.html"];
+const TABLES=["quiz_state","quiz_players","quiz_scores","quiz_chat"];
+
+let sb=null,results=[],logLines=[],checksDone=0,checksTotal=0,startTime=0;
+
+function log(msg,type="info"){
+  const t=new Date().toTimeString().slice(0,8);
+  logLines.push({t,msg,type});
+  const el=document.getElementById("logBox");
+  const div=document.createElement("div");
+  div.className="log-entry "+type;
+  div.innerHTML=`<span class="log-time">${t}</span>${escH(msg)}`;
+  el.appendChild(div);
+  el.scrollTop=el.scrollHeight;
+}
+
+function setProgress(done,total,label){
+  const pct=total>0?Math.round(done/total*100):0;
+  document.getElementById("progressFill").style.width=pct+"%";
+  document.getElementById("progressLabel").textContent=label||`${done}/${total}`;
+}
+
+function addCheck(cid,bid,name,status,detail,raw){
+  results.push({section:cid,name,status,detail:detail||"",raw:raw||""});
+  const c=document.getElementById(cid);
+  const row=document.createElement("div");row.className="check-row";
+  const icon=status==="ok"?"✓":status==="err"?"✗":status==="warn"?"!":"…";
+  row.innerHTML=`<div class="ci ${status}">${icon}</div><div class="check-body">
+    <div class="check-name">${escH(name)}</div>
+    <div class="check-detail ${status}">${escH(detail||"")}</div>
+    ${raw?`<div class="copy-box" onclick="selectAndCopy(this)">${escH(raw)}</div>`:""}
+  </div>`;
+  c.appendChild(row);
+  checksDone++;
+  setProgress(checksDone,checksTotal,`${checksDone}/${checksTotal} — ${name}`);
+  updateBadge(cid,bid);
+}
+
+function updateLast(cid,bid,status,detail,raw){
+  const c=document.getElementById(cid);
+  const rows=c.querySelectorAll(".check-row");
+  const last=rows[rows.length-1];
+  const lastRes=results.filter(r=>r.section===cid).slice(-1)[0];
+  if(lastRes){lastRes.status=status;lastRes.detail=detail||"";if(raw)lastRes.raw=raw;}
+  if(last){
+    const ci=last.querySelector(".ci");
+    const cd=last.querySelector(".check-detail");
+    const icon=status==="ok"?"✓":status==="err"?"✗":status==="warn"?"!":"…";
+    if(ci){ci.className="ci "+status;ci.textContent=icon;}
+    if(cd){cd.className="check-detail "+status;cd.textContent=detail||"";}
+    if(raw&&!last.querySelector(".copy-box")){
+      const cb=document.createElement("div");cb.className="copy-box";cb.textContent=raw;
+      cb.onclick=()=>selectAndCopy(cb);
+      last.querySelector(".check-body").appendChild(cb);
+    }
+  }
+  updateBadge(cid,bid);
+}
+
+function updateBadge(cid,bid){
+  const sr=results.filter(r=>r.section===cid);
+  const hasErr=sr.some(r=>r.status==="err");
+  const hasWarn=sr.some(r=>r.status==="warn");
+  const b=document.getElementById(bid);
+  if(b){b.style.display="";b.className="badge "+(hasErr?"err":hasWarn?"warn":"ok");
+    b.textContent=hasErr?"Ошибки":hasWarn?"Предупреждения":"ОК";}
+}
+
+async function loadSB(){
+  return new Promise(res=>{
+    if(window.supabase){sb=window.supabase.createClient(SURL,SKEY);res(true);return;}
+    const s=document.createElement("script");
+    s.src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2";
+    s.onload=()=>{sb=window.supabase.createClient(SURL,SKEY);res(true);};
+    s.onerror=()=>res(false);
+    document.head.appendChild(s);
+  });
+}
+
+async function runDB(){
+  checksTotal+=16;
+  // 1 SDK
+  addCheck("dbChecks","dbBadge","Загрузка Supabase SDK","run","Загружаем CDN…");
+  const ok=await loadSB();
+  updateLast("dbChecks","dbBadge",ok?"ok":"err",
+    ok?"SDK загружен успешно":"SDK недоступен — нет интернета или CDN заблокирован",
+    ok?null:"CDN: cdn.jsdelivr.net — проверь соединение");
+  if(!ok){log("SDK fail","err");return;}
+  log("SDK OK","ok");
+
+  // 2 Ping
+  addCheck("dbChecks","dbBadge","Соединение с Supabase","run","Пингуем…");
+  let pingOk=false,pingErr="";
+  try{
+    const t0=Date.now();
+    const{data,error}=await sb.from("quiz_state").select("game_id").limit(1);
+    const ms=Date.now()-t0;
+    if(error){pingErr=`${error.message} (${error.code})`;}
+    else{pingOk=true;log(`Ping OK ${ms}ms`,"ok");}
+  }catch(e){pingErr=e.message;}
+  updateLast("dbChecks","dbBadge",pingOk?"ok":"err",
+    pingOk?"БД отвечает":"Ошибка подключения",pingOk?null:pingErr);
+  if(!pingOk){log("DB fail: "+pingErr,"err");return;}
+
+  // 3 Таблицы
+  for(const tbl of TABLES){
+    addCheck("dbChecks","dbBadge","Таблица: "+tbl,"run","…");
+    try{
+      const{error}=await sb.from(tbl).select("*").limit(0);
+      if(error){
+        updateLast("dbChecks","dbBadge","err",`"${tbl}" недоступна`,`${error.message} (${error.code})`);
+        log(`${tbl}: ERR ${error.message}`,"err");
+      }else{
+        updateLast("dbChecks","dbBadge","ok",`"${tbl}" доступна`);
+        log(`${tbl}: OK`,"ok");
+      }
+    }catch(e){updateLast("dbChecks","dbBadge","err","Исключение",e.message);}
+  }
+
+  // Game state
+  addCheck("stateChecks","stateBadge","Запись game_id=default","run","…");
+  try{
+    const{data,error}=await sb.from("quiz_state").select("*").eq("game_id",GID).maybeSingle();
+    if(error){updateLast("stateChecks","stateBadge","err","Ошибка чтения",error.message);return;}
+    if(!data){
+      updateLast("stateChecks","stateBadge","err","Запись НЕ найдена",
+        "SQL: INSERT INTO quiz_state(game_id,phase) VALUES('default','waiting');");
+      return;
+    }
+    updateLast("stateChecks","stateBadge","ok","Запись найдена");
+
+    // Column checks
+    const cols=[
+      ["phase", data.phase, "waiting|running|paused|ended", !data.phase],
+      ["current_index", data.current_index, "число 0–29", false],
+      ["quiz_mode", data.quiz_mode, "spo|school", !data.quiz_mode],
+      ["show_answer", String(data.show_answer), "true|false", false],
+      ["round_type", data.round_type||"(пусто)", "пусто|betting_chips…", false],
+      ["shuffle_seed", data.shuffle_seed, "число или null", data.shuffle_seed===undefined],
+      ["quiz_id", data.quiz_id||"(пусто)", "arctic|ecology", false],
+      ["music_broadcast", data.music_broadcast||"(null)", "null или url", false],
+    ];
+    checksTotal+=cols.length;
+    for(const [col,val,exp,missing] of cols){
+      addCheck("stateChecks","stateBadge","Колонка: "+col,
+        missing?"warn":"ok",
+        missing?`Колонка "${col}" отсутствует — нужна миграция`:`${col} = ${JSON.stringify(val)} (ожидается: ${exp})`,
+        missing?`ALTER TABLE quiz_state ADD COLUMN IF NOT EXISTS ${col} text;`:null
+      );
+    }
+  }catch(e){updateLast("stateChecks","stateBadge","err","Исключение",e.message);}
+
+  // Players
+  addCheck("playersChecks","playersBadge","Список игроков","run","…");
+  try{
+    const{data,error}=await sb.from("quiz_players").select("*").eq("game_id",GID).order("joined_at",{ascending:false});
+    if(error){updateLast("playersChecks","playersBadge","err","Ошибка",error.message);return;}
+    const n=data?.length||0;
+    updateLast("playersChecks","playersBadge",n===0?"warn":"ok",
+      n===0?"Игроков нет (0 записей)":
+      `${n} игрок${n<5?"а":"ов"}: ${data.slice(0,4).map(p=>p.student_name).join(", ")}${n>4?" +ещё":""}`,
+      n>0?JSON.stringify(data.slice(0,5).map(p=>({name:p.student_name,team:p.team_name,seen:p.last_seen})),null,2):null
+    );
+    if(n>0){
+      const blocked=data.filter(p=>p.chat_blocked);
+      if(blocked.length){
+        checksTotal++;
+        addCheck("playersChecks","playersBadge","Заблокированные","warn",
+          blocked.map(p=>p.student_name).join(", "),null);
+      }
+    }
+    log(`Players: ${n}`,"ok");
+  }catch(e){updateLast("playersChecks","playersBadge","err","Исключение",e.message);}
+
+  // Scores
+  addCheck("scoresChecks","scoresBadge","Таблица очков","run","…");
+  try{
+    const{data,error}=await sb.from("quiz_scores").select("*").eq("game_id",GID).order("score",{ascending:false}).limit(20);
+    if(error){updateLast("scoresChecks","scoresBadge","err","Ошибка",`${error.message} (${error.code})`);return;}
+    const n=data?.length||0;
+    updateLast("scoresChecks","scoresBadge",n===0?"warn":"ok",
+      n===0?"Очков нет":
+      `Топ: ${data.slice(0,3).map(p=>`${p.student_name}=${p.score}`).join(", ")}`,
+      n>0?JSON.stringify(data.slice(0,5),null,2):null
+    );
+    log(`Scores: ${n}`,"ok");
+  }catch(e){updateLast("scoresChecks","scoresBadge","err","Исключение",e.message);}
+
+  // Chat
+  addCheck("chatChecks","chatBadge","Последние сообщения","run","…");
+  try{
+    const{data,error}=await sb.from("quiz_chat").select("*").eq("game_id",GID)
+      .order("created_at",{ascending:false}).limit(10);
+    if(error){updateLast("chatChecks","chatBadge","err","Ошибка",error.message);return;}
+    const n=data?.length||0;
+    updateLast("chatChecks","chatBadge","ok",
+      n===0?"Чат пуст":
+      `${n} сообщений. Последнее: ${data[0]?.sender_name}: "${(data[0]?.message||"").slice(0,40)}"`,
+      n>0?data.slice(0,5).map(m=>`[${m.sender_name}] ${m.message?.slice(0,50)||""}`).join("\n"):null
+    );
+    log(`Chat: ${n} messages`,"ok");
+  }catch(e){updateLast("chatChecks","chatBadge","err","Исключение",e.message);}
+}
+
+async function runFiles(){
+  checksTotal+=FILES.length;
+  const base=location.href.replace(/\/[^/]*$/,"/");
+  log("── Проверка файлов ──");
+  for(const file of FILES){
+    addCheck("filesChecks","filesBadge",file,"run","HEAD запрос…");
+    try{
+      const t0=Date.now();
+      const r=await fetch(base+file,{method:"HEAD",cache:"no-cache"});
+      const ms=Date.now()-t0;
+      if(r.ok){
+        updateLast("filesChecks","filesBadge","ok",`${r.status} OK (${ms}ms)`);
+        log(`${file}: OK ${ms}ms`,"ok");
+      }else{
+        updateLast("filesChecks","filesBadge","err",
+          `HTTP ${r.status}`,
+          r.status===404?"Файл не найден — не загружен на GitHub?":
+          r.status===403?"Доступ запрещён (403)":"Ошибка "+r.status);
+        log(`${file}: ${r.status}`,"err");
+      }
+    }catch(e){
+      updateLast("filesChecks","filesBadge","err","Ошибка сети",e.message);
+      log(`${file}: ${e.message}`,"err");
+    }
+  }
+}
+
+function checkJSErrors(){
+  const el=document.getElementById("jsErrors");
+  const badge=document.getElementById("jsBadge");
+  let stored=[];
+  try{stored=JSON.parse(localStorage.getItem("quizhub_errors")||"[]");}catch(e){}
+  if(stored.length===0){
+    el.innerHTML=`<div class="check-row"><div class="ci ok">✓</div><div class="check-body">
+      <div class="check-name">Нет перехваченных JS ошибок</div>
+      <div class="check-detail">localStorage "quizhub_errors" пуст</div></div></div>`;
+    badge.style.display="";badge.className="badge ok";badge.textContent="ОК";
+    return;
+  }
+  badge.style.display="";badge.className="badge err";badge.textContent=stored.length+" ошибок";
+  el.innerHTML="";
+  stored.slice(-15).reverse().forEach(e=>{
+    const row=document.createElement("div");row.className="check-row";
+    row.innerHTML=`<div class="ci err">✗</div><div class="check-body">
+      <div class="check-name">${escH((e.message||"").slice(0,120))}</div>
+      <div class="check-detail err">${escH(e.file||"")} строка ${e.line||"?"}:${e.col||"?"} | ${e.time||""}</div>
+      ${e.stack?`<div class="copy-box" onclick="selectAndCopy(this)">${escH(e.stack.slice(0,600))}</div>`:""}
+    </div>`;
+    el.appendChild(row);
+  });
+}
+
+function clearJsErrors(){
+  localStorage.removeItem("quizhub_errors");
+  document.getElementById("jsErrors").innerHTML=
+    `<div style="font-size:.75rem;color:var(--ok);padding:6px 0">✅ JS ошибки очищены</div>`;
+  const b=document.getElementById("jsBadge");
+  b.className="badge ok";b.textContent="Очищено";
+}
+
+async function runAll(){
+  // reset
+  results=[];logLines=[];checksDone=0;checksTotal=0;
+  document.getElementById("logBox").innerHTML="";
+  document.getElementById("summarySection").style.display="none";
+  document.getElementById("reportBox").style.display="none";
+  document.getElementById("errSummaryBox").innerHTML="";
+  ["db","state","players","scores","chat","files"].forEach(s=>{
+    const el=document.getElementById(s+"Checks");if(el)el.innerHTML="";
+    const b=document.getElementById(s+"Badge");if(b)b.style.display="none";
+  });
+
+  startTime=Date.now();
+  document.getElementById("btnRunAll").disabled=true;
+  document.getElementById("btnCopyReport").disabled=true;
+  log("═══ Начало диагностики ═══","ok");
+  setProgress(0,1,"Инициализация…");
+
+  await runDB();
+  await runFiles();
+  checkJSErrors();
+
+  // Summary
+  const errs=results.filter(r=>r.status==="err");
+  const warns=results.filter(r=>r.status==="warn");
+  const oks=results.filter(r=>r.status==="ok");
+
+  document.getElementById("okCount").textContent=oks.length;
+  document.getElementById("errCount").textContent=errs.length;
+  document.getElementById("warnCount").textContent=warns.length;
+
+  const sb2=document.getElementById("summaryBadge");
+  sb2.className="badge "+(errs.length?"err":warns.length?"warn":"ok");
+  sb2.textContent=errs.length?`${errs.length} ошибок`:warns.length?`${warns.length} предупреждений`:"Всё ОК";
+
+  if(errs.length||warns.length){
+    document.getElementById("errSummaryBox").innerHTML=
+      `<div class="err-summary"><h3>🔺 Требует внимания:</h3>`+
+      [...errs,...warns].map((r,i)=>
+        `<div class="err-line"><b>${i+1}.</b>${r.status==="err"?"❌":"⚠"} 
+        [${r.section.replace("Checks","")}] ${escH(r.name)}: ${escH((r.detail||"").slice(0,90))}</div>`
+      ).join("")+`</div>`;
+  }
+
+  document.getElementById("summarySection").style.display="";
+  const elapsed=((Date.now()-startTime)/1000).toFixed(1);
+  setProgress(checksDone,checksDone,`✅ Готово за ${elapsed}с — ❌${errs.length} ⚠${warns.length} ✅${oks.length}`);
+  log(`═══ Готово за ${elapsed}с | ❌${errs.length} ⚠${warns.length} ✅${oks.length} ═══`,"ok");
+
+  buildReport();
+  document.getElementById("reportBox").style.display="";
+  document.getElementById("btnCopyReport").disabled=false;
+  document.getElementById("btnRunAll").disabled=false;
+}
+
+function buildReport(){
+  const now=new Date().toLocaleString("ru-RU");
+  const errs=results.filter(r=>r.status==="err");
+  const warns=results.filter(r=>r.status==="warn");
+  const oks=results.filter(r=>r.status==="ok");
+  let L=[
+    "╔══════════════════════════════════════╗",
+    "║   QUIZHUB DIAGNOSTIC REPORT          ║",
+    "╚══════════════════════════════════════╝",
+    `Дата: ${now}`,
+    `URL: ${location.href}`,
+    `UA: ${navigator.userAgent.slice(0,100)}`,
+    "",
+    `ИТОГО: ❌ ${errs.length} ошибок | ⚠ ${warns.length} предупреждений | ✅ ${oks.length} ок`,
+    "",
+  ];
+  if(errs.length){
+    L.push("══ ОШИБКИ ══");
+    errs.forEach((r,i)=>{
+      L.push(`${i+1}. [${r.section.replace("Checks","")}] ${r.name}`);
+      L.push(`   → ${r.detail}`);
+      if(r.raw)L.push(`   raw: ${r.raw.slice(0,200)}`);
+    });
+    L.push("");
+  }
+  if(warns.length){
+    L.push("══ ПРЕДУПРЕЖДЕНИЯ ══");
+    warns.forEach((r,i)=>{
+      L.push(`${i+1}. [${r.section.replace("Checks","")}] ${r.name}: ${r.detail}`);
+    });
+    L.push("");
+  }
+  L.push("══ ВСЕ ПРОВЕРКИ ══");
+  [...new Set(results.map(r=>r.section))].forEach(sec=>{
+    L.push(`\n[${sec.replace("Checks","")}]`);
+    results.filter(r=>r.section===sec).forEach(r=>{
+      const ico=r.status==="ok"?"✅":r.status==="err"?"❌":"⚠";
+      L.push(`  ${ico} ${r.name}: ${(r.detail||"").slice(0,100)}`);
+    });
+  });
+  try{
+    const je=JSON.parse(localStorage.getItem("quizhub_errors")||"[]");
+    if(je.length){
+      L.push("\n══ JS ОШИБКИ ══");
+      je.slice(-10).forEach(e=>{
+        L.push(`  • [${e.time||""}] ${(e.message||"").slice(0,120)}`);
+        if(e.file)L.push(`    @ ${e.file}:${e.line}`);
+        if(e.stack)L.push(`    ${e.stack.split("\n").slice(0,3).join(" | ")}`);
+      });
+    }
+  }catch(e){}
+  L.push("\n══ ЛОГ ══");
+  logLines.forEach(l=>L.push(`[${l.t}] ${l.msg}`));
+  document.getElementById("reportText").textContent=L.join("\n");
+}
+
+function selectAndCopy(el){
+  const sel=window.getSelection();
+  const r=document.createRange();
+  r.selectNodeContents(el);sel.removeAllRanges();sel.addRange(r);
+  try{
+    document.execCommand("copy");
+    el.classList.add("copied");
+    setTimeout(()=>el.classList.remove("copied"),2000);
+  }catch(e){}
+}
+
+function copyReport(){
+  selectAndCopy(document.getElementById("reportText"));
+  const btn=document.getElementById("btnCopyReport");
+  const orig=btn.textContent;
+  btn.textContent="✅ Скопировано!";
+  setTimeout(()=>btn.textContent=orig,2500);
+}
+
+function escH(s){
+  return String(s||"")
+    .replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
+}
+
+// Intercept errors on this page
+window.onerror=function(msg,src,line,col,err){
+  log(`JS Error: ${msg} @ ${src}:${line}`,"err");
+  try{
+    const e=JSON.parse(localStorage.getItem("quizhub_errors")||"[]");
+    e.push({type:"onerror",message:msg,file:src,line,col,stack:err?.stack,time:new Date().toISOString()});
+    if(e.length>50)e.shift();
+    localStorage.setItem("quizhub_errors",JSON.stringify(e));
+  }catch(ex){}
+  return false;
+};
+window.addEventListener("unhandledrejection",e=>{
+  log(`Promise rejection: ${e.reason}`,"err");
+  try{
+    const errs=JSON.parse(localStorage.getItem("quizhub_errors")||"[]");
+    errs.push({type:"promise",message:String(e.reason),stack:e.reason?.stack,time:new Date().toISOString()});
+    if(errs.length>50)errs.shift();
+    localStorage.setItem("quizhub_errors",JSON.stringify(errs));
+  }catch(ex){}
+});
+
+window.addEventListener("load",()=>{
+  checkJSErrors();
+  setTimeout(runAll,400);
+});
+</script>
+</body>
+</html>
