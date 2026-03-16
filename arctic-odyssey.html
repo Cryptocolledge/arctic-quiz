@@ -1,0 +1,1928 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>🧊 Арктическая Одиссея</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Russo+One&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+:root{
+  --sky:#dff4ff;--snow:#f0faff;--ice:#b8e8ff;--ocean:#4db8e8;
+  --eco:#22c55e;--gold:#f59e0b;--red:#ef4444;--purple:#8b5cf6;
+  --panel:rgba(255,255,255,.92);--border:rgba(100,180,220,.3);
+  --txt:#1a3a4a;--muted:#6b8fa3;--shadow:rgba(0,80,140,.15);
+  --p0:#0ea5e9;--p1:#ef4444;--p2:#22c55e;--p3:#f59e0b;
+  --font:'Nunito',sans-serif;--head:'Russo One',sans-serif;
+}
+html,body{width:100%;height:100%;font-family:var(--font);background:var(--sky);color:var(--txt);overflow:hidden;touch-action:none;}
+
+/* ── ANIMATED SKY BG ── */
+.sky-bg{position:fixed;inset:0;z-index:0;
+  background:linear-gradient(180deg,#c8eeff 0%,#dff4ff 40%,#eef9ff 70%,#f5fbff 100%);}
+.cloud{position:fixed;background:rgba(255,255,255,.75);border-radius:50px;pointer-events:none;
+  animation:cloudDrift linear infinite;}
+@keyframes cloudDrift{from{transform:translateX(-200px)}to{transform:translateX(110vw)}}
+.snowfall{position:fixed;inset:0;z-index:1;pointer-events:none;}
+.sf2{position:fixed;top:-20px;color:rgba(180,220,240,.6);animation:sf2 linear infinite;pointer-events:none;}
+@keyframes sf2{to{transform:translateY(105vh) rotate(360deg);opacity:0}}
+
+/* ── SCREENS ── */
+.scr{position:relative;z-index:10;width:100%;height:100%;display:flex;align-items:center;justify-content:center;padding:16px;}
+.scr.off{display:none!important;}
+
+/* ════ MENU ════ */
+.logo{font-family:var(--head);font-size:clamp(1.6rem,4vw,2.8rem);
+  color:#0369a1;text-align:center;line-height:1.15;margin-bottom:4px;
+  text-shadow:0 2px 12px rgba(3,105,161,.2),0 0 40px rgba(3,105,161,.1);}
+.logo-sub{color:var(--muted);font-size:.8rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;text-align:center;margin-bottom:20px;}
+.mcard{background:var(--panel);border:1px solid var(--border);border-radius:24px;
+  padding:26px;width:min(520px,96vw);
+  box-shadow:0 8px 32px var(--shadow),0 0 0 1px rgba(255,255,255,.8);backdrop-filter:blur(12px);}
+.mlbl{font-size:.6rem;font-weight:800;letter-spacing:.13em;text-transform:uppercase;color:var(--muted);margin-bottom:8px;}
+.mrow2{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px;}
+.mmode{padding:10px 8px;border-radius:13px;border:2px solid var(--border);
+  background:rgba(255,255,255,.6);cursor:pointer;text-align:center;transition:all .2s;}
+.mmode.on{border-color:#0ea5e9;background:rgba(14,165,233,.08);}
+.mmode em{font-size:1.35rem;display:block;margin-bottom:3px;font-style:normal;}
+.mmode b{font-size:.77rem;font-weight:800;color:var(--txt);display:block;}
+.mmode span{font-size:.6rem;color:var(--muted);}
+
+/* TOKEN SELECTOR */
+.tok-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:14px;}
+.tok-card{padding:10px 5px;border-radius:13px;border:2px solid var(--border);
+  background:rgba(255,255,255,.6);cursor:pointer;text-align:center;transition:all .22s;}
+.tok-card.sel{border-width:2.5px;transform:scale(1.05);box-shadow:0 6px 20px var(--shadow);}
+.tok-ico{font-size:1.8rem;display:block;margin-bottom:3px;}
+.tok-name{font-size:.64rem;font-weight:800;color:var(--txt);}
+.tok-bonus{font-size:.56rem;color:var(--muted);margin-top:1px;}
+
+.pslots{display:flex;flex-direction:column;gap:6px;margin-bottom:14px;}
+.pslot{display:flex;align-items:center;gap:8px;padding:7px 11px;
+  border-radius:11px;background:rgba(255,255,255,.6);border:1px solid var(--border);}
+.pdot{width:11px;height:11px;border-radius:50%;flex-shrink:0;}
+.pinp{flex:1;background:transparent;border:none;color:var(--txt);font:700 .84rem var(--font);outline:none;}
+.pinp::placeholder{color:var(--muted);}
+.ptok-pick{font-size:1.1rem;cursor:pointer;padding:0 4px;border:none;background:none;}
+.ptog{background:none;border:1px solid var(--border);border-radius:7px;color:var(--muted);font:.68rem var(--font);padding:3px 8px;cursor:pointer;transition:all .15s;}
+.ptog.on{border-color:var(--eco);color:var(--eco);background:rgba(34,197,94,.07);}
+
+.mbtn{display:block;width:100%;padding:13px;margin-bottom:8px;border-radius:13px;
+  border:none;font:800 .9rem var(--font);cursor:pointer;transition:all .22s;}
+.mbtn.pri{background:linear-gradient(135deg,#0ea5e9,#0369a1);color:#fff;box-shadow:0 6px 20px rgba(3,105,161,.3);}
+.mbtn.pri:hover{transform:translateY(-2px);box-shadow:0 10px 28px rgba(3,105,161,.4);}
+.mbtn.sec{background:rgba(255,255,255,.7);border:1px solid var(--border);color:var(--txt);}
+.mbtn.sec:hover{border-color:#0ea5e9;}
+
+/* ════ RULES ════ */
+.rov{position:fixed;inset:0;z-index:600;display:flex;align-items:center;justify-content:center;
+  background:rgba(0,40,80,.5);backdrop-filter:blur(10px);padding:16px;}
+.rov.off{display:none;}
+.rbox{background:var(--panel);border:1px solid var(--border);border-radius:22px;
+  padding:24px;width:min(560px,96vw);max-height:88vh;overflow-y:auto;
+  box-shadow:0 20px 60px var(--shadow);}
+.rbox h2{font-family:var(--head);font-size:1.2rem;color:#0369a1;text-align:center;margin-bottom:14px;}
+.rbox h3{font-size:.7rem;font-weight:800;color:var(--gold);text-transform:uppercase;letter-spacing:.09em;margin:12px 0 4px;}
+.rbox p,.rbox li{font-size:.79rem;color:var(--muted);line-height:1.7;}
+.rbox ul{padding-left:14px;}
+.cleg{display:grid;grid-template-columns:repeat(2,1fr);gap:6px;margin:7px 0;}
+.cleg-i{display:flex;align-items:center;gap:7px;padding:6px 9px;border-radius:9px;background:rgba(14,165,233,.05);border:1px solid var(--border);}
+.cleg-i small{font-size:.72rem;color:var(--muted);}
+
+/* ════ GAME SCREEN ════ */
+#gameScr{flex-direction:row;align-items:stretch;padding:0;overflow:hidden;}
+
+/* SIDEBARS */
+.lsb,.rsb{width:185px;flex-shrink:0;display:flex;flex-direction:column;gap:5px;padding:7px;overflow-y:auto;scrollbar-width:none;background:rgba(240,250,255,.7);backdrop-filter:blur(8px);border-right:1px solid var(--border);}
+.rsb{border-right:none;border-left:1px solid var(--border);}
+.lsb::-webkit-scrollbar,.rsb::-webkit-scrollbar{display:none;}
+.gpan{background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:10px;box-shadow:0 2px 8px var(--shadow);}
+.gptit{font-size:.54rem;font-weight:800;letter-spacing:.13em;text-transform:uppercase;color:var(--muted);margin-bottom:7px;}
+
+/* Player cards */
+.pcard{display:flex;align-items:center;gap:6px;padding:6px 8px;border-radius:9px;
+  border:1.5px solid transparent;background:rgba(255,255,255,.5);transition:all .2s;margin-bottom:4px;}
+.pcard.act{border-color:#0ea5e9;background:rgba(14,165,233,.08);box-shadow:0 3px 12px rgba(14,165,233,.2);}
+.pav{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.95rem;flex-shrink:0;box-shadow:0 2px 8px var(--shadow);}
+.pnm{font-size:clamp(.8rem,1.8vw,1rem);font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.psc{font-size:.6rem;color:var(--muted);}
+.pmoney{font-size:.65rem;font-weight:800;color:var(--gold);}
+
+/* Eco */
+.ebw{height:8px;background:rgba(0,0,0,.07);border-radius:99px;overflow:hidden;margin:4px 0;}
+.ebf{height:100%;border-radius:99px;background:linear-gradient(90deg,#22c55e,#86efac);transition:width .7s;}
+.elbl{display:flex;justify-content:space-between;font-size:.61rem;color:var(--muted);}
+
+/* Resources */
+.rchips{display:flex;gap:4px;flex-wrap:wrap;margin-top:3px;}
+.rchip{font-size:.82rem;padding:2px 5px;border-radius:6px;background:rgba(14,165,233,.08);border:1px solid var(--border);}
+
+/* Dice area */
+.dwrap{text-align:center;padding:4px 0;}
+.dice-hint{font-size:.62rem;color:var(--muted);text-align:center;margin-top:3px;}
+/* Dice canvas overlay */
+#diceOverlay{position:fixed;inset:0;z-index:800;pointer-events:none;display:none;}
+#diceOverlay.active{display:block;pointer-events:all;}
+#diceCanvas{position:absolute;inset:0;width:100%;height:100%;}
+/* Dice launch zone in sidebar */
+.dice-launch{width:84px;height:84px;margin:0 auto;border-radius:16px;
+  background:linear-gradient(135deg,rgba(14,165,233,.12),rgba(3,105,161,.08));
+  border:2px dashed rgba(14,165,233,.35);cursor:grab;touch-action:none;
+  display:flex;align-items:center;justify-content:center;font-size:2rem;
+  transition:all .2s;user-select:none;position:relative;overflow:hidden;}
+.dice-launch:hover{border-color:rgba(14,165,233,.65);background:rgba(14,165,233,.15);}
+.dice-launch.dragging{cursor:grabbing;border-color:#0ea5e9;background:rgba(14,165,233,.2);}
+.dice-launch canvas{position:absolute;inset:0;width:100%;height:100%;}
+/* Profile modal */
+.prof-ov{position:fixed;inset:0;z-index:700;display:flex;align-items:center;justify-content:center;
+  background:rgba(0,40,80,.55);backdrop-filter:blur(12px);padding:16px;}
+.prof-ov.off{display:none;}
+.prof-box{background:var(--panel);border:1px solid var(--border);border-radius:22px;
+  padding:26px;width:min(440px,96vw);box-shadow:0 20px 60px var(--shadow);}
+.prof-box h2{font-family:var(--head);font-size:1.15rem;color:#0369a1;text-align:center;margin-bottom:14px;}
+.pf-tabs{display:flex;gap:6px;margin-bottom:16px;}
+.pf-tab{flex:1;padding:8px;border-radius:10px;border:1.5px solid var(--border);
+  background:rgba(255,255,255,.5);cursor:pointer;font:.75rem var(--font);font-weight:800;
+  text-align:center;transition:all .2s;}
+.pf-tab.on{border-color:#0ea5e9;background:rgba(14,165,233,.1);color:#0369a1;}
+.pfield{width:100%;padding:10px 13px;border-radius:10px;border:1.5px solid var(--border);
+  background:rgba(255,255,255,.7);color:var(--txt);font:.83rem var(--font);outline:none;margin-bottom:9px;}
+.pfield:focus{border-color:#0ea5e9;}
+.pfield::placeholder{color:var(--muted);}
+.perr{font-size:.72rem;color:var(--red);min-height:18px;margin-bottom:6px;text-align:center;}
+.pok{font-size:.72rem;color:var(--eco);min-height:18px;margin-bottom:6px;text-align:center;}
+/* Profile chip in header */
+.prof-chip{display:flex;align-items:center;gap:6px;padding:5px 10px;border-radius:10px;
+  background:rgba(14,165,233,.08);border:1px solid rgba(14,165,233,.2);cursor:pointer;
+  font-size:.72rem;font-weight:700;transition:all .2s;}
+.prof-chip:hover{background:rgba(14,165,233,.14);}
+
+.rbtn{width:100%;padding:9px;border-radius:10px;border:none;font:800 .76rem var(--font);
+  background:linear-gradient(135deg,#0ea5e9,#0369a1);color:#fff;
+  cursor:pointer;transition:all .2s;margin-top:6px;box-shadow:0 4px 14px rgba(3,105,161,.3);}
+.rbtn:hover:not(:disabled){transform:translateY(-2px);}
+.rbtn:disabled{opacity:.35;cursor:not-allowed;}
+.hint{font-size:.66rem;color:#0369a1;text-align:center;min-height:16px;line-height:1.4;font-weight:700;}
+.abtn{width:100%;padding:8px;border-radius:9px;border:none;font:800 .73rem var(--font);cursor:pointer;transition:all .2s;margin-top:5px;}
+.abtn.end{background:linear-gradient(135deg,#ef4444,#b91c1c);color:#fff;display:none;box-shadow:0 3px 12px rgba(239,68,68,.3);}
+.abtn.bld{background:linear-gradient(135deg,#22c55e,#15803d);color:#fff;display:none;box-shadow:0 3px 12px rgba(34,197,94,.3);}
+
+/* CENTER BOARD */
+.bctr{flex:1;position:relative;overflow:hidden;}
+#boardC{width:100%;height:100%;}
+.rules-fab{position:absolute;top:10px;left:10px;z-index:50;
+  background:var(--panel);border:1px solid var(--border);border-radius:10px;
+  padding:5px 11px;color:#0369a1;font:700 .7rem var(--font);cursor:pointer;
+  transition:all .2s;box-shadow:0 2px 8px var(--shadow);}
+.rules-fab:hover{background:#e0f2fe;}
+
+/* RIGHT LOG */
+.glog{overflow-y:auto;max-height:clamp(180px,25vh,320px);scrollbar-width:thin;}
+.lge{font-size:clamp(.75rem,1.5vw,.95rem);color:var(--muted);padding:5px 0;border-bottom:1px solid rgba(0,0,0,.06);line-height:1.5;}
+.lge.g{color:#15803d;font-weight:600;}.lge.b{color:#b91c1c;font-weight:600;}.lge.i{color:#0369a1;font-weight:600;}.lge.w{color:#b45309;font-weight:600;}
+
+/* ════ POPUP ════ */
+.mov{position:fixed;inset:0;z-index:500;display:flex;align-items:center;justify-content:center;
+  background:rgba(0,40,80,.45);backdrop-filter:blur(12px);padding:14px;}
+.mov.off{display:none;}
+@keyframes mIn{from{transform:scale(.88)translateY(16px);opacity:0}to{transform:scale(1)translateY(0);opacity:1}}
+.mbox{background:var(--panel);border:1px solid var(--border);border-radius:22px;
+  padding:22px;width:min(490px,100%);animation:mIn .28s cubic-bezier(.34,1.56,.64,1);
+  max-height:90vh;overflow-y:auto;box-shadow:0 20px 60px var(--shadow);}
+.mico{font-size:2.8rem;text-align:center;display:block;margin-bottom:7px;animation:bIn .35s ease;}
+@keyframes bIn{0%{transform:scale(0)}60%{transform:scale(1.2)}100%{transform:scale(1)}}
+.mtag{display:inline-block;padding:3px 11px;border-radius:99px;font-size:.61rem;font-weight:800;letter-spacing:.08em;text-transform:uppercase;margin-bottom:8px;}
+.mtit{font-family:var(--head);font-size:1.1rem;margin-bottom:3px;text-align:center;color:var(--txt);}
+.msub{font-size:.76rem;color:var(--muted);text-align:center;margin-bottom:12px;}
+.fbox{background:rgba(14,165,233,.05);border:1px solid rgba(14,165,233,.2);border-radius:11px;padding:11px;margin-bottom:12px;}
+.flbl{font-size:.55rem;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:#0369a1;margin-bottom:5px;}
+.ftxt{font-size:.82rem;line-height:1.65;color:var(--txt);}
+/* shop/buy */
+.shop-grid{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-bottom:12px;}
+.shop-item{padding:10px;border-radius:11px;border:1.5px solid var(--border);background:rgba(255,255,255,.7);cursor:pointer;text-align:center;transition:all .2s;}
+.shop-item:hover{border-color:#0ea5e9;background:rgba(14,165,233,.06);}
+.shop-item.bought{border-color:var(--eco);background:rgba(34,197,94,.07);cursor:default;}
+.shop-item.cantafford{opacity:.45;cursor:not-allowed;}
+.shop-ico{font-size:1.6rem;display:block;margin-bottom:4px;}
+.shop-name{font-size:.72rem;font-weight:800;color:var(--txt);}
+.shop-price{font-size:.68rem;color:var(--gold);font-weight:700;margin-top:2px;}
+.shop-bonus{font-size:.6rem;color:var(--muted);}
+/* quiz */
+.qsep{border-top:1px solid rgba(0,0,0,.07);margin:12px 0;}
+.qlbl{font-size:.58rem;font-weight:800;text-transform:uppercase;letter-spacing:.09em;color:var(--gold);margin-bottom:7px;}
+.tbar{height:4px;background:rgba(0,0,0,.07);border-radius:99px;margin-bottom:9px;overflow:hidden;}
+.tbarf{height:100%;border-radius:99px;transition:width .1s linear;background:linear-gradient(90deg,#0ea5e9,#8b5cf6);}
+.qq{font-size:.89rem;font-weight:700;line-height:1.5;margin-bottom:10px;color:var(--txt);}
+.qopts{display:flex;flex-direction:column;gap:5px;margin-bottom:9px;}
+.qopt{padding:8px 12px;border-radius:10px;border:1.5px solid var(--border);background:rgba(255,255,255,.7);cursor:pointer;font:700 .79rem var(--font);text-align:left;transition:all .2s;color:var(--txt);}
+.qopt:hover:not(:disabled){border-color:#0ea5e9;background:rgba(14,165,233,.06);}
+.qopt:disabled{cursor:default;}
+.qopt.ok{border-color:var(--eco)!important;background:rgba(34,197,94,.1)!important;color:#15803d!important;}
+.qopt.no{border-color:var(--red)!important;opacity:.5;}
+.qres{padding:8px 11px;border-radius:10px;font-size:.78rem;line-height:1.5;display:none;margin-bottom:9px;}
+.qres.sh{display:block;}
+.qres.ok{background:rgba(34,197,94,.08);border:1px solid rgba(34,197,94,.25);color:#15803d;}
+.qres.no{background:rgba(239,68,68,.07);border:1px solid rgba(239,68,68,.2);color:#b91c1c;}
+.chlbl{font-size:.58rem;font-weight:800;text-transform:uppercase;letter-spacing:.08em;color:var(--gold);margin-bottom:7px;}
+.chlist{display:flex;flex-direction:column;gap:5px;margin-bottom:10px;}
+.chbtn{padding:9px 12px;border-radius:10px;border:1.5px solid rgba(245,158,11,.3);background:rgba(245,158,11,.05);cursor:pointer;font:700 .79rem var(--font);color:var(--txt);transition:all .2s;text-align:left;}
+.chbtn:hover{border-color:rgba(245,158,11,.7);background:rgba(245,158,11,.09);}
+.chbtn.ok{border-color:var(--eco)!important;background:rgba(34,197,94,.09)!important;color:#15803d!important;}
+.chbtn.no{border-color:var(--red)!important;opacity:.5;}
+.cnxt{width:100%;padding:11px;border-radius:12px;border:none;font:800 .82rem var(--font);
+  background:linear-gradient(135deg,#0ea5e9,#0369a1);color:#fff;
+  cursor:pointer;transition:all .2s;display:none;margin-top:4px;box-shadow:0 4px 14px rgba(3,105,161,.25);}
+.cnxt.sh{display:block;}
+.cnxt:hover{transform:translateY(-2px);}
+/* WIN — Ministry */
+.win-ministry{text-align:center;padding:10px 0 16px;}
+.win-seal{font-size:4rem;display:block;animation:flt 2.5s ease-in-out infinite;}
+@keyframes flt{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
+.win-decree{background:linear-gradient(135deg,rgba(245,158,11,.08),rgba(14,165,233,.06));
+  border:2px solid rgba(245,158,11,.3);border-radius:16px;padding:16px;margin:14px 0;
+  font-size:.82rem;line-height:1.8;color:var(--txt);}
+.win-decree b{color:#0369a1;}
+.win-signature{font-style:italic;font-size:.75rem;color:var(--muted);margin-top:8px;}
+.wpod{display:flex;flex-direction:column;gap:6px;margin:12px 0;}
+.wprow{display:flex;align-items:center;gap:8px;padding:7px 11px;border-radius:9px;background:rgba(14,165,233,.06);border:1px solid var(--border);}
+/* badges */
+.btoast{position:fixed;bottom:16px;right:196px;z-index:600;
+  background:var(--panel);border:1.5px solid rgba(245,158,11,.4);border-radius:12px;
+  padding:10px 14px;display:flex;align-items:center;gap:9px;
+  animation:tIn .35s cubic-bezier(.34,1.56,.64,1);font-family:var(--font);
+  box-shadow:0 6px 24px var(--shadow);}
+.btoast.out{animation:tOut .3s ease forwards;}
+@keyframes tIn{from{transform:translateX(120%);opacity:0}to{transform:translateX(0);opacity:1}}
+@keyframes tOut{to{transform:translateX(120%);opacity:0}}
+.fsc{position:fixed;z-index:400;font:800 1.05rem var(--font);pointer-events:none;animation:fscUp 1.3s ease-out forwards;}
+@keyframes fscUp{0%{transform:translateY(0);opacity:1}100%{transform:translateY(-60px);opacity:0}}
+
+/* ════ RESPONSIVE ════ */
+@media(max-width:900px){.lsb,.rsb{width:155px;}}
+@media(max-width:660px){
+  #gameScr{flex-direction:column!important;}
+  .lsb,.rsb{width:100%;flex-direction:row;flex-wrap:wrap;padding:5px;overflow-y:visible;overflow-x:auto;border:none;border-bottom:1px solid var(--border);}
+  .rsb{border-top:1px solid var(--border);border-bottom:none;}
+  .lsb .gpan,.rsb .gpan{min-width:130px;flex:1;}
+  .bctr{flex:1;min-height:50vw;}
+}
+::-webkit-scrollbar{width:3px;}
+::-webkit-scrollbar-thumb{background:rgba(0,80,140,.15);border-radius:99px;}
+</style>
+</head>
+<body>
+<div class="sky-bg"></div>
+<div class="snowfall" id="sfBox"></div>
+
+<!-- MENU -->
+<div class="scr" id="menuScr">
+  <div style="max-height:100vh;overflow-y:auto;width:100%;display:flex;flex-direction:column;align-items:center;padding:16px;">
+  <div class="logo">🧊 Арктическая Одиссея</div>
+  <div class="logo-sub">Настольная игра · Спаси Арктику · 2–4 игрока</div>
+  <div class="mcard">
+    <div class="mlbl">Режим игры</div>
+    <div class="mrow2">
+      <div class="mmode on" id="mdSch" onclick="setMode('school')"><em>🎒</em><b>Школьный</b><span>Подсказки · Легко</span></div>
+      <div class="mmode" id="mdStu" onclick="setMode('student')"><em>🎓</em><b>Студенческий</b><span>Таймер 15с · Сложно</span></div>
+    </div>
+    <div class="mlbl">Выбери фишку (каждая даёт бонус!)</div>
+    <div class="tok-grid" id="tokenGrid"></div>
+    <div class="mlbl">Игроки (2–4)</div>
+    <div class="pslots" id="pslots"></div>
+    <div id="profChipWrap" style="margin-bottom:12px;"></div>
+    <button class="mbtn pri" onclick="startGame()">🚀 Начать путешествие!</button>
+    <button class="mbtn sec" onclick="openRules()">📖 Правила</button>
+  </div>
+  </div>
+</div>
+
+<!-- RULES -->
+<div class="rov off" id="rulesOv">
+  <div class="rbox">
+    <h2>📖 Правила «Арктической Одиссеи»</h2>
+    <h3>🎯 Цель</h3>
+    <p>Первый достигший финиша, набравший 50₽ или поднявший экологию до 100% — победитель!</p>
+    <h3>💰 Экономика</h3>
+    <p>Стартовый капитал: <b>500₽</b>. Зарабатывайте деньги, отвечая на вопросы и спасая Арктику. Тратьте на постройки и улучшения.</p>
+    <h3>🗺️ Клетки</h3>
+    <div class="cleg">
+      <div class="cleg-i"><span>🌿</span><small><b>Тундра</b> — ресурс +50₽</small></div>
+      <div class="cleg-i"><span>🐾</span><small><b>Животное</b> — квиз +100₽</small></div>
+      <div class="cleg-i"><span>⚡</span><small><b>Угроза</b> — выбор действия</small></div>
+      <div class="cleg-i"><span>🏪</span><small><b>Рынок</b> — купи улучшение</small></div>
+      <div class="cleg-i"><span>🏗️</span><small><b>Проект</b> — строй станцию</small></div>
+      <div class="cleg-i"><span>🌌</span><small><b>Сияние</b> — бонусный ход</small></div>
+      <div class="cleg-i"><span>🕳️</span><small><b>Трещина</b> — пропуск хода</small></div>
+      <div class="cleg-i"><span>🤝</span><small><b>Инуиты</b> — +100₽ +ресурс</small></div>
+    </div>
+    <h3>🏆 Заработок</h3>
+    <ul>
+      <li>Правильный ответ на вопрос: <b>+100₽</b></li>
+      <li>Нейтрализация угрозы: <b>+80₽ +8% эко</b></li>
+      <li>Эко-станция (3 ресурса): <b>+200₽ +20% эко</b></li>
+      <li>Каждый ход в тундре: <b>+50₽</b></li>
+      <li>Финиш первым: <b>+300₽</b></li>
+    </ul>
+    <button class="mbtn pri" style="margin-top:14px;" onclick="closeRules()">← Закрыть</button>
+  </div>
+</div>
+
+<!-- GAME -->
+<div class="scr off" id="gameScr">
+  <div class="lsb">
+    <div class="gpan"><div class="gptit">Игроки</div><div id="pCards"></div></div>
+    <div class="gpan">
+      <div class="gptit">🌿 Экология</div>
+      <div class="ebw"><div class="ebf" id="ecoFill" style="width:20%"></div></div>
+      <div class="elbl"><span id="ecoVal">20%</span><span>100%</span></div>
+    </div>
+    <div class="gpan">
+      <div class="gptit">🎒 Ресурсы (<span id="curPN">—</span>)</div>
+      <div class="rchips" id="resArea">—</div>
+      <button class="abtn bld" id="bldBtn" onclick="tryBuild()">🏗️ Построить!</button>
+    </div>
+    <div class="gpan">
+      <div class="gptit">🎲 Ход</div>
+      <div class="dwrap">
+        <div class="dice-launch" id="diceLaunch">
+          <canvas id="dicePreviewC" width="84" height="84"></canvas>
+        </div>
+        <div class="dice-hint" id="diceHint">Потяните и бросьте!</div>
+        <button class="rbtn" id="rollBtn" onclick="rollDice()">🎲 Бросить кубик</button>
+      </div>
+      <div class="hint" id="hintEl">Нажмите «Бросить кубик»</div>
+      <button class="abtn end" id="endBtn" onclick="endTurn()">✅ Завершить ход</button>
+      <button class="mbtn sec" style="margin-top:7px;font-size:.66rem;padding:6px;" onclick="goMenu()">🔄 Меню</button>
+    </div>
+  </div>
+
+  <div class="bctr">
+    <button class="rules-fab" onclick="openRules()">📖 Правила</button>
+    <canvas id="boardC"></canvas>
+
+  </div>
+
+  <div class="rsb">
+    <div class="gpan" style="flex:1">
+      <div class="gptit">📋 Лог</div>
+      <div class="glog" id="gLog"></div>
+    </div>
+    <div class="gpan"><div class="gptit">🏅 Бейджи</div><div id="badgeArea" style="font-size:.95rem;min-height:24px;"></div></div>
+    <div class="gpan"><div class="gptit">🏆 Рекорды</div><div id="lbEl" style="font-size:.67rem;color:var(--muted);"></div></div>
+  </div>
+</div>
+
+<!-- DICE OVERLAY (full-screen physics) -->
+<div id="diceOverlay">
+  <canvas id="diceCanvas"></canvas>
+</div>
+
+<!-- PROFILE MODAL -->
+<div class="prof-ov off" id="profOv">
+  <div class="prof-box">
+    <h2>👤 Профиль игрока</h2>
+    <div class="pf-tabs">
+      <div class="pf-tab on" id="pfTabLogin" onclick="switchPfTab('login')">Войти</div>
+      <div class="pf-tab" id="pfTabReg" onclick="switchPfTab('reg')">Регистрация</div>
+      <div class="pf-tab" id="pfTabGuest" onclick="switchPfTab('guest')">Гостевой</div>
+    </div>
+    <div id="pfLogin">
+      <input class="pfield" id="pfLoginName" placeholder="Имя игрока / Логин">
+      <input class="pfield" type="password" id="pfLoginPwd" placeholder="Пароль">
+      <div class="perr" id="pfLoginErr"></div>
+      <button class="mbtn pri" onclick="doProfileLogin()">Войти →</button>
+    </div>
+    <div id="pfReg" style="display:none">
+      <input class="pfield" id="pfRegName" placeholder="Имя игрока (будет в рейтинге)">
+      <input class="pfield" id="pfRegTeam" placeholder="Команда (необязательно)">
+      <input class="pfield" type="password" id="pfRegPwd" placeholder="Пароль">
+      <input class="pfield" type="password" id="pfRegPwd2" placeholder="Повторите пароль">
+      <div class="perr" id="pfRegErr"></div>
+      <button class="mbtn pri" onclick="doProfileReg()">Зарегистрироваться →</button>
+    </div>
+    <div id="pfGuest" style="display:none">
+      <div style="text-align:center;padding:12px 0;color:var(--muted);font-size:.8rem;">
+        Гостевой режим — без сохранения рейтинга.<br>Статистика не записывается.
+      </div>
+      <button class="mbtn pri" onclick="doProfileGuest()">Продолжить как гость →</button>
+    </div>
+    <div id="pfLoggedIn" style="display:none">
+      <div style="text-align:center;padding:10px 0;">
+        <div style="font-size:2rem;" id="pfAvatar">👤</div>
+        <div style="font-weight:800;font-size:1rem;color:#0369a1;margin-top:4px;" id="pfDispName">—</div>
+        <div style="font-size:.72rem;color:var(--muted);margin-top:2px;" id="pfDispTeam">—</div>
+        <div style="margin-top:10px;display:flex;gap:8px;justify-content:center;">
+          <div style="text-align:center;padding:8px 16px;border-radius:10px;background:rgba(14,165,233,.07);border:1px solid var(--border);">
+            <div style="font-size:1.1rem;font-weight:800;color:#0369a1;" id="pfBestScore">—</div>
+            <div style="font-size:.6rem;color:var(--muted);">Лучший счёт</div>
+          </div>
+          <div style="text-align:center;padding:8px 16px;border-radius:10px;background:rgba(14,165,233,.07);border:1px solid var(--border);">
+            <div style="font-size:1.1rem;font-weight:800;color:var(--gold);" id="pfGames">—</div>
+            <div style="font-size:.6rem;color:var(--muted);">Игр сыграно</div>
+          </div>
+        </div>
+      </div>
+      <button class="mbtn sec" style="margin-top:10px;" onclick="doProfileLogout()">Выйти из профиля</button>
+    </div>
+    <button class="mbtn sec" style="margin-top:8px;" onclick="closeProfModal()">← Закрыть</button>
+  </div>
+</div>
+
+<!-- POPUP -->
+<div class="mov off" id="popMov"><div class="mbox" id="popBox"></div></div>
+
+<!-- WIN -->
+<div class="mov off" id="winMov">
+  <div class="mbox">
+    <div class="win-ministry">
+      <span class="win-seal">🏛️</span>
+      <div style="font-family:var(--head);font-size:1.1rem;color:#0369a1;margin-top:8px;">МИНИСТЕРСТВО АРКТИКИ</div>
+      <div style="font-size:.65rem;color:var(--muted);letter-spacing:.1em;text-transform:uppercase;">Российская Федерация</div>
+    </div>
+    <div class="win-decree" id="winDecree">—</div>
+    <div class="wpod" id="winPod"></div>
+    <button class="mbtn sec" style="margin-top:5px;" onclick="shareResult()">🔗 Поделиться</button>
+    <button class="mbtn pri" style="margin-top:5px;" onclick="goMenu()">← В меню</button>
+  </div>
+</div>
+
+<script>
+// ══ SNOW ══
+(()=>{
+  const b=document.getElementById('sfBox');
+  const fl=['❄','❅','·','✦','❆'];
+  for(let i=0;i<22;i++){
+    const e=document.createElement('div');e.className='sf2';e.textContent=fl[i%fl.length];
+    e.style.cssText=`left:${Math.random()*100}vw;font-size:${.35+Math.random()*.6}rem;animation-duration:${10+Math.random()*14}s;animation-delay:${-Math.random()*16}s`;
+    b.appendChild(e);
+  }
+  // Clouds
+  for(let i=0;i<5;i++){
+    const c=document.createElement('div');c.className='cloud';
+    const h=40+Math.random()*60,w=h*(1.8+Math.random());
+    c.style.cssText=`width:${w}px;height:${h}px;top:${Math.random()*35}%;`+
+      `animation-duration:${60+Math.random()*80}s;animation-delay:${-Math.random()*60}s;`+
+      `opacity:${.4+Math.random()*.4};filter:blur(${2+Math.random()*4}px);`;
+    document.querySelector('.sky-bg').appendChild(c);
+  }
+})();
+
+// ══ HELPERS ══
+const $=id=>document.getElementById(id);
+function SS(id){['menuScr','gameScr'].forEach(s=>$(s).classList.add('off'));$(id).classList.remove('off');}
+function openRules(){$('rulesOv').classList.remove('off');}
+function closeRules(){$('rulesOv').classList.add('off');}
+
+// ══ TOKENS ══
+const TOKENS=[
+  {id:'bear',ico:'🐻‍❄️',name:'Белый медведь',bonus:'Выживание',desc:'+1 к броску кубика',
+   color:'#0ea5e9',bg:'rgba(14,165,233,.1)',
+   effect:p=>{p.diceBonus=1;}},
+  {id:'fox',ico:'🦊',name:'Полярный лис',bonus:'Хитрость',desc:'Подсказка в квизе 1 раз',
+   color:'#f97316',bg:'rgba(249,115,22,.1)',
+   effect:p=>{p.hasHint=true;}},
+  {id:'whale',ico:'🐋',name:'Нарвал',bonus:'Богатство',desc:'Старт +200₽',
+   color:'#8b5cf6',bg:'rgba(139,92,246,.1)',
+   effect:p=>{p.money+=200;}},
+  {id:'owl',ico:'🦉',name:'Полярная сова',bonus:'Мудрость',desc:'Двойные очки за квиз',
+   color:'#f59e0b',bg:'rgba(245,158,11,.1)',
+   effect:p=>{p.doubleQuiz=true;}},
+  {id:'seal',ico:'🦭',name:'Тюлень',bonus:'Скорость',desc:'Раз за игру бросить 2 кубика',
+   color:'#06b6d4',bg:'rgba(6,182,212,.1)',
+   effect:p=>{p.doubleDice=1;}},
+  {id:'tern',ico:'🐦',name:'Арктическая крачка',bonus:'Дальность',desc:'Перелёт через 1 клетку',
+   color:'#22c55e',bg:'rgba(34,197,94,.1)',
+   effect:p=>{p.skipCell=1;}},
+  {id:'walrus',ico:'🐘',name:'Морж',bonus:'Строитель',desc:'Постройки на 50₽ дешевле',
+   color:'#78716c',bg:'rgba(120,113,108,.1)',
+   effect:p=>{p.buildDiscount=50;}},
+  {id:'snowflake',ico:'❄️',name:'Ледяная фишка',bonus:'Удача',desc:'Раз в игру переброс кубика',
+   color:'#94a3b8',bg:'rgba(148,163,184,.1)',
+   effect:p=>{p.reroll=1;}},
+];
+
+// Player choices
+const PCOLORS=['#0ea5e9','#ef4444','#22c55e','#f59e0b'];
+const PNAMES=['Игрок 1','Игрок 2','Игрок 3','Игрок 4'];
+const DFACES=['⚀','⚁','⚂','⚃','⚄','⚅'];
+
+// Path
+const PTYPES=[
+  'camp','tundra','animal','threat','tundra','market',
+  'animal','aurora','tundra','inuit','threat',
+  'animal','tundra','project','market','threat',
+  'crack','tundra','animal','aurora','tundra',
+  'threat','animal','inuit','market','tundra',
+  'project','animal','threat','tundra','crack',
+  'aurora','tundra','animal','market','threat',
+  'inuit','animal','project','tundra','threat',
+  'animal','aurora','tundra','market','threat',
+  'tundra','project','camp'
+];
+
+const TCOL={
+  camp:'rgba(34,197,94,.12)',tundra:'rgba(74,222,128,.15)',
+  animal:'rgba(56,189,248,.18)',threat:'rgba(239,68,68,.14)',
+  project:'rgba(139,92,246,.15)',aurora:'rgba(147,197,253,.2)',
+  crack:'rgba(148,163,184,.12)',inuit:'rgba(245,158,11,.15)',
+  market:'rgba(16,185,129,.15)'
+};
+const TBRD={
+  camp:'rgba(34,197,94,.7)',tundra:'rgba(74,222,128,.6)',
+  animal:'rgba(56,189,248,.7)',threat:'rgba(239,68,68,.65)',
+  project:'rgba(139,92,246,.7)',aurora:'rgba(147,197,253,.8)',
+  crack:'rgba(148,163,184,.5)',inuit:'rgba(245,158,11,.7)',
+  market:'rgba(16,185,129,.7)'
+};
+const TICO={
+  camp:'🏕️',tundra:'🌿',animal:'🐾',threat:'⚡',
+  project:'🏗️',aurora:'🌌',crack:'🕳️',inuit:'🤝',market:'🏪'
+};
+
+// ══ SHOP ITEMS ══
+const SHOP_ITEMS=[
+  {id:'tent',ico:'⛺',name:'Полевой лагерь',price:150,eco:3,desc:'+3% эко за каждый ход'},
+  {id:'solar',ico:'☀️',name:'Солнечная панель',price:200,eco:5,desc:'+5% эко сразу'},
+  {id:'wind',ico:'🌬️',name:'Ветрогенератор',price:250,eco:8,desc:'+8% эко + +30₽/ход'},
+  {id:'lab',ico:'🔬',name:'Эко-лаборатория',price:300,eco:0,desc:'Двойные очки за правильный ответ'},
+  {id:'kayak',ico:'🛶',name:'Каяк',price:100,eco:0,desc:'+1 к броску кубика'},
+  {id:'radio',ico:'📡',name:'Спутниковая связь',price:180,eco:0,desc:'Подсказка в любом квизе'},
+];
+
+// ══ GAME DATA ══
+const ANIMALS=[
+  {n:'Белый медведь',i:'🐻‍❄️',f:'Белый медведь чует тюленя за 30 км сквозь метровый лёд! Его шерстинки прозрачные — направляют тепло к чёрной коже.',
+   qs:{q:'Какого цвета кожа белого медведя?',o:['Белого','Чёрного','Серого'],a:1,e:'Чёрная кожа поглощает тепло!'},
+   qu:{q:'На сколько км учуяет тюленя?',o:['5 км','15 км','30 км'],a:2,e:'30 км и сквозь метровый лёд!'}},
+  {n:'Нарвал',i:'🦄',f:'«Единорог морей» — бивень нарвала это зуб до 3 м с 10 млн нервных окончаний. Природный сенсор воды.',
+   qs:{q:'Что такое «рог» нарвала?',o:['Рог','Видоизменённый зуб','Коралл'],a:1,e:'Это левый клык!'},
+   qu:{q:'Нервных окончаний в бивне нарвала?',o:['100 тыс','1 млн','10 млн'],a:2,e:'10 миллионов — сенсор!'}},
+  {n:'Арктическая крачка',i:'🐦',f:'Рекордсмен: 90 000 км/год — два раза вокруг Земли! За жизнь — расстояние до Луны и обратно 3 раза.',
+   qs:{q:'Куда летит крачка зимой?',o:['В Африку','В Антарктику','В Азию'],a:1,e:'Из Арктики в Антарктику!'},
+   qu:{q:'Сколько км в год летит крачка?',o:['30 000','60 000','90 000'],a:2,e:'90 000 км!'}},
+  {n:'Нерпа',i:'🦭',f:'Прогрызает лунки во льду когтями. Ныряет 300 м, не дышит 40 минут — кровь хранит в 5 раз больше кислорода!',
+   qs:{q:'Зачем нерпа прогрызает лунки?',o:['Рыбу ловить','Чтобы дышать','Играть'],a:1,e:'Без лунок задохнётся!'},
+   qu:{q:'Как глубоко ныряет нерпа?',o:['50 м','150 м','300 м'],a:2,e:'300 м без дыхания 40 минут!'}},
+  {n:'Песец',i:'🦊',f:'Зимой белый, летом серый. Выживает при -50°C без укрытия благодаря двойному меху.',
+   qs:{q:'Как меняется мех песца зимой?',o:['Рыжим','Белым','Серым'],a:1,e:'Белый — маскировка в снегу!'},
+   qu:{q:'При какой t° живёт без укрытия?',o:['-20°C','-35°C','-50°C'],a:2,e:'-50°C — рекорд!'}},
+  {n:'Морж',i:'🦭',f:'Бивни — и оружие, и ледорубы! До 50 кг моллюсков в день, находя их усами в темноте.',
+   qs:{q:'Для чего морж использует бивни?',o:['Только бой','Вылезать на лёд','Рыть ямы'],a:1,e:'Многофункциональный инструмент!'},
+   qu:{q:'Сколько кг еды ест морж/день?',o:['5 кг','20 кг','50 кг'],a:2,e:'50 кг — усами в темноте!'}},
+  {n:'Полярная сова',i:'🦉',f:'Охотится при ярком солнце! 1600 леммингов в год — главный регулятор грызунов тундры.',
+   qs:{q:'Когда охотится полярная сова?',o:['Только ночью','Только утром','Может и днём'],a:2,e:'В Арктике нет ночи месяцами!'},
+   qu:{q:'Леммингов в год съедает сова?',o:['200','800','1600'],a:2,e:'1600 — ключевой регулятор!'}},
+  {n:'Гренландский кит',i:'🐋',f:'Живёт 200+ лет — рекорд! В китах находили гарпуны XIX века. Мозг до 8 кг — самый большой.',
+   qs:{q:'Сколько лет живёт кит?',o:['70 лет','130 лет','200+ лет'],a:2,e:'200+ лет — живой свидетель!'},
+   qu:{q:'Сколько весит мозг кита?',o:['2 кг','5 кг','8 кг'],a:2,e:'8 кг — самый большой мозг!'}},
+];
+
+const THREATS=[
+  {n:'Таяние льда',i:'🌊',f:'Арктика тает в 4× быстрее планеты. За 40 лет лёд потерял 75% объёма!',dmg:12,
+   ch:[{t:'⚡ Перейти на возобновляемую энергию',ok:true,e:'Снижение CO₂ — главный путь!'},
+       {t:'🌱 Посадить деревья',ok:false,e:'Важно, но не останавливает таяние.'},
+       {t:'🚢 Запретить суда',ok:false,e:'Поможет немного, но не главное.'}],
+   qs:{q:'На сколько % сократился лёд за 40 лет?',o:['25%','50%','75%'],a:2,e:'75% объёма!'},
+   qu:{q:'Во сколько раз быстрее тает Арктика?',o:['В 2 раза','В 4 раза','В 8 раз'],a:1,e:'В 4 раза!'}},
+  {n:'Разлив нефти',i:'🛢️',f:'Нефть в холодной воде разлагается в 10–15× медленнее. Один разлив — катастрофа на десятилетия.',dmg:15,
+   ch:[{t:'🚫 Запретить бурение в Арктике',ok:true,e:'Лучшее решение — не добывать там!'},
+       {t:'🧹 Отправить уборочные суда',ok:false,e:'Убирают лишь 10–15% нефти.'},
+       {t:'🔥 Сжечь нефть',ok:false,e:'Токсичный дым — не решение.'}],
+   qs:{q:'Как нефть ведёт себя в холодной воде?',o:['Испаряется','В 10–15× медленнее','Тонет'],a:1,e:'Холод консервирует нефть!'},
+   qu:{q:'Сколько % нефти убирают суда?',o:['10–15%','40–50%','80%'],a:0,e:'Всего 10–15%!'}},
+  {n:'Выбросы CO₂',i:'🏭',f:'CO₂ вырос до 420+ ppm — рекорд за 3 млн лет! Ежегодно 37+ млрд тонн.',dmg:10,
+   ch:[{t:'🔋 Электромобили + солнечные панели',ok:true,e:'Транспорт и энергетика — 70% выбросов!'},
+       {t:'🌳 Посадить триллион деревьев',ok:false,e:'Важно, но недостаточно быстро.'},
+       {t:'❄ Охлаждать Арктику',ok:false,e:'Геоинженерия нестабильна.'}],
+   qs:{q:'Когда CO₂ был таким высоким?',o:['10 000 лет назад','1 млн лет назад','3 млн лет назад'],a:2,e:'3 миллиона лет назад!'},
+   qu:{q:'Сколько млрд тонн CO₂/год?',o:['~10','~25','37+'],a:2,e:'37+ миллиардов тонн!'}},
+  {n:'Пластик в океане',i:'🗑️',f:'8–10 млн тонн пластика в год. Микропластик в крови 77% людей!',dmg:8,
+   ch:[{t:'🚫 Запретить одноразовый пластик',ok:true,e:'40% пластика — одноразовый!'},
+       {t:'🌊 Фильтровать весь океан',ok:false,e:'Нереально в масштабах океана.'},
+       {t:'🔥 Сжигать пластик',ok:false,e:'Диоксины хуже пластика.'}],
+   qs:{q:'Сколько лет разлагается пластик?',o:['20–50 лет','100–200 лет','400–500 лет'],a:2,e:'400–500 лет!'},
+   qu:{q:'Микропластик нашли у скольких % людей?',o:['10%','35%','77%'],a:2,e:'77%!'}},
+  {n:'Таяние мерзлоты',i:'🌡️',f:'Мерзлота хранит вдвое больше углерода чем в атмосфере. Метан в 86× мощнее CO₂!',dmg:14,
+   ch:[{t:'📉 Срочно сократить выбросы',ok:true,e:'Единственный реальный путь!'},
+       {t:'🌬️ Управлять облаками',ok:false,e:'Может нарушить осадки везде.'},
+       {t:'🥶 Заморозить мерзлоту',ok:false,e:'Технически невозможно.'}],
+   qs:{q:'Что такое вечная мерзлота?',o:['Вечный снег','Замёрзший грунт','Замёрзший океан'],a:1,e:'Постоянно мёрзлый грунт!'},
+   qu:{q:'Метан мощнее CO₂ в сколько раз?',o:['10×','28×','86×'],a:2,e:'В 86 раз — климатическая бомба!'}},
+];
+
+const TUNDRA=[
+  {f:'В Арктике 1700+ видов растений! Мох фотосинтезирует почти при 0°C.',r:'🌱',
+   qs:{q:'Сколько видов растений в Арктике?',o:['<100','~500','1700+'],a:2,e:'1700+ — не пустыня!'},
+   qu:{q:'При какой t° мох фотосинтезирует?',o:['+10°C','+5°C','~0°C'],a:2,e:'Почти при 0°C!'}},
+  {f:'Ягель растёт 3–5 мм/год, живёт 300–400 лет. Восстанавливается 50–100 лет.',r:'🌿',
+   qs:{q:'Сколько лет восстанавливается ягель?',o:['2–5 лет','15 лет','50–100 лет'],a:2,e:'50–100 лет!'},
+   qu:{q:'Сколько мм/год растёт ягель?',o:['1–2 мм','3–5 мм','10–15 мм'],a:1,e:'3–5 мм — медленнее ногтя!'}},
+  {f:'Инуиты говорят о снеге на 50+ словах! Каждый вид важен для выживания.',r:'❄️',
+   qs:{q:'Слов для снега в языке инуитов?',o:['10','~20','50+'],a:2,e:'50+ слов!'},
+   qu:{q:'Что инуиты делают из шкур тюленей?',o:['Только еда','Непромокаемая одежда','Инструменты'],a:1,e:'Технология тысяч лет!'}},
+  {f:'Тундра хранит вдвое больше CO₂ в почве чем сейчас в атмосфере Земли.',r:'🌱',
+   qs:{q:'Что тундра хранит в почве?',o:['Нефть','Запас углерода','Воду'],a:1,e:'Замёрзший углерод!'},
+   qu:{q:'Во сколько раз больше углерода в мерзлоте?',o:['Одинаково','В 2 раза','В 5 раз'],a:1,e:'В 2 раза — опасно!'}},
+  {f:'Северное сияние: свечение атмосферы на 100–300 км. Зелёный — O₂, синий — N₂.',r:'🌿',
+   qs:{q:'На какой высоте северное сияние?',o:['1–5 км','20–50 км','100–300 км'],a:2,e:'100–300 км — ионосфера!'},
+   qu:{q:'Какой газ даёт зелёный цвет?',o:['Азот','Кислород','Аргон'],a:1,e:'Кислород — зелёный!'}},
+];
+// ══ STATE ══
+const SLOTS=[{on:true},{on:true},{on:false},{on:false}];
+let MODE='school',players=[],curP=0,eco=20;
+let rolled=false,moving=false,qTmr=null,qDone=false,pCb=null;
+let BC,BX,BW,BH,cells=[];
+let selToken=0; // selected token index for "all use same" - per player
+const playerTokens=[0,1,2,3]; // default token per player slot
+
+// ══ MENU ══
+function initMenu(){
+  updateProfileChip();
+  // Token grid
+  const tg=$('tokenGrid');tg.innerHTML='';
+  TOKENS.forEach((t,i)=>{
+    const d=document.createElement('div');
+    d.className='tok-card'+(i===0?' sel':'');
+    d.style.borderColor=i===0?t.color:'';
+    d.style.background=i===0?t.bg:'';
+    d.innerHTML=`<span class="tok-ico">${t.ico}</span><div class="tok-name">${t.name}</div><div class="tok-bonus" style="color:${t.color};font-weight:800;">${t.bonus}</div><div class="tok-bonus">${t.desc}</div>`;
+    d.onclick=()=>selectToken(i);
+    tg.appendChild(d);
+  });
+  // Player slots
+  const c=$('pslots');c.innerHTML='';
+  SLOTS.forEach((s,i)=>{
+    const d=document.createElement('div');d.className='pslot';
+    d.innerHTML=`<div class="pdot" style="background:${PCOLORS[i]}"></div>
+      <button class="ptok-pick" id="ptok${i}" title="Выбрать фишку" onclick="openTokenPicker(${i})" style="font-size:1.4rem;background:rgba(14,165,233,.1);border:1.5px solid rgba(14,165,233,.25);border-radius:10px;padding:3px 8px;cursor:pointer;transition:all .2s">${TOKENS[playerTokens[i]].ico}</button>
+      <input class="pinp" id="pn${i}" placeholder="${PNAMES[i]}" value="${PNAMES[i]}">
+      <button class="ptog ${s.on?'on':''}" id="pt${i}" onclick="togSlot(${i})">${s.on?'Вкл':'Выкл'}</button>`;
+    c.appendChild(d);
+  });
+  renderLB();
+}
+function selectToken(i){
+  document.querySelectorAll('.tok-card').forEach((c,j)=>{
+    const t=TOKENS[j];
+    c.classList.toggle('sel',j===i);
+    c.style.borderColor=j===i?t.color:'';
+    c.style.background=j===i?t.bg:'';
+  });
+  selToken=i;
+}
+function cycleToken(pi){
+  playerTokens[pi]=(playerTokens[pi]+1)%TOKENS.length;
+  const el=$('ptok'+pi);if(el)el.textContent=TOKENS[playerTokens[pi]].ico;
+}
+let _tokPickerPI=-1;
+function openTokenPicker(pi){
+  _tokPickerPI=pi;
+  const playerName=$('pn'+pi)?.value||('Игрок '+(pi+1));
+  const nm=$('tokPickerName');if(nm)nm.textContent='Игрок: '+playerName;
+  const grid=$('tokPickerGrid');if(!grid)return;
+  grid.innerHTML='';
+  TOKENS.forEach((t,i)=>{
+    const sel=playerTokens[pi]===i;
+    // Check if token used by another player
+    const usedBy=playerTokens.findIndex((ti,idx)=>ti===i&&idx!==pi);
+    const usedName=usedBy>=0?($('pn'+usedBy)?.value||('Игрок '+(usedBy+1))):null;
+    const card=document.createElement('div');
+    card.style.cssText=`background:${sel?t.bg:'rgba(255,255,255,.04)'};border:2px solid ${sel?t.color:'rgba(255,255,255,.08)'};border-radius:14px;padding:12px 10px;cursor:pointer;transition:all .2s;text-align:center;position:relative;`;
+    card.innerHTML=`<div style="font-size:2rem;margin-bottom:4px">${t.ico}</div>
+      <div style="font-size:.72rem;font-weight:800;color:${sel?t.color:'#ddf4ff'};margin-bottom:3px">${t.name}</div>
+      <div style="font-size:.6rem;color:rgba(180,220,255,.5);line-height:1.4">${t.desc}</div>
+      ${usedName?`<div style="font-size:.55rem;color:#ffd84d;margin-top:4px">⚠ уже у ${usedName}</div>`:''}
+      ${sel?'<div style="position:absolute;top:6px;right:8px;font-size:.6rem;color:'+t.color+';font-weight:800">✓ Выбрано</div>':''}`;
+    card.onclick=()=>{
+      playerTokens[pi]=i;
+      const el=$('ptok'+pi);if(el)el.textContent=t.ico;
+      closeTokPicker();
+    };
+    grid.appendChild(card);
+  });
+  const mov=$('tokPickerMov');if(mov){mov.style.display='flex';}
+}
+function closeTokPicker(){
+  const mov=$('tokPickerMov');if(mov)mov.style.display='none';
+  _tokPickerPI=-1;
+}
+function togSlot(i){
+  if(SLOTS[i].on&&SLOTS.filter(s=>s.on).length<=2)return;
+  SLOTS[i].on=!SLOTS[i].on;
+  const b=$('pt'+i);b.textContent=SLOTS[i].on?'Вкл':'Выкл';b.className='ptog'+(SLOTS[i].on?' on':'');
+}
+function setMode(m){MODE=m;$('mdSch').className='mmode'+(m==='school'?' on':'');$('mdStu').className='mmode'+(m==='student'?' on':'');}
+
+// ══════════════════════════════════════════════════════════
+// FULL 3D DICE PHYSICS ENGINE — Canvas2D + matrix math
+// No external libs. Gravity, bounce, spin, settle.
+// ══════════════════════════════════════════════════════════
+
+// ── 3×3 Matrix helpers ──
+const M = {
+  id:()=>[1,0,0, 0,1,0, 0,0,1],
+  mul:(a,b)=>[
+    a[0]*b[0]+a[1]*b[3]+a[2]*b[6], a[0]*b[1]+a[1]*b[4]+a[2]*b[7], a[0]*b[2]+a[1]*b[5]+a[2]*b[8],
+    a[3]*b[0]+a[4]*b[3]+a[5]*b[6], a[3]*b[1]+a[4]*b[4]+a[5]*b[7], a[3]*b[2]+a[4]*b[5]+a[5]*b[8],
+    a[6]*b[0]+a[7]*b[3]+a[8]*b[6], a[6]*b[1]+a[7]*b[4]+a[8]*b[7], a[6]*b[2]+a[7]*b[5]+a[8]*b[8],
+  ],
+  rotX:(a)=>{const c=Math.cos(a),s=Math.sin(a);return[1,0,0, 0,c,-s, 0,s,c];},
+  rotY:(a)=>{const c=Math.cos(a),s=Math.sin(a);return[c,0,s, 0,1,0, -s,0,c];},
+  rotZ:(a)=>{const c=Math.cos(a),s=Math.sin(a);return[c,-s,0, s,c,0, 0,0,1];},
+  applyV:(m,v)=>[m[0]*v[0]+m[1]*v[1]+m[2]*v[2], m[3]*v[0]+m[4]*v[1]+m[5]*v[2], m[6]*v[0]+m[7]*v[1]+m[8]*v[2]],
+  norm:(v)=>{const l=Math.sqrt(v[0]**2+v[1]**2+v[2]**2)||1;return[v[0]/l,v[1]/l,v[2]/l];},
+  dot:(a,b)=>a[0]*b[0]+a[1]*b[1]+a[2]*b[2],
+};
+
+// ── Dice geometry: 6 faces with normal + dots positions ──
+const FACE_NORMALS = [
+  [0,0,1],   // front  = face 1
+  [0,0,-1],  // back   = face 6
+  [1,0,0],   // right  = face 3
+  [-1,0,0],  // left   = face 4
+  [0,1,0],   // bottom = face 2
+  [0,-1,0],  // top    = face 5
+];
+const FACE_VALUES = [1,6,3,4,2,5];
+
+// Dot positions for each face value (normalized -1..1 on face)
+const DOTS = {
+  1: [[0,0]],
+  2: [[-0.4,-0.4],[0.4,0.4]],
+  3: [[-0.4,-0.4],[0,0],[0.4,0.4]],
+  4: [[-0.4,-0.4],[0.4,-0.4],[-0.4,0.4],[0.4,0.4]],
+  5: [[-0.4,-0.4],[0.4,-0.4],[0,0],[-0.4,0.4],[0.4,0.4]],
+  6: [[-0.4,-0.4],[0.4,-0.4],[-0.4,0],[0.4,0],[-0.4,0.4],[0.4,0.4]],
+};
+
+// Face up/right vectors (for projecting dots onto face in 3D)
+const FACE_UP = [
+  [0,1,0],[0,-1,0],[0,1,0],[0,1,0],[1,0,0],[1,0,0]
+];
+const FACE_RIGHT = [
+  [1,0,0],[-1,0,0],[0,0,-1],[0,0,1],[0,0,-1],[0,0,1]
+];
+
+// ── Physics state ──
+const DS = {
+  rot: M.id(),      // rotation matrix (orientation)
+  angVel: [0,0,0],  // angular velocity (rad/frame)
+  pos: [0,0,0],     // world position (x,y,z)
+  vel: [0,0,0],     // linear velocity
+  flying: false,
+  settling: false,
+  settled: false,
+  result: 0,
+  dragStart: null,
+  dragLast: null,
+  dragVel: [0,0],
+  animFrame: null,
+  onSettle: null,
+};
+
+// ── Canvas ──
+let DC=null,DX=null; // dice overlay canvas
+let DPX=null; // preview canvas context
+
+function initDiceEngine(){
+  DC=$('diceCanvas');
+  DX=DC.getContext('2d');
+  const pc=$('dicePreviewC');
+  DPX=pc.getContext('2d');
+
+  // Resize
+  const resize=()=>{DC.width=window.innerWidth;DC.height=window.innerHeight;};
+  resize();window.addEventListener('resize',resize);
+
+  // Initial idle spin
+  DS.rot=M.mul(M.rotX(0.3),M.rotY(0.5));
+  renderPreview();
+  idleSpin();
+
+  // Touch/mouse on launch zone
+  const lz=$('diceLaunch');
+  lz.addEventListener('mousedown', dragStart);
+  lz.addEventListener('touchstart', e=>{e.preventDefault();dragStart(e.touches[0]);},{passive:false});
+  window.addEventListener('mousemove', dragMove);
+  window.addEventListener('touchmove', e=>{if(DS.dragStart)dragMove(e.touches[0]);},{passive:false});
+  window.addEventListener('mouseup', dragEnd);
+  window.addEventListener('touchend', e=>{if(DS.dragStart)dragEnd(e.changedTouches[0]);});
+}
+
+let idleAnimId=null;
+function idleSpin(){
+  cancelAnimationFrame(idleAnimId);
+  const spin=()=>{
+    if(DS.flying||DS.settling)return;
+    DS.rot=M.mul(M.rotY(0.008),M.mul(M.rotX(0.003),DS.rot));
+    renderPreview();
+    idleAnimId=requestAnimationFrame(spin);
+  };
+  spin();
+}
+
+function dragStart(e){
+  if(rolled||moving||DS.flying)return;
+  DS.dragStart={x:e.clientX,y:e.clientY,t:Date.now()};
+  DS.dragLast={x:e.clientX,y:e.clientY,t:Date.now()};
+  DS.dragVel=[0,0];
+  $('diceLaunch').classList.add('dragging');
+  cancelAnimationFrame(idleAnimId);
+}
+function dragMove(e){
+  if(!DS.dragStart)return;
+  const now=Date.now(),dt=Math.max(1,now-DS.dragLast.t);
+  const dx=e.clientX-DS.dragLast.x,dy=e.clientY-DS.dragLast.y;
+  DS.dragVel=[dx/dt*12,dy/dt*12];
+  // Rotate preview based on drag
+  DS.rot=M.mul(M.rotY(dx*0.025),M.mul(M.rotX(dy*0.025),DS.rot));
+  renderPreview();
+  DS.dragLast={x:e.clientX,y:e.clientY,t:now};
+}
+function dragEnd(e){
+  if(!DS.dragStart)return;
+  $('diceLaunch').classList.remove('dragging');
+  const dx=e.clientX-DS.dragStart.x,dy=e.clientY-DS.dragStart.y;
+  const dist=Math.sqrt(dx*dx+dy*dy);
+  const spd=Math.sqrt(DS.dragVel[0]**2+DS.dragVel[1]**2);
+  DS.dragStart=null;
+  if(dist>25||spd>3){
+    launchDice(DS.dragVel[0],DS.dragVel[1]);
+  } else {
+    idleSpin();
+  }
+}
+
+function launchDice(vx,vy){
+  if(rolled||moving||DS.flying)return;
+  const p=players[curP];
+  if(p.skipNext){p.skipNext=false;addLog(`🕳️ ${p.name} пропускает ход`,'b');showEnd();return;}
+
+  DS.flying=true;DS.settled=false;DS.settling=false;
+  sfx('roll');$('rollBtn').disabled=true;
+
+  // Determine result now (pre-baked)
+  let v=Math.floor(Math.random()*6)+1;
+  if(p.diceBonus)v=Math.min(6,v+p.diceBonus);
+  DS.result=v;
+
+  // Starting position: launch zone center
+  const lz=$('diceLaunch').getBoundingClientRect();
+  DS.pos=[lz.left+lz.width/2, lz.top+lz.height/2, 0];
+
+  // Velocity: upward + some horizontal based on swipe
+  const speed=Math.sqrt(vx*vx+vy*vy);
+  const scale=Math.max(14, Math.min(40, speed*2));
+  DS.vel=[
+    vx*0.5 + (Math.random()-0.5)*8,
+    -scale - Math.abs(vy)*0.5,  // always goes up
+    0
+  ];
+
+  // Angular velocity from swipe direction
+  DS.angVel=[
+    (vy*0.008 + (Math.random()-0.5)*0.18),
+    (vx*0.008 + (Math.random()-0.5)*0.18),
+    (Math.random()-0.5)*0.12,
+  ];
+
+  // Show overlay
+  $('diceOverlay').classList.add('active');
+
+  // Target rotation to show correct face on top when settled
+  // We'll interpolate DS.rot toward target during settling
+  DS.targetRot=faceUpMatrix(v);
+
+  physicsLoop();
+}
+
+// Build rotation matrix so face `val` points up (+Y direction)
+function faceUpMatrix(val){
+  // Face normals: which face index has value val?
+  const fi=FACE_VALUES.indexOf(val);
+  const n=FACE_NORMALS[fi];
+  // We need n to point to [0,-1,0] (up in screen = -Y in our coords)
+  // Simple: rotate to align normal with up
+  const target=M.norm([0,-0.55,0.835]); // face tilts toward viewer so it's visible
+  // cross product gives rotation axis
+  const axis=[
+    n[1]*target[2]-n[2]*target[1],
+    n[2]*target[0]-n[0]*target[2],
+    n[0]*target[1]-n[1]*target[0],
+  ];
+  const sinA=Math.sqrt(axis[0]**2+axis[1]**2+axis[2]**2);
+  const cosA=M.dot(n,target);
+  if(sinA<0.001)return cosA>0?M.id():M.rotX(Math.PI);
+  const u=M.norm(axis);
+  const a=Math.atan2(sinA,cosA);
+  // Rodrigues rotation matrix
+  const c=Math.cos(a),s=Math.sin(a),t2=1-c;
+  return[
+    t2*u[0]*u[0]+c,    t2*u[0]*u[1]-s*u[2], t2*u[0]*u[2]+s*u[1],
+    t2*u[1]*u[0]+s*u[2], t2*u[1]*u[1]+c,    t2*u[1]*u[2]-s*u[0],
+    t2*u[2]*u[0]-s*u[1], t2*u[2]*u[1]+s*u[0], t2*u[2]*u[2]+c,
+  ];
+}
+
+const GRAV=1.8, BOUNCE=0.42, FLOOR_Y=()=>window.innerHeight*0.82;
+let phFrame=null;
+
+function physicsLoop(){
+  cancelAnimationFrame(phFrame);
+  const step=()=>{
+    if(!DS.flying&&!DS.settling)return;
+
+    if(DS.flying){
+      // gravity
+      DS.vel[1]+=GRAV;
+      DS.pos[0]+=DS.vel[0];DS.pos[1]+=DS.vel[1];
+
+      // Rotate
+      const wx=DS.angVel[0],wy=DS.angVel[1],wz=DS.angVel[2];
+      if(wx||wy||wz){
+        let dR=M.mul(M.rotZ(wz),M.mul(M.rotY(wy),M.rotX(wx)));
+        DS.rot=M.mul(dR,DS.rot);
+      }
+      // Damping
+      DS.angVel=DS.angVel.map(v=>v*0.985);
+
+      // Floor bounce
+      const floor=FLOOR_Y();
+      if(DS.pos[1]>=floor){
+        DS.pos[1]=floor;
+        DS.vel[1]*=-BOUNCE;
+        DS.vel[0]*=0.75;
+        DS.angVel=DS.angVel.map(v=>v*BOUNCE);
+        sfx_dice_bounce();
+        if(Math.abs(DS.vel[1])<2&&Math.abs(DS.vel[0])<1.5){
+          DS.flying=false;DS.settling=true;DS.settleT=0;
+        }
+      }
+      // Wall bounce
+      const hw=window.innerWidth;
+      if(DS.pos[0]<60){DS.pos[0]=60;DS.vel[0]=Math.abs(DS.vel[0])*0.6;}
+      if(DS.pos[0]>hw-60){DS.pos[0]=hw-60;DS.vel[0]=-Math.abs(DS.vel[0])*0.6;}
+    }
+
+    if(DS.settling){
+      DS.settleT=(DS.settleT||0)+1;
+      // Interpolate rotation toward correct face-up
+      const t=Math.min(1, DS.settleT/35);
+      const ease=t*t*(3-2*t); // smoothstep
+      DS.rot=lerpMatrix(DS.rot,DS.targetRot,ease*0.12);
+      if(DS.settleT>40){
+        DS.rot=DS.targetRot;
+        DS.settling=false;DS.settled=true;
+        onDiceSettled();
+        return;
+      }
+    }
+
+    drawDiceOverlay();
+    phFrame=requestAnimationFrame(step);
+  };
+  step();
+}
+
+function lerpMatrix(a,b,t){return a.map((v,i)=>v+(b[i]-v)*t);}
+
+function sfx_dice_bounce(){
+  try{
+    const ac=new(window.AudioContext||window.webkitAudioContext)();
+    const o=ac.createOscillator(),g=ac.createGain();
+    o.type='square';o.frequency.value=80+Math.random()*120;
+    g.gain.setValueAtTime(0.18,ac.currentTime);
+    g.gain.exponentialRampToValueAtTime(0.001,ac.currentTime+0.08);
+    o.connect(g);g.connect(ac.destination);o.start();o.stop(ac.currentTime+0.09);
+  }catch(e){}
+}
+
+function getTopFaceValue(){
+  // Read which face is actually pointing UP (-Y) in current rotation
+  // = face whose rotated normal has smallest Y component (most negative)
+  let topFi=-1, minY=1;
+  for(let fi=0;fi<6;fi++){
+    const n=M.applyV(DS.rot, FACE_NORMALS[fi]);
+    if(n[1]<minY){minY=n[1];topFi=fi;}
+  }
+  return topFi>=0 ? FACE_VALUES[topFi] : DS.result;
+}
+function onDiceSettled(){
+  const v=getTopFaceValue(); // use ACTUAL displayed face, not pre-baked value
+  DS.result=v; // sync result to what's shown
+  // Flash result
+  drawDiceOverlay();
+  // Show result text
+  DX.save();
+  DX.font='bold 28px Nunito,sans-serif';DX.textAlign='center';
+  DX.fillStyle='rgba(3,105,161,.95)';
+  DX.fillText('Выпало: '+v, DS.pos[0], DS.pos[1]+70);
+  DX.restore();
+
+  sfx('good');
+
+  setTimeout(()=>{
+    // Hide overlay, return dice to sidebar
+    $('diceOverlay').classList.remove('active');
+    DX.clearRect(0,0,DC.width,DC.height);
+    DS.flying=false;DS.settling=false;
+    // Reset rotation for next throw
+    idleSpin();
+    // Proceed with game move
+    rolled=true;
+    const p=players[curP];
+    const from=p.pos,to=Math.min(from+v,PTYPES.length-1);
+    addLog(`🎲 ${p.name} бросил ${v}`,'i');setHint(`Выпало ${v}!`);
+    moving=true;
+    animMove(p,from,to,()=>{
+      moving=false;
+      if(to===PTYPES.length-1){
+        p.money+=300;p.score+=15;renderPlayers();floatScore('+300₽ ФИНИШ!',p.color);
+        addLog(`🏁 ${p.name} финишировал! +300₽`,'w');
+        setTimeout(()=>showWin('finish'),700);return;
+      }
+      setTimeout(()=>landCell(PTYPES[to],to),300);
+    });
+  },1100);
+}
+
+// ── Draw 3D cube on canvas ──
+function drawCube(ctx,cx,cy,size,rot,isOverlay){
+  const faces=[];
+  for(let fi=0;fi<6;fi++){
+    const rawN=FACE_NORMALS[fi];
+    const n=M.applyV(rot,rawN);
+    if(n[2]<=0)continue; // back-face cull (z towards viewer)
+    const val=FACE_VALUES[fi];
+    const ru=FACE_RIGHT[fi],rv=FACE_UP[fi];
+    const worldU=M.applyV(rot,ru);
+    const worldV=M.applyV(rot,rv);
+    // 4 corners of face
+    const corners=[];
+    [[-1,-1],[1,-1],[1,1],[-1,1]].forEach(([a,b])=>{
+      const wx=rawN[0]+a*ru[0]+b*rv[0];
+      const wy=rawN[1]+a*ru[1]+b*rv[1];
+      const wz=rawN[2]+a*ru[2]+b*rv[2];
+      const p3=M.applyV(rot,[wx,wy,wz]);
+      // Simple perspective
+      const pz=2.8+p3[2];
+      corners.push([cx+p3[0]*size/pz*pz, cy+p3[1]*size/pz*pz]);
+    });
+    faces.push({val,n,corners,worldU,worldV,depth:n[2]});
+  }
+  // Sort back to front
+  faces.sort((a,b)=>b.depth-a.depth);
+
+  faces.forEach(({val,n,corners,worldU,worldV})=>{
+    ctx.save();
+    // Face shape
+    ctx.beginPath();
+    ctx.moveTo(corners[0][0],corners[0][1]);
+    corners.slice(1).forEach(([x,y])=>ctx.lineTo(x,y));
+    ctx.closePath();
+    // Lighting: ambient + directional
+    const light=M.norm([0.5,-0.8,0.6]);
+    const diff=Math.max(0,M.dot(n,light));
+    const bright=isOverlay?255:240;
+    const shade=Math.round(185+diff*bright*(isOverlay?0.65:0.5));
+    const r2=Math.round(shade*0.88),g2=Math.round(shade*0.95),b2=Math.round(shade);
+    ctx.fillStyle=`rgb(${r2},${g2},${b2})`;
+    ctx.fill();
+    ctx.strokeStyle=`rgba(3,105,161,${0.25+diff*0.2})`;
+    ctx.lineWidth=isOverlay?1.5:1;
+    ctx.stroke();
+
+    // Draw dots
+    const dotR=size*(isOverlay?0.072:0.068);
+    const DOTS_FACE=DOTS[val]||[];
+    DOTS_FACE.forEach(([du,dv])=>{
+      // Project dot position onto screen
+      const rawN2=FACE_NORMALS[faces.indexOf(faces.find(f=>f.val===val))||0];
+      // Use face center + offset along u and v
+      const dScale=size*0.48;
+      const wx=(worldU[0]*du+worldV[0]*dv)*dScale;
+      const wy=(worldU[1]*du+worldV[1]*dv)*dScale;
+      // Find screen center of this face
+      const fcx=(corners[0][0]+corners[2][0])/2;
+      const fcy=(corners[0][1]+corners[2][1])/2;
+      // Project offset
+      const ux=(corners[1][0]-corners[0][0])+(corners[2][0]-corners[3][0]);
+      const uy=(corners[1][1]-corners[0][1])+(corners[2][1]-corners[3][1]);
+      const vx=(corners[3][0]-corners[0][0])+(corners[2][0]-corners[1][0]);
+      const vy=(corners[3][1]-corners[0][1])+(corners[2][1]-corners[1][1]);
+      const dx2=fcx+(ux*du*0.25)+(vx*dv*0.25);
+      const dy2=fcy+(uy*du*0.25)+(vy*dv*0.25);
+      ctx.beginPath();ctx.arc(dx2,dy2,dotR,0,Math.PI*2);
+      const dotBright=Math.max(20,Math.round(shade*0.25));
+      ctx.fillStyle=`rgb(${dotBright},${Math.round(dotBright*1.1)},${Math.round(dotBright*1.3)})`;
+      ctx.fill();
+    });
+    ctx.restore();
+  });
+}
+
+function renderPreview(){
+  if(!DPX)return;
+  DPX.clearRect(0,0,84,84);
+  drawCube(DPX,42,42,36,DS.rot,false);
+}
+
+function drawDiceOverlay(){
+  if(!DX)return;
+  DX.clearRect(0,0,DC.width,DC.height);
+  // Semi-transparent blur hint
+  DX.fillStyle='rgba(220,245,255,0.08)';
+  DX.fillRect(0,0,DC.width,DC.height);
+  // Shadow under dice
+  const fx=DS.pos[0],fy=FLOOR_Y();
+  DX.fillStyle='rgba(0,80,140,0.12)';
+  DX.beginPath();DX.ellipse(fx,fy+4,30,8,0,0,Math.PI*2);DX.fill();
+  // Draw dice
+  drawCube(DX,DS.pos[0],DS.pos[1],52,DS.rot,true);
+  // Floor line
+  DX.strokeStyle='rgba(14,165,233,0.15)';DX.lineWidth=1;DX.setLineDash([8,12]);
+  DX.beginPath();DX.moveTo(0,fy+8);DX.lineTo(DC.width,fy+8);DX.stroke();DX.setLineDash([]);
+}
+
+// ── Public API ──
+function initDicePhysics(){initDiceEngine();}
+function throwDice(){
+  if(DS.flying||DS.settling){setHint('Кубик летит...');return;}
+  launchDice((Math.random()-0.5)*20,-15-Math.random()*10);
+}
+function rollDice(){throwDice();}
+
+// ══ BOARD — TOP-DOWN ARCTIC LANDSCAPE ══
+function buildCells(){
+  cells=[];
+  const N=PTYPES.length;
+  // Winding path layout — S-snake with nice curves
+  const cols=8,rows=6;
+  const padX=0.06,padY=0.1;
+  const uw=(1-padX*2)/cols,uh=(1-padY*2)/rows;
+  const path=[];
+  for(let r=0;r<rows;r++){
+    const lr=r%2===0;
+    for(let c=0;c<cols;c++){
+      const gc=lr?c:(cols-1-c);
+      path.push({gr:rows-1-r,gc});
+    }
+  }
+  for(let i=0;i<N;i++){
+    const g=path[i]||{gr:0,gc:0};
+    const jx=(Math.sin(i*7.3+g.gr*3.1))*uw*BW*.06;
+    const jy=(Math.cos(i*5.7+g.gc*2.8))*uh*BH*.05;
+    cells.push({
+      x:(padX+g.gc*uw+uw*.5)*BW+jx,
+      y:(padY+g.gr*uh+uh*.5)*BH+jy,
+      r:Math.min(uw*BW,uh*BH)*.42,
+      type:PTYPES[i],idx:i,
+      buildings:[]  // bought buildings on this cell
+    });
+  }
+}
+function initBoard(){
+  BC=$('boardC');BX=BC.getContext('2d');
+  const rsz=()=>{
+    const w=BC.parentElement;
+    BW=w.clientWidth;BH=w.clientHeight;
+    BC.width=BW;BC.height=BH;
+    buildCells();
+  };
+  rsz();window.addEventListener('resize',()=>{rsz();});
+  const loop=()=>{drawBoard();requestAnimationFrame(loop);};
+  loop();
+}
+function drawBoard(){
+  if(!BX)return;
+  // ── Sky/snow background ──
+  const skyG=BX.createLinearGradient(0,0,BW,BH);
+  skyG.addColorStop(0,'#dff4ff');skyG.addColorStop(.4,'#eef9ff');skyG.addColorStop(1,'#f5fbff');
+  BX.fillStyle=skyG;BX.fillRect(0,0,BW,BH);
+
+  // ── Arctic terrain features ──
+  // Ocean patches
+  [[.15,.72,.18,.1],[.65,.8,.22,.08],[.82,.55,.12,.08]].forEach(([rx,ry,rw,rh])=>{
+    const g=BX.createRadialGradient(rx*BW,ry*BH,0,rx*BW,ry*BH,rw*BW);
+    g.addColorStop(0,'rgba(77,184,232,.35)');g.addColorStop(1,'rgba(77,184,232,0)');
+    BX.fillStyle=g;BX.beginPath();BX.ellipse(rx*BW,ry*BH,rw*BW,rh*BH,-.1,0,Math.PI*2);BX.fill();
+  });
+  // Tundra patches (greenish)
+  [[.3,.55,.1,.06],[.7,.4,.12,.07],[.5,.75,.09,.05]].forEach(([rx,ry,rw,rh])=>{
+    const g=BX.createRadialGradient(rx*BW,ry*BH,0,rx*BW,ry*BH,rw*BW);
+    g.addColorStop(0,'rgba(134,239,172,.3)');g.addColorStop(1,'rgba(134,239,172,0)');
+    BX.fillStyle=g;BX.beginPath();BX.ellipse(rx*BW,ry*BH,rw*BW,rh*BH,.1,0,Math.PI*2);BX.fill();
+  });
+  // Iceberg decorations
+  [[.08,.35,.038],[.92,.6,.032],[.48,.18,.028],[.72,.78,.025]].forEach(([rx,ry,rs])=>{
+    const x=rx*BW,y=ry*BH,s=rs*Math.min(BW,BH);
+    // Shadow
+    BX.fillStyle='rgba(0,100,160,.06)';BX.beginPath();BX.ellipse(x,y+s*.8,s*1.1,s*.25,0,0,Math.PI*2);BX.fill();
+    // Body
+    const ig=BX.createRadialGradient(x-s*.2,y-s*.3,0,x,y,s);
+    ig.addColorStop(0,'rgba(240,252,255,.96)');ig.addColorStop(.6,'rgba(200,238,255,.9)');ig.addColorStop(1,'rgba(150,210,240,.7)');
+    BX.fillStyle=ig;
+    BX.beginPath();BX.moveTo(x,y-s);BX.lineTo(x+s*.7,y+s*.1);BX.lineTo(x+s*.3,y+s*.5);
+    BX.lineTo(x-s*.3,y+s*.5);BX.lineTo(x-s*.7,y+s*.1);BX.closePath();BX.fill();
+    BX.strokeStyle='rgba(150,210,240,.5)';BX.lineWidth=1;BX.stroke();
+  });
+  // Snow hills
+  [[.2,.88],[.45,.92],[.7,.87],[.88,.82]].forEach(([rx,ry])=>{
+    const g=BX.createRadialGradient(rx*BW,ry*BH,0,rx*BW,ry*BH,BW*.09);
+    g.addColorStop(0,'rgba(220,245,255,.45)');g.addColorStop(1,'rgba(220,245,255,0)');
+    BX.fillStyle=g;BX.beginPath();BX.ellipse(rx*BW,ry*BH,BW*.08,BH*.06,0,0,Math.PI*2);BX.fill();
+  });
+
+  // ── Path connector ──
+  if(cells.length>1){
+    BX.save();BX.setLineDash([5,10]);BX.strokeStyle='rgba(100,180,220,.3)';BX.lineWidth=2;
+    BX.beginPath();cells.forEach((c,i)=>i===0?BX.moveTo(c.x,c.y):BX.lineTo(c.x,c.y));
+    BX.stroke();BX.setLineDash([]);BX.restore();
+  }
+
+  // ── Cells ──
+  const sorted=[...cells].sort((a,b)=>a.y-b.y); // paint top-to-bottom
+  sorted.forEach(cell=>{
+    drawCell(cell);
+  });
+  // ── Tokens ──
+  drawTokens();
+  // ── Score labels ──
+  drawScoreLabels();
+}
+
+function drawCell(cell){
+  const {x,y,r,type,idx}=cell;
+  const anyHere=players.some(p=>p.pos===idx);
+  const isCurHere=players[curP]&&players[curP].pos===idx;
+  const pulse=isCurHere?(Math.sin(Date.now()*.004)*.5+.5):0;
+  const cr=r*(1+pulse*.06);
+
+  BX.save();
+  if(anyHere){BX.shadowColor=TBRD[type]||'rgba(14,165,233,.5)';BX.shadowBlur=16+pulse*8;}
+
+  // Cell circle — white snow surface
+  BX.beginPath();BX.arc(x,y,cr,0,Math.PI*2);
+  const cg=BX.createRadialGradient(x-cr*.2,y-cr*.3,0,x,y,cr);
+  cg.addColorStop(0,'rgba(255,255,255,.98)');
+  cg.addColorStop(.6,'rgba(240,250,255,.95)');
+  cg.addColorStop(1,'rgba(220,240,255,.9)');
+  BX.fillStyle=cg;BX.fill();
+
+  // Type color ring
+  BX.beginPath();BX.arc(x,y,cr,0,Math.PI*2);
+  BX.fillStyle=TCOL[type]||'rgba(14,165,233,.1)';BX.fill();
+  BX.strokeStyle=anyHere?(TBRD[type]||'rgba(14,165,233,.6)'):'rgba(180,220,240,.5)';
+  BX.lineWidth=anyHere?2.5:1.5;BX.stroke();
+  BX.restore();
+
+  // "3D" highlight arc
+  BX.save();BX.beginPath();BX.arc(x,y-cr*.1,cr*.85,Math.PI*1.1,Math.PI*2.2);
+  BX.strokeStyle='rgba(255,255,255,.7)';BX.lineWidth=cr*.18;
+  BX.stroke();BX.restore();
+
+  // Icon
+  BX.font=`${cr*.7}px serif`;BX.textAlign='center';BX.textBaseline='middle';
+  // START/FINISH
+  if(idx===0){
+    BX.font=`bold ${cr*.28}px Nunito,sans-serif`;BX.fillStyle='#15803d';BX.fillText('СТАРТ',x,y+cr*.58);
+    BX.font=`${cr*.62}px serif`;BX.fillText(TICO[type],x,y-cr*.08);
+  } else if(idx===PTYPES.length-1){
+    BX.font=`bold ${cr*.26}px Nunito,sans-serif`;BX.fillStyle='#0369a1';BX.fillText('ФИНИШ',x,y+cr*.58);
+    BX.font=`${cr*.62}px serif`;BX.fillText('🏆',x,y-cr*.08);
+  } else {
+    BX.fillText(TICO[type]||'?',x,y);
+  }
+  // Buildings on cell
+  if(cell.buildings&&cell.buildings.length){
+    BX.font=`${cr*.35}px serif`;BX.textAlign='center';BX.textBaseline='middle';
+    cell.buildings.forEach((b,bi)=>{
+      const angle=bi*(Math.PI*2/cell.buildings.length)-Math.PI/2;
+      const bx2=x+Math.cos(angle)*(cr*1.05);const by2=y+Math.sin(angle)*(cr*1.05);
+      BX.fillText(b,bx2,by2);
+    });
+  }
+}
+
+// Draw 3D-looking tokens
+function drawTokens(){
+  if(!players.length)return;
+  const byPos={};
+  players.forEach((p,i)=>{byPos[p.pos]=byPos[p.pos]||[];byPos[p.pos].push(i);});
+  const offs=[[0,0],[-.32,0],[.32,0],[0,-.32]];
+  players.forEach((p,pi)=>{
+    const cell=cells[p.pos];if(!cell)return;
+    const j=byPos[p.pos].indexOf(pi);
+    const off=offs[j]||[0,0];
+    const tx=cell.x+off[0]*cell.r*1.15;
+    const ty=cell.y+off[1]*cell.r*1.15;
+    if(!p._tx){p._tx=tx;p._ty=ty;}
+    p._tx+=(tx-p._tx)*.13;p._ty+=(ty-p._ty)*.13;
+    const ax=p._tx,ay=p._ty;
+    const tr=cell.r*.27;
+    const isCur=pi===curP;
+    const bounce=isCur?(Math.sin(Date.now()*.005)*2):0;
+    const tok=TOKENS[p.tokenIdx]||TOKENS[0];
+    BX.save();
+    // Shadow
+    BX.fillStyle='rgba(0,80,140,.15)';BX.beginPath();BX.ellipse(ax,ay+tr*.8+bounce,tr*.9,tr*.25,0,0,Math.PI*2);BX.fill();
+    // Token 3D body
+    BX.shadowColor=tok.color;BX.shadowBlur=isCur?14:6;
+    // Base circle
+    BX.beginPath();BX.arc(ax,ay+bounce,tr,0,Math.PI*2);
+    const tg=BX.createRadialGradient(ax-tr*.25,ay-tr*.25+bounce,0,ax,ay+bounce,tr);
+    tg.addColorStop(0,tok.color+'dd');tg.addColorStop(1,tok.color+'66');
+    BX.fillStyle=tg;BX.fill();
+    BX.strokeStyle='rgba(255,255,255,.6)';BX.lineWidth=2;BX.stroke();
+    BX.shadowBlur=0;
+    // Emoji
+    BX.font=`${tr*.95}px serif`;BX.textAlign='center';BX.textBaseline='middle';
+    BX.fillText(tok.ico,ax,ay+bounce);
+    // Active ring
+    if(isCur){
+      const r2=tr+4+bounce*.5;
+      BX.beginPath();BX.arc(ax,ay+bounce,r2,0,Math.PI*2);
+      BX.strokeStyle=tok.color;BX.lineWidth=2;
+      BX.setLineDash([4,4]);BX.stroke();BX.setLineDash([]);
+    }
+    BX.restore();
+  });
+}
+
+function drawScoreLabels(){
+  players.forEach(p=>{
+    if(!p._tx)return;const cell=cells[p.pos];if(!cell)return;
+    const tr=cell.r*.27;
+    const bx=p._tx,by=p._ty-tr-16;
+    const txt=`${p.money}₽`;
+    BX.save();
+    BX.font=`800 ${tr*.58}px Nunito,sans-serif`;
+    const tw=BX.measureText(txt).width;
+    const pw=tw+9,ph=tr*.72;
+    BX.fillStyle='rgba(255,255,255,.92)';BX.strokeStyle=PCOLORS[p.idx];BX.lineWidth=1.5;
+    BX.beginPath();BX.roundRect(bx-pw/2,by-ph/2,pw,ph,99);BX.fill();BX.stroke();
+    BX.fillStyle=PCOLORS[p.idx];BX.textAlign='center';BX.textBaseline='middle';BX.fillText(txt,bx,by);
+    BX.restore();
+  });
+}
+
+// minimap removed
+  mx.strokeStyle='rgba(100,180,220,.25)';mx.lineWidth=1;mx.beginPath();
+  cells.forEach((c,i)=>{const p=pr(c);i===0?mx.moveTo(p.x,p.y):mx.lineTo(p.x,p.y);});mx.stroke();
+  cells.forEach(c=>{const p=pr(c);mx.beginPath();mx.arc(p.x,p.y,2,0,Math.PI*2);mx.fillStyle=TBRD[c.type]||'#aaa';mx.fill();});
+  players.forEach((p,pi)=>{
+    const c=cells[p.pos];if(!c)return;const pp=pr(c);
+    mx.beginPath();mx.arc(pp.x,pp.y,3.5,0,Math.PI*2);mx.fillStyle=PCOLORS[pi];mx.fill();
+  });
+}
+// ══ ANIMATED MOVE ══
+function animMove(player,from,to,onDone){
+  const steps=[];for(let i=from+1;i<=to;i++)steps.push(i);
+  if(!steps.length){onDone();return;}
+  let si=0;
+  function step(){player.pos=steps[si];sfx('step');renderPlayers();si++;
+    if(si<steps.length)setTimeout(step,270);else setTimeout(onDone,320);}
+  step();
+}
+
+// ══ RENDER ══
+function renderAll(){renderPlayers();updateEco();renderRes();renderLB();}
+function renderPlayers(){
+  const c=$('pCards');c.innerHTML='';
+  players.forEach((p,i)=>{
+    const tok=TOKENS[p.tokenIdx]||TOKENS[0];
+    const d=document.createElement('div');d.className='pcard'+(i===curP?' act':'');
+    d.innerHTML=`<div class="pav" style="background:${tok.bg||p.color+'22'}">${tok.ico}</div>
+      <div style="flex:1;min-width:0">
+        <div class="pnm" style="color:${p.color}">${p.name}</div>
+        <div class="psc">⭐${p.score} · кл.${p.pos+1}</div>
+        <div class="pmoney">${p.money}₽</div>
+      </div>`;
+    c.appendChild(d);});
+  const p=players[curP];
+  $('curPN').textContent=p.name;
+  $('badgeArea').textContent=p.badges.join(' ');
+}
+function updateEco(){
+  const v=Math.max(0,Math.min(100,Math.round(eco)));
+  $('ecoFill').style.width=v+'%';$('ecoVal').textContent=v+'%';
+  if(v>=100)setTimeout(()=>showWin('eco'),700);
+}
+function renderRes(){
+  const p=players[curP];
+  const a=$('resArea');
+  a.innerHTML=p.res.length?p.res.map(r=>`<span class="rchip">${r}</span>`).join(''):'<span style="color:var(--muted);font-size:.71rem">Пусто</span>';
+  const has3=new Set(p.res).size>=3;const onPrj=PTYPES[p.pos]==='project';
+  $('bldBtn').style.display=(has3&&onPrj)?'block':'none';
+}
+function addLog(msg,cls){
+  const gl=$('gLog');const d=document.createElement('div');d.className='lge '+(cls||'');d.textContent=msg;
+  gl.prepend(d);while(gl.children.length>40)gl.removeChild(gl.lastChild);
+}
+function setHint(t){$('hintEl').textContent=t;}
+function showEnd(){$('endBtn').style.display='block';setHint('Нажмите «Завершить ход»');}
+
+// ══ CELL LANDING ══
+function landCell(type,ci){
+  const p=players[curP];
+  if(type==='camp'){
+    p.money+=30;p.score+=2;eco+=1;updateEco();renderPlayers();floatScore('+30₽',p.color);
+    addLog(`🏕️ ${p.name} в лагере +30₽`,'g');
+    popup('camp',{ico:'🏕️',tit:'Базовый лагерь',sub:'+30₽ за отдых',
+      fact:'Арктика — дом 4 млн человек! Коренные народы живут здесь 30 000+ лет.'});
+  } else if(type==='tundra'){
+    const c=TUNDRA[Math.floor(Math.random()*TUNDRA.length)];
+    let earn=50;if(p.items?.includes('wind'))earn+=30;
+    p.money+=earn;p.score+=3;p.res.push(c.r);if(p.res.length>6)p.res.shift();eco+=5;
+    updateEco();renderPlayers();renderRes();floatScore(`+${earn}₽ ${c.r}`,p.color);
+    addLog(`🌿 ${p.name} +${earn}₽ ресурс ${c.r}`,'g');
+    popup('tundra',{ico:'🌿',tit:'Тундра',sub:`+${earn}₽ + ресурс ${c.r}`,fact:c.f,
+      quiz:MODE==='school'?c.qs:c.qu});
+  } else if(type==='animal'){
+    const c=ANIMALS[Math.floor(Math.random()*ANIMALS.length)];
+    popup('animal',{ico:c.i,tit:'Встреча: '+c.n,sub:'Верно → +100₽ +6% эко',fact:c.f,
+      quiz:MODE==='school'?c.qs:c.qu,
+      onR:()=>{
+        const pp=players[curP];let earn=100;
+        if(pp.doubleQuiz||pp.items?.includes('lab'))earn=200;
+        pp.money+=earn;pp.score+=10;eco+=6;updateEco();renderPlayers();
+        floatScore(`+${earn}₽`,pp.color);addLog(`✅ ${pp.name} +${earn}₽ +6%`,'g');chkBadge(pp);},
+      onW:()=>{eco-=3;updateEco();addLog(`❌ ${players[curP].name} -3% эко`,'b');}});
+  } else if(type==='threat'){
+    const c=THREATS[Math.floor(Math.random()*THREATS.length)];
+    eco-=c.dmg*.4;updateEco();addLog(`⚡ Угроза: ${c.n}`,'b');
+    popup('threat',{ico:c.i,tit:'Угроза: '+c.n,sub:'Выбери действие!',fact:c.f,choices:c.ch,
+      quiz:MODE==='school'?c.qs:c.qu,
+      onR:()=>{const pp=players[curP];pp.money+=80;pp.score+=8;eco+=c.dmg*.5;
+        updateEco();renderPlayers();floatScore('+80₽',pp.color);addLog(`🛡️ ${pp.name} +80₽`,'g');chkBadge(pp);},
+      onW:()=>{eco-=c.dmg*.25;updateEco();addLog(`😞 Неверное решение`,'b');}});
+  } else if(type==='market'){
+    showMarket();return;
+  } else if(type==='project'){
+    renderRes();
+    const has3=new Set(p.res).size>=3;
+    popup('project',{ico:'🏗️',tit:'Экологический проект',
+      sub:has3?'Есть 3 ресурса — строй!':'Нужны 3 разных ресурса.',
+      fact:'Арктические станции изучают климат. Данные используют учёные всего мира!'});
+  } else if(type==='aurora'){
+    rolled=false;$('rollBtn').disabled=false;
+    addLog(`🌌 ${p.name} — бонусный ход!`,'w');sfx('aurora');
+    popup('aurora',{ico:'🌌',tit:'Северное сияние!',sub:'🎁 Бросайте ещё раз!',
+      fact:'Сияние на высоте 100–300 км. Зелёный — O₂, синий — N₂!'});
+  } else if(type==='crack'){
+    p.skipNext=true;addLog(`🕳️ ${p.name} — трещина! Пропуск хода`,'b');
+    popup('crack',{ico:'🕳️',tit:'Трещина во льду!',sub:'Следующий ход пропускаешь.',
+      fact:'Трещины опасны для путешественников и нерп.'});
+  } else if(type==='inuit'){
+    const rs=['🌱','🌿','❄️'],r=rs[Math.floor(Math.random()*rs.length)];
+    p.res.push(r);p.res.push(r);if(p.res.length>6)p.res=p.res.slice(-6);
+    p.money+=100;p.score+=2;renderRes();renderPlayers();floatScore('+100₽ '+r+r,p.color);
+    addLog(`🤝 ${p.name} помощь инуитов +100₽`,'g');
+    popup('inuit',{ico:'🤝',tit:'Помощь инуитов',sub:`${r}${r} +100₽`,
+      fact:'Инуиты — коренные жители Арктики. Знания выживания в холоде бесценны.'});
+  }
+}
+function tryBuild(){
+  const p=players[curP];if(new Set(p.res).size<3)return;
+  p.res=[];p.money+=200;p.score+=20;eco+=20;updateEco();renderPlayers();renderRes();
+  floatScore('+200₽ +20% эко',p.color);addLog(`🏗️ ${p.name} построил Эко-Станцию!`,'g');
+  cells[p.pos].buildings=cells[p.pos].buildings||[];cells[p.pos].buildings.push('🏭');
+  showBadge({ico:'🏗️',n:'Инженер',d:'Построил Эко-Станцию!'});$('bldBtn').style.display='none';
+  if(p.money>=500||p.score>=50)setTimeout(()=>showWin('score'),700);
+}
+
+// ══ MARKET ══
+function showMarket(){
+  const p=players[curP];
+  p.items=p.items||[];
+  let sh='<div class="shop-grid">';
+  SHOP_ITEMS.forEach((item,i)=>{
+    const disc=p.buildDiscount||0;const price=Math.max(0,item.price-disc);
+    const bought=p.items.includes(item.id);
+    const cant=!bought&&p.money<price;
+    sh+=`<div class="shop-item ${bought?'bought':cant?'cantafford':''}" onclick="${bought||cant?'':''}" id="si${i}">
+      <span class="shop-ico">${item.ico}</span>
+      <div class="shop-name">${item.name}</div>
+      <div class="shop-price">${bought?'✅ Куплено':price+'₽'}</div>
+      <div class="shop-bonus">${item.desc}</div>
+    </div>`;
+  });
+  sh+='</div>';
+  $('popBox').innerHTML=`<span class="mico">🏪</span>
+    <div style="text-align:center;margin-bottom:6px"><span class="mtag" style="background:rgba(16,185,129,.1);border:1px solid rgba(16,185,129,.4);color:#059669">Рынок</span></div>
+    <div class="mtit">Арктический рынок</div>
+    <div class="msub">Ваш бюджет: <b style="color:var(--gold)">${p.money}₽</b></div>
+    ${sh}
+    <button class="cnxt sh" onclick="closePopup()">Закрыть →</button>`;
+  // attach click handlers
+  SHOP_ITEMS.forEach((item,i)=>{
+    const el=$('si'+i);if(!el)return;
+    const disc=p.buildDiscount||0,price=Math.max(0,item.price-disc);
+    const bought=p.items.includes(item.id),cant=!bought&&p.money<price;
+    if(!bought&&!cant){
+      el.addEventListener('click',()=>{
+        p.money-=price;p.items.push(item.id);
+        // Apply item effect
+        if(item.eco){eco+=item.eco;updateEco();}
+        if(item.id==='kayak')p.diceBonus=(p.diceBonus||0)+1;
+        if(item.id==='radio')p.hasHint=true;
+        if(item.id==='lab')p.doubleQuiz=true;
+        cells[players[curP].pos].buildings=cells[players[curP].pos].buildings||[];
+        cells[players[curP].pos].buildings.push(item.ico);
+        floatScore(`-${price}₽ ${item.ico}`,p.color);addLog(`🛒 ${p.name} купил ${item.name}`,'i');
+        renderPlayers();showMarket();
+      });
+    }
+  });
+  $('popMov').classList.remove('off');
+}
+
+// ══ POPUP ══
+const TTAG={
+  camp:'rgba(34,197,94,.08)|rgba(34,197,94,.3)|#15803d|Лагерь',
+  tundra:'rgba(74,222,128,.08)|rgba(74,222,128,.3)|#16a34a|Тундра',
+  animal:'rgba(56,189,248,.08)|rgba(56,189,248,.3)|#0369a1|Животное',
+  threat:'rgba(239,68,68,.08)|rgba(239,68,68,.3)|#b91c1c|Угроза',
+  project:'rgba(139,92,246,.08)|rgba(139,92,246,.3)|#7c3aed|Проект',
+  aurora:'rgba(147,197,253,.1)|rgba(147,197,253,.5)|#3b82f6|Сияние',
+  crack:'rgba(148,163,184,.08)|rgba(148,163,184,.3)|#64748b|Трещина',
+  inuit:'rgba(245,158,11,.08)|rgba(245,158,11,.3)|#b45309|Инуиты',
+};
+function popup(type,opts){
+  const [bg,bc,tc,tn]=(TTAG[type]||'rgba(14,165,233,.08)|rgba(14,165,233,.3)|#0369a1|Событие').split('|');
+  qDone=false;pCb={onR:opts.onR,onW:opts.onW,ch:opts.choices};
+  let h=`<span class="mico">${opts.ico}</span>
+    <div style="text-align:center;margin-bottom:7px"><span class="mtag" style="background:${bg};border:1px solid ${bc};color:${tc}">${tn}</span></div>
+    <div class="mtit">${opts.tit}</div><div class="msub">${opts.sub}</div>
+    <div class="fbox"><div class="flbl">💡 Факт об Арктике</div><div class="ftxt">${opts.fact}</div></div>`;
+  if(opts.choices){
+    h+=`<div class="chlbl">⚡ Выбери действие:</div><div class="chlist">`;
+    opts.choices.forEach((c,i)=>h+=`<button class="chbtn" id="ch${i}" onclick="pickCh(${i})">${c.t}</button>`);
+    h+=`</div><div class="qres" id="chR"></div>`;
+  }
+  if(opts.quiz){
+    const q=opts.quiz;
+    h+=`<div class="qsep"></div><div class="qlbl">❓ Проверь знания</div>`;
+    if(MODE==='student')h+=`<div class="tbar"><div class="tbarf" id="tbrF" style="width:100%"></div></div>`;
+    h+=`<div class="qq">${q.q}</div><div class="qopts">`;
+    q.o.forEach((o,i)=>h+=`<button class="qopt" id="qo${i}" onclick="pickQ(${i},${q.a},'${encodeURIComponent(q.e)}')">${o}</button>`);
+    h+=`</div><div class="qres" id="qR"></div>`;
+  }
+  h+=`<button class="cnxt ${(!opts.quiz&&!opts.choices)?'sh':''}" id="cBtn" onclick="closePopup()">Продолжить →</button>`;
+  $('popBox').innerHTML=h;$('popMov').classList.remove('off');
+  if(opts.quiz&&MODE==='student'){
+    let left=15;clearInterval(qTmr);
+    qTmr=setInterval(()=>{
+      left-=.1;const pct=Math.max(0,left/15*100);
+      const f=$('tbrF');if(f){f.style.width=pct+'%';
+        f.style.background=pct>50?'linear-gradient(90deg,#0ea5e9,#8b5cf6)':pct>25?'linear-gradient(90deg,#f59e0b,#f97316)':'linear-gradient(90deg,#ef4444,#f97316)';}
+      if(left<=0){clearInterval(qTmr);if(!qDone)tmOut();}
+    },100);
+  }
+}
+function pickCh(i){
+  if(qDone)return;const c=pCb.ch[i];
+  document.querySelectorAll('.chbtn').forEach((b,j)=>{b.disabled=true;if(j===i)b.classList.add(c.ok?'ok':'no');});
+  const r=$('chR');r.textContent=(c.ok?'✅ ':'❌ ')+c.e;r.className='qres sh '+(c.ok?'ok':'no');
+  if(c.ok&&pCb.onR)pCb.onR();else if(!c.ok&&pCb.onW)pCb.onW();
+  qDone=true;const cb=$('cBtn');if(cb)cb.classList.add('sh');
+}
+function pickQ(sel,cor,eEnc){
+  if(qDone)return;qDone=true;clearInterval(qTmr);
+  const e=decodeURIComponent(eEnc);
+  document.querySelectorAll('.qopt').forEach((b,i)=>{b.disabled=true;if(i===cor)b.classList.add('ok');else if(i===sel)b.classList.add('no');});
+  const ok=sel===cor;
+  const r=$('qR');r.textContent=(ok?'✅ Верно! ':'❌ Неверно. ')+e;r.className='qres sh '+(ok?'ok':'no');
+  if(ok&&pCb?.onR)pCb.onR();else if(!ok&&pCb?.onW)pCb.onW();
+  sfx(ok?'good':'bad');const cb=$('cBtn');if(cb)cb.classList.add('sh');
+}
+function tmOut(){
+  if(qDone)return;qDone=true;
+  document.querySelectorAll('.qopt').forEach(b=>b.disabled=true);
+  const r=$('qR');if(r){r.textContent='⏰ Время вышло!';r.className='qres sh no';}
+  if(pCb?.onW)pCb.onW();const cb=$('cBtn');if(cb)cb.classList.add('sh');
+}
+function closePopup(){clearInterval(qTmr);$('popMov').classList.add('off');showEnd();}
+
+// ══ TURN ══
+function endTurn(){
+  rolled=false;$('rollBtn').disabled=false;$('endBtn').style.display='none';
+  $('diceHint').textContent='Потяните и бросьте!';setHint('Нажмите «Бросить кубик»');
+  // Per-turn effects
+  const p=players[curP];
+  if(p.items?.includes('tent')){eco+=3;updateEco();}
+  curP=(curP+1)%players.length;
+  addLog(`➡️ Ход: ${players[curP].name}`,'i');renderAll();
+}
+
+// ══ START ══
+function startGame(){
+  players=SLOTS.map((s,i)=>s.on?{
+    name:$('pn'+i)?.value.trim()||PNAMES[i],
+    color:PCOLORS[i],idx:i,
+    tokenIdx:playerTokens[i],
+    pos:0,score:0,money:500,res:[],items:[],badges:[],skipNext:false,
+    diceBonus:0,doubleQuiz:false,hasHint:false,reroll:0,doubleDice:0,skipCell:0,buildDiscount:0,
+    _tx:null,_ty:null
+  }:null).filter(Boolean);
+  if(players.length<2){alert('Минимум 2 игрока!');return;}
+  // Tag first player with profile if logged in
+  if(currentProfile&&!currentProfile.isGuest&&players[0]){
+    players[0].profileLinked=true;
+  }
+  // Apply token effects
+  players.forEach(p=>{const tok=TOKENS[p.tokenIdx];if(tok?.effect)tok.effect(p);});
+  curP=0;eco=20;rolled=false;moving=false;
+  SS('gameScr');
+  setTimeout(()=>{initBoard();initDicePhysics();renderAll();addLog('🚀 Путешествие началось!','i');},80);
+}
+function goMenu(){
+  if(confirm('Вернуться в меню?')){
+    $('popMov').classList.add('off');$('winMov').classList.add('off');
+    SS('menuScr');initMenu();}
+}
+
+// ══ BADGES ══
+const BDEFS=[
+  {ico:'🌿',n:'Эко-активист',d:'Экология 50%',ck:()=>eco>=50},
+  {ico:'💰',n:'Богатей',d:'1000₽ в кармане',ck:p=>p.money>=1000},
+  {ico:'🏗️',n:'Инженер',d:'Построил станцию',ck:p=>p.items?.length>=2},
+  {ico:'🧠',n:'Знаток',d:'20 очков',ck:p=>p.score>=20},
+];
+function chkBadge(p){BDEFS.forEach(b=>{if(!p.badges.includes(b.ico)&&b.ck(p)){p.badges.push(b.ico);showBadge(b);}});}
+function showBadge(b){
+  const el=document.createElement('div');el.className='btoast';
+  el.innerHTML=`<div style="font-size:1.55rem">${b.ico}</div><div><div style="font-weight:800;color:var(--gold);font-size:.77rem">🏅 ${b.n}</div><div style="color:var(--muted);font-size:.67rem">${b.d}</div></div>`;
+  document.body.appendChild(el);sfx('badge');
+  setTimeout(()=>{el.classList.add('out');setTimeout(()=>el.remove(),350);},3200);
+}
+
+// ══ WIN — MINISTRY OF ARCTIC ══
+function showWin(reason){
+  clearInterval(qTmr);
+  const srt=[...players].sort((a,b)=>b.money-a.money);
+  const winner=srt[0];
+  const tok=TOKENS[winner.tokenIdx]||TOKENS[0];
+  const date=new Date().toLocaleDateString('ru-RU',{day:'numeric',month:'long',year:'numeric'});
+  const decreeText=`
+    <p style="text-align:center;margin-bottom:12px;"><b>ПОСТАНОВЛЕНИЕ № АО-${Math.floor(Math.random()*9000+1000)}</b></p>
+    <p>от ${date} года</p>
+    <p>Настоящим Министерство по делам Арктики и Антарктики Российской Федерации выражает <b>искреннюю благодарность</b> участникам экспедиции «Арктическая Одиссея» за самоотверженный труд по сохранению арктической экосистемы.</p>
+    <p style="margin-top:8px;">Особую благодарность заслуживает <b style="color:#0369a1;">${tok.ico} ${winner.name}</b>, достигший выдающихся результатов: <b>${winner.money}₽</b> вложено в спасение Арктики, <b>${winner.score}</b> очков исследовательской деятельности.</p>
+    <p style="margin-top:8px;">Экологический индекс экспедиции: <b style="color:#15803d;">${Math.round(eco)}%</b>. Арктика ${eco>=60?'находится в безопасности 🟢':'продолжает нуждаться в защите 🔴'}.</p>
+    <div class="win-signature">Министр по делам Арктики<br>д-р Н.В. Полярников</div>`;
+  $('winDecree').innerHTML=decreeText;
+  const med=['🥇','🥈','🥉','4️⃣'];
+  $('winPod').innerHTML=srt.map((p,i)=>`<div class="wprow">
+    <div style="width:24px;text-align:center">${med[i]}</div>
+    <div style="font-size:1rem">${TOKENS[p.tokenIdx]?.ico||'?'}</div>
+    <div style="flex:1;font-weight:800;color:${p.color};font-size:.82rem">${p.name}</div>
+    <div style="font-weight:800;color:var(--gold);font-size:.82rem">${p.money}₽</div></div>`).join('');
+  sfx('win');$('winMov').classList.remove('off');
+  saveLB(srt[0]);
+  saveProfileResult(srt[0]);
+}
+function saveLB(w){
+  const lb=JSON.parse(localStorage.getItem('ao6_lb')||'[]');
+  lb.unshift({n:w.name,s:w.money,d:new Date().toLocaleDateString()});lb.splice(5);
+  localStorage.setItem('ao6_lb',JSON.stringify(lb));
+}
+function renderLB(){
+  const lb=JSON.parse(localStorage.getItem('ao6_lb')||'[]');
+  $('lbEl').innerHTML=lb.length?lb.map((e,i)=>`${i+1}. ${e.n}: ${e.s}₽`).join('<br>'):'Рекордов пока нет';
+}
+function shareResult(){
+  const s=[...players].sort((a,b)=>b.money-a.money);
+  const txt=`🧊 Арктическая Одиссея! ${TOKENS[s[0].tokenIdx]?.ico}${s[0].name}: ${s[0].money}₽ Эко: ${Math.round(eco)}% 🏛️ Министерство Арктики благодарит!`;
+  if(navigator.share)navigator.share({title:'Арктическая Одиссея',text:txt});
+  else navigator.clipboard.writeText(txt).then(()=>alert('Скопировано!')).catch(()=>prompt('',txt));
+}
+function floatScore(txt,color){
+  const el=document.createElement('div');el.className='fsc';el.textContent=txt;el.style.color=color;
+  const bw=BC?BC.getBoundingClientRect():{left:window.innerWidth/2-60,top:window.innerHeight/2,width:120};
+  el.style.left=(bw.left+bw.width/2-36)+'px';el.style.top=(bw.top+bw.height*.42)+'px';
+  document.body.appendChild(el);setTimeout(()=>el.remove(),1400);
+}
+
+// ══ SFX ══
+let _ac;
+function gAC(){if(!_ac)_ac=new(window.AudioContext||window.webkitAudioContext)();if(_ac.state==='suspended')_ac.resume();return _ac;}
+function tn(f,d,v,w,s){try{const ac=gAC(),t=ac.currentTime+(s||0),o=ac.createOscillator(),g=ac.createGain();o.type=w||'sine';o.frequency.value=f;g.gain.setValueAtTime(v||.25,t);g.gain.exponentialRampToValueAtTime(.001,t+d);o.connect(g);g.connect(ac.destination);o.start(t);o.stop(t+d+.05);}catch(e){}}
+function sfx(t){
+  if(t==='roll'){for(let i=0;i<8;i++)tn(60+Math.random()*200,.06,.12,'square',i*.06);}
+  else if(t==='step'){tn(200,.04,.07,'square',0);tn(160,.05,.05,'square',.05);}
+  else if(t==='good'){tn(523,.1,.32,'sine',0);tn(659,.1,.32,'sine',.12);tn(784,.2,.38,'sine',.24);}
+  else if(t==='bad'){tn(330,.08,.22,'sawtooth',0);tn(260,.28,.18,'sawtooth',.09);}
+  else if(t==='aurora'){tn(660,.3,.16,'sine',0);tn(880,.3,.12,'sine',.1);tn(1100,.5,.14,'sine',.2);}
+  else if(t==='badge'){[523,659,784,1047].forEach((f,i)=>tn(f,.12,.32,'sine',i*.09));}
+  else if(t==='win'){[523,659,784,1047,784,1047,1319].forEach((f,i)=>tn(f,.18,.4,'sine',i*.13));}
+}
+
+
+// ══════════════════════════════════════════
+// PROFILE SYSTEM — localStorage + Supabase
+// ══════════════════════════════════════════
+const SB_URL='https://arpbhbfyucpojvxipqng.supabase.co';
+const SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFycGJoYmZ5dWNwb2p2eGlwcW5nIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIyMTAwNTQsImV4cCI6MjA4Nzc4NjA1NH0.MQWcU9ph2sWNgbHbfDZ0qKEC1V1PzbI7I7TtQyPNyeg';
+
+let SB=null;
+let currentProfile=null; // {name,team,isGuest,token}
+
+// Load supabase lazily
+async function getSB(){
+  if(SB)return SB;
+  return new Promise(res=>{
+    if(window.supabase){SB=window.supabase.createClient(SB_URL,SB_KEY);res(SB);return;}
+    const s=document.createElement('script');
+    s.src='https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js';
+    s.onload=()=>{SB=window.supabase.createClient(SB_URL,SB_KEY);res(SB);};
+    s.onerror=()=>res(null);
+    document.head.appendChild(s);
+  });
+}
+
+// Hash password (simple, no crypto needed for this use)
+async function hashPwd(pwd){
+  const enc=new TextEncoder().encode(pwd+'arctic_salt_2025');
+  const buf=await crypto.subtle.digest('SHA-256',enc);
+  return Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join('');
+}
+
+// ── Profile tabs ──
+function openProfModal(){
+  const pOv=$('profOv');if(!pOv)return;
+  pOv.classList.remove('off');
+  if(currentProfile&&!currentProfile.isGuest){
+    switchPfTab('loggedin');
+  } else {
+    switchPfTab('login');
+  }
+}
+function closeProfModal(){$('profOv')?.classList.add('off');}
+function switchPfTab(tab){
+  ['login','reg','guest','loggedin'].forEach(t=>{
+    const el=$('pf'+t.charAt(0).toUpperCase()+t.slice(1));
+    if(el)el.style.display=t===tab?'block':'none';
+  });
+  ['login','reg','guest'].forEach(t=>{
+    const btn=$('pfTab'+t.charAt(0).toUpperCase()+t.slice(1));
+    if(btn)btn.classList.toggle('on',t===tab);
+  });
+  if(tab==='loggedin' && currentProfile){
+    $('pfAvatar').textContent=TOKENS[currentProfile.tokenIdx||0]?.ico||'👤';
+    $('pfDispName').textContent=currentProfile.name;
+    $('pfDispTeam').textContent=currentProfile.team||'Без команды';
+    // Load stats
+    loadProfileStats();
+  }
+}
+
+async function loadProfileStats(){
+  const lb=JSON.parse(localStorage.getItem('ao6_lb')||'[]');
+  const myGames=lb.filter(e=>e.n===currentProfile?.name);
+  $('pfBestScore').textContent=myGames.length?Math.max(...myGames.map(e=>e.s||0))+'₽':'—';
+  $('pfGames').textContent=myGames.length||0;
+}
+
+async function doProfileLogin(){
+  const name=$('pfLoginName').value.trim();
+  const pwd=$('pfLoginPwd').value;
+  if(!name||!pwd){$('pfLoginErr').textContent='Заполните все поля';return;}
+  $('pfLoginErr').textContent='⏳ Проверяем...';
+  
+  // Try Supabase first
+  const sb=await getSB();
+  if(sb){
+    try{
+      const hash=await hashPwd(pwd);
+      const{data}=await sb.from('ao_profiles')
+        .select('*').eq('name',name).eq('pwd_hash',hash).single();
+      if(data){
+        setProfile({name:data.name,team:data.team,isGuest:false,tokenIdx:data.token_idx||0});
+        closeProfModal();updateProfileChip();return;
+      }
+    }catch(e){}
+  }
+  // Fallback: localStorage profiles
+  const stored=JSON.parse(localStorage.getItem('ao_profiles')||'{}');
+  const hash=await hashPwd(pwd);
+  if(stored[name]&&stored[name].hash===hash){
+    setProfile({name,team:stored[name].team,isGuest:false,tokenIdx:stored[name].tokenIdx||0});
+    closeProfModal();updateProfileChip();
+  } else {
+    $('pfLoginErr').textContent='❌ Неверное имя или пароль';
+  }
+}
+
+async function doProfileReg(){
+  const name=$('pfRegName').value.trim();
+  const team=$('pfRegTeam').value.trim();
+  const pwd=$('pfRegPwd').value;
+  const pwd2=$('pfRegPwd2').value;
+  if(!name){$('pfRegErr').textContent='Введите имя';return;}
+  if(pwd&&pwd!==pwd2){$('pfRegErr').textContent='Пароли не совпадают';return;}
+  if(name.length<2){$('pfRegErr').textContent='Имя слишком короткое';return;}
+  if(name.length>30){$('pfRegErr').textContent='Имя слишком длинное';return;}
+  $('pfRegErr').textContent='⏳ Регистрируем...';
+
+  const hash=pwd?await hashPwd(pwd):'';
+  // Save to localStorage
+  const stored=JSON.parse(localStorage.getItem('ao_profiles')||'{}');
+  if(stored[name]){$('pfRegErr').textContent='❌ Имя уже занято';return;}
+  stored[name]={hash,team,tokenIdx:selToken||0,createdAt:new Date().toISOString()};
+  localStorage.setItem('ao_profiles',JSON.stringify(stored));
+
+  // Try save to Supabase
+  const sb=await getSB();
+  if(sb&&hash){
+    try{
+      await sb.from('ao_profiles').upsert({
+        name,team,pwd_hash:hash,token_idx:selToken||0,
+        created_at:new Date().toISOString()
+      });
+    }catch(e){}
+  }
+  setProfile({name,team,isGuest:false,tokenIdx:selToken||0});
+  closeProfModal();updateProfileChip();
+  $('pfRegErr').textContent='';
+}
+
+function doProfileGuest(){
+  setProfile({name:null,team:null,isGuest:true});
+  closeProfModal();updateProfileChip();
+}
+
+function doProfileLogout(){
+  currentProfile=null;
+  localStorage.removeItem('ao_current_profile');
+  updateProfileChip();
+  switchPfTab('login');
+}
+
+function setProfile(p){
+  currentProfile=p;
+  localStorage.setItem('ao_current_profile',JSON.stringify(p));
+  // Pre-fill first player slot name
+  if(p.name){
+    const el=$('pn0');if(el)el.value=p.name;
+    if(p.tokenIdx!==undefined){playerTokens[0]=p.tokenIdx;const pe=$('ptok0');if(pe)pe.textContent=TOKENS[p.tokenIdx]?.ico||TOKENS[0].ico;}
+  }
+}
+
+function updateProfileChip(){
+  const wrap=$('profChipWrap');if(!wrap)return;
+  if(currentProfile&&!currentProfile.isGuest){
+    const tok=TOKENS[currentProfile.tokenIdx||0];
+    wrap.innerHTML=`<div class="prof-chip" onclick="openProfModal()" style="justify-content:center;">
+      <span>${tok?.ico||'👤'}</span>
+      <span style="color:#0369a1">${currentProfile.name}</span>
+      <span style="color:var(--muted);font-size:.6rem">${currentProfile.team||''}</span>
+      <span style="color:var(--muted);font-size:.6rem;">· Профиль ›</span>
+    </div>`;
+  } else {
+    wrap.innerHTML=`<button class="mbtn sec" style="margin-bottom:0;font-size:.75rem;padding:8px;" onclick="openProfModal()">👤 Войти / Зарегистрироваться</button>`;
+  }
+}
+
+// Save game result to profile
+async function saveProfileResult(winner){
+  if(!currentProfile||currentProfile.isGuest)return;
+  const lb=JSON.parse(localStorage.getItem('ao6_lb')||'[]');
+  // already saved by saveLB
+  const sb=await getSB();
+  if(!sb)return;
+  try{
+    await sb.from('ao_game_stats').insert({
+      player_name:currentProfile.name,
+      team:currentProfile.team,
+      score:winner.score,
+      money:winner.money,
+      eco:Math.round(eco),
+      played_at:new Date().toISOString(),
+      won:winner.name===currentProfile.name,
+    });
+  }catch(e){}
+}
+
+// Load profile on startup
+(()=>{
+  const saved=localStorage.getItem('ao_current_profile');
+  if(saved)try{currentProfile=JSON.parse(saved);}catch(e){}
+})();
+
+
+// ══ INIT ══
+initMenu();
+</script>
+
+<!-- TOKEN PICKER MODAL -->
+<div id="tokPickerMov" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:9999;align-items:center;justify-content:center;">
+  <div style="background:linear-gradient(135deg,#0f172a,#1e293b);border:1px solid rgba(79,223,255,.25);border-radius:20px;padding:22px;max-width:380px;width:92%;max-height:80vh;overflow-y:auto;">
+    <div style="font-size:1rem;font-weight:800;color:#4fdfff;margin-bottom:4px;text-align:center">🎒 Выбери фишку</div>
+    <div id="tokPickerName" style="font-size:.72rem;color:rgba(180,220,255,.5);text-align:center;margin-bottom:14px"></div>
+    <div id="tokPickerGrid" style="display:grid;grid-template-columns:repeat(2,1fr);gap:10px"></div>
+    <button onclick="closeTokPicker()" style="margin-top:16px;width:100%;padding:10px;border-radius:12px;border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.05);color:#fff;font:700 .85rem sans-serif;cursor:pointer">✕ Закрыть</button>
+  </div>
+</div>
+</body>
+</html>

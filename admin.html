@@ -1,0 +1,900 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>🛡️ Панель администратора — АрктикаКвиз</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+:root{
+  --bg:#050e22;--panel:rgba(8,20,50,.96);--border:rgba(79,170,255,.15);
+  --ice:#4fdfff;--eco:#5dffb0;--gold:#ffd84d;--red:#ff5471;--warn:#ffaa4d;
+  --txt:#ddf4ff;--muted:rgba(180,220,255,.45);--font:'Nunito',sans-serif;
+}
+body{background:var(--bg);color:var(--txt);font-family:var(--font);min-height:100vh;}
+
+/* ── LOGIN ── */
+#loginScr{display:flex;align-items:center;justify-content:center;min-height:100vh;padding:20px;}
+.login-box{background:var(--panel);border:1px solid var(--border);border-radius:22px;
+  padding:36px;width:min(420px,96vw);text-align:center;
+  box-shadow:0 0 60px rgba(79,170,255,.08);}
+.login-box h1{font-size:1.6rem;font-weight:900;background:linear-gradient(135deg,#4fdfff,#ffd84d);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:4px;}
+.login-box p{color:var(--muted);font-size:.8rem;margin-bottom:24px;}
+.login-box input{width:100%;padding:12px 16px;border-radius:11px;border:1px solid var(--border);
+  background:rgba(255,255,255,.05);color:var(--txt);font:700 1rem var(--font);
+  outline:none;margin-bottom:10px;text-align:center;letter-spacing:.2em;}
+.login-box input::placeholder{letter-spacing:normal;color:var(--muted);}
+.login-box input:focus{border-color:var(--ice);}
+.lbtn{width:100%;padding:13px;border-radius:12px;border:none;
+  background:linear-gradient(135deg,#4fdfff,#6b7aff);color:#060e22;
+  font:800 .9rem var(--font);cursor:pointer;transition:all .2s;}
+.lbtn:hover{transform:translateY(-2px);box-shadow:0 8px 28px rgba(79,223,255,.3);}
+.lerr{color:var(--red);font-size:.78rem;margin-top:8px;min-height:20px;}
+
+/* ── ADMIN SHELL ── */
+#adminScr{display:none;flex-direction:column;min-height:100vh;}
+.topbar{background:rgba(8,20,50,.98);border-bottom:1px solid var(--border);
+  padding:10px 20px;display:flex;align-items:center;gap:14px;flex-wrap:wrap;
+  position:sticky;top:0;z-index:100;backdrop-filter:blur(12px);}
+.topbar h1{font-size:1rem;font-weight:900;color:var(--ice);white-space:nowrap;}
+.tb-chip{font-size:.6rem;font-weight:800;letter-spacing:.1em;text-transform:uppercase;
+  padding:3px 10px;border-radius:99px;background:rgba(79,223,255,.1);
+  border:1px solid rgba(79,223,255,.3);color:var(--ice);}
+.tbsp{flex:1;}
+.tb-btn{padding:6px 14px;border-radius:9px;border:1px solid var(--border);
+  background:rgba(255,255,255,.05);color:var(--muted);font:.7rem var(--font);
+  cursor:pointer;transition:all .2s;font-weight:700;}
+.tb-btn:hover,.tb-btn.act{border-color:var(--ice);color:var(--ice);background:rgba(79,223,255,.06);}
+.tb-btn.danger{border-color:rgba(255,84,113,.4);color:var(--red);}
+.tb-btn.danger:hover{background:rgba(255,84,113,.08);}
+
+/* ── NAV TABS ── */
+.nav-tabs{display:flex;gap:4px;padding:14px 20px 0;border-bottom:1px solid var(--border);
+  background:rgba(8,20,50,.7);overflow-x:auto;flex-wrap:nowrap;}
+.ntab{padding:9px 18px;border-radius:11px 11px 0 0;border:1px solid transparent;
+  border-bottom:none;color:var(--muted);font:.72rem var(--font);font-weight:800;
+  cursor:pointer;transition:all .2s;white-space:nowrap;}
+.ntab.act{background:rgba(79,223,255,.07);border-color:var(--border);color:var(--ice);}
+.ntab:hover:not(.act){color:var(--txt);}
+
+/* ── CONTENT ── */
+.content{flex:1;padding:20px;max-width:1300px;width:100%;}
+
+/* ── CARDS / PANELS ── */
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;}
+.grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;}
+@media(max-width:900px){.grid3,.grid4{grid-template-columns:1fr 1fr;}.grid2{grid-template-columns:1fr;}}
+@media(max-width:600px){.grid3,.grid4,.grid2{grid-template-columns:1fr;}}
+.apan{background:var(--panel);border:1px solid var(--border);border-radius:16px;padding:18px;margin-bottom:14px;}
+.apan-tit{font-size:.6rem;font-weight:800;letter-spacing:.12em;text-transform:uppercase;
+  color:var(--muted);margin-bottom:12px;display:flex;align-items:center;gap:8px;}
+.apan-tit span{flex:1;}
+.stat-num{font-size:2rem;font-weight:900;color:var(--ice);line-height:1;}
+.stat-lbl{font-size:.68rem;color:var(--muted);margin-top:2px;}
+.stat-delta{font-size:.7rem;font-weight:700;margin-top:3px;}
+.stat-delta.up{color:var(--eco);}
+.stat-delta.dn{color:var(--red);}
+
+/* ── TABLE ── */
+.atable{width:100%;border-collapse:collapse;font-size:.76rem;}
+.atable th{font-size:.57rem;font-weight:800;letter-spacing:.1em;text-transform:uppercase;
+  color:var(--muted);padding:7px 10px;border-bottom:1px solid var(--border);text-align:left;}
+.atable td{padding:8px 10px;border-bottom:1px solid rgba(255,255,255,.04);color:var(--txt);}
+.atable tr:last-child td{border-bottom:none;}
+.atable tr:hover td{background:rgba(79,223,255,.03);}
+.badge{display:inline-block;padding:2px 9px;border-radius:99px;font-size:.6rem;font-weight:800;}
+.badge.ok{background:rgba(93,255,176,.1);border:1px solid rgba(93,255,176,.3);color:var(--eco);}
+.badge.warn{background:rgba(255,170,77,.1);border:1px solid rgba(255,170,77,.3);color:var(--warn);}
+.badge.err{background:rgba(255,84,113,.1);border:1px solid rgba(255,84,113,.3);color:var(--red);}
+.badge.info{background:rgba(79,223,255,.1);border:1px solid rgba(79,223,255,.3);color:var(--ice);}
+
+/* ── ACTIONS ── */
+.act-btn{padding:4px 11px;border-radius:7px;border:1px solid var(--border);
+  background:rgba(255,255,255,.04);color:var(--muted);font:.65rem var(--font);
+  cursor:pointer;transition:all .15s;font-weight:700;}
+.act-btn:hover{border-color:var(--ice);color:var(--ice);}
+.act-btn.red{border-color:rgba(255,84,113,.4);color:var(--red);}
+.act-btn.red:hover{background:rgba(255,84,113,.08);}
+.act-btn.grn{border-color:rgba(93,255,176,.4);color:var(--eco);}
+.act-btn.grn:hover{background:rgba(93,255,176,.06);}
+.act-btn.warn{border-color:rgba(255,170,77,.4);color:var(--warn);}
+
+/* ── SEARCH / FILTER ── */
+.afield{padding:9px 13px;border-radius:10px;border:1px solid var(--border);
+  background:rgba(255,255,255,.04);color:var(--txt);font:.78rem var(--font);
+  outline:none;width:100%;margin-bottom:12px;}
+.afield:focus{border-color:var(--ice);}
+.afield::placeholder{color:var(--muted);}
+.row-actions{display:flex;gap:5px;flex-wrap:wrap;}
+
+/* ── CHAT LOG ── */
+.chat-msg{padding:8px 12px;border-radius:10px;border:1px solid rgba(255,255,255,.05);
+  background:rgba(255,255,255,.02);margin-bottom:5px;font-size:.75rem;line-height:1.5;}
+.chat-msg.flagged{border-color:rgba(255,84,113,.3);background:rgba(255,84,113,.04);}
+.chat-msg .cmeta{font-size:.6rem;color:var(--muted);margin-bottom:3px;}
+.chat-msg .ctxt{color:var(--txt);}
+
+/* ── MODAL ── */
+.modal-ov{position:fixed;inset:0;z-index:999;background:rgba(0,0,0,.8);
+  backdrop-filter:blur(10px);display:none;align-items:center;justify-content:center;padding:20px;}
+.modal-ov.open{display:flex;}
+.modal-box{background:rgba(6,16,42,.99);border:1px solid var(--border);border-radius:18px;
+  padding:24px;width:min(480px,96vw);max-height:85vh;overflow-y:auto;
+  box-shadow:0 20px 60px rgba(0,0,0,.6);}
+.modal-box h3{font-size:1rem;font-weight:800;color:var(--ice);margin-bottom:14px;}
+.mlabel{font-size:.62rem;font-weight:800;color:var(--muted);letter-spacing:.08em;text-transform:uppercase;margin-bottom:5px;}
+.mbtns{display:flex;gap:8px;margin-top:14px;}
+.mbtn2{flex:1;padding:11px;border-radius:11px;border:none;font:800 .82rem var(--font);cursor:pointer;transition:all .2s;}
+.mbtn2.pri{background:linear-gradient(135deg,#4fdfff,#6b7aff);color:#060e22;}
+.mbtn2.sec{background:rgba(255,255,255,.07);border:1px solid var(--border);color:var(--txt);}
+
+/* ── LOG ── */
+.alog{max-height:300px;overflow-y:auto;font-size:.72rem;}
+.alog-e{padding:5px 0;border-bottom:1px solid rgba(255,255,255,.04);display:flex;gap:10px;line-height:1.4;}
+.alog-t{color:var(--muted);flex-shrink:0;font-size:.62rem;}
+.alog-m{color:var(--txt);}
+.alog-m.warn{color:var(--warn);}.alog-m.err{color:var(--red);}.alog-m.ok{color:var(--eco);}
+
+/* ── SETTINGS ── */
+.set-row{display:flex;align-items:center;justify-content:space-between;
+  padding:11px 0;border-bottom:1px solid rgba(255,255,255,.05);}
+.set-row:last-child{border-bottom:none;}
+.set-info b{font-size:.82rem;font-weight:700;}
+.set-info small{display:block;font-size:.67rem;color:var(--muted);margin-top:1px;}
+.tog{width:38px;height:22px;border-radius:99px;cursor:pointer;position:relative;
+  transition:background .2s;border:none;flex-shrink:0;}
+.tog.on{background:var(--eco);}
+.tog.off{background:rgba(255,255,255,.15);}
+.tog::after{content:'';position:absolute;width:16px;height:16px;border-radius:50%;
+  background:#fff;top:3px;transition:left .2s;}
+.tog.on::after{left:19px;}
+.tog.off::after{left:3px;}
+
+/* SCROLLBAR */
+::-webkit-scrollbar{width:4px;}
+::-webkit-scrollbar-thumb{background:rgba(79,223,255,.15);border-radius:99px;}
+
+/* TAB PANELS */
+.tab-panel{display:none;}
+.tab-panel.act{display:block;}
+
+/* Spinner */
+.spin{width:24px;height:24px;border:3px solid rgba(79,223,255,.2);border-top-color:var(--ice);
+  border-radius:50%;animation:spin .8s linear infinite;margin:20px auto;}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* Empty state */
+.empty{text-align:center;padding:32px;color:var(--muted);font-size:.82rem;}
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="loginScr">
+  <div class="login-box">
+    <div style="font-size:2.5rem;margin-bottom:8px;">🛡️</div>
+    <h1>Панель администратора</h1>
+    <p>АрктикаКвиз · Только для администраторов</p>
+    <input type="password" id="pwdIn" placeholder="Введите пароль" onkeydown="if(event.key==='Enter')doLogin()">
+    <button class="lbtn" onclick="doLogin()">Войти →</button>
+    <div class="lerr" id="lerr"></div>
+    <div style="margin-top:18px;font-size:.65rem;color:var(--muted);">
+      <a href="hub.html" style="color:var(--muted);">← Вернуться на главную</a>
+    </div>
+  </div>
+</div>
+
+<!-- ADMIN SHELL -->
+<div id="adminScr" style="display:none;flex-direction:column;min-height:100vh;">
+  <div class="topbar">
+    <div style="font-size:1.3rem;">🛡️</div>
+    <h1>АрктикаКвиз · Admin</h1>
+    <span class="tb-chip" id="tbConnStatus">⏳ Подключение...</span>
+    <div class="tbsp"></div>
+    <span style="font-size:.68rem;color:var(--muted);margin-right:6px;" id="tbTime"></span>
+    <button class="tb-btn" onclick="refreshAll()">🔄 Обновить</button>
+    <button class="tb-btn" onclick="goHub()">🏠 Хаб</button>
+    <button class="tb-btn danger" onclick="doLogout()">Выйти</button>
+  </div>
+
+  <div class="nav-tabs">
+    <div class="ntab act" onclick="switchTab('dash')">📊 Дашборд</div>
+    <div class="ntab" onclick="switchTab('players')">👤 Игроки</div>
+    <div class="ntab" onclick="switchTab('chat')">💬 Чат</div>
+    <div class="ntab" onclick="switchTab('scores')">🏆 Рейтинг</div>
+    <div class="ntab" onclick="switchTab('games')">🎮 Сессии</div>
+    <div class="ntab" onclick="switchTab('announces')">📢 Анонсы</div>
+    <div class="ntab" onclick="switchTab('moderation')">🚫 Модерация</div>
+    <div class="ntab" onclick="switchTab('settings')">⚙️ Настройки</div>
+    <div class="ntab" onclick="switchTab('log')">📋 Журнал</div>
+  </div>
+
+  <div class="content">
+
+    <!-- DASH -->
+    <div class="tab-panel act" id="tp-dash">
+      <div class="grid4" id="statsCards">
+        <div class="apan"><div class="stat-num" id="st-players">—</div><div class="stat-lbl">Игроков сейчас</div><div class="stat-delta up" id="st-players-d">—</div></div>
+        <div class="apan"><div class="stat-num" id="st-answers">—</div><div class="stat-lbl">Ответов за сегодня</div><div class="stat-delta up" id="st-answers-d">—</div></div>
+        <div class="apan"><div class="stat-num" id="st-chats">—</div><div class="stat-lbl">Сообщений в чате</div><div class="stat-delta" id="st-chats-d">—</div></div>
+        <div class="apan"><div class="stat-num" id="st-blocked">—</div><div class="stat-lbl">Заблокированных</div><div class="stat-delta dn" id="st-blocked-d">—</div></div>
+      </div>
+      <div class="grid2">
+        <div class="apan">
+          <div class="apan-tit"><span>🔴 Онлайн прямо сейчас</span></div>
+          <div id="onlineList"><div class="spin"></div></div>
+        </div>
+        <div class="apan">
+          <div class="apan-tit"><span>⚠️ Требует внимания</span></div>
+          <div id="attentionList"><div class="spin"></div></div>
+        </div>
+      </div>
+      <div class="apan">
+        <div class="apan-tit"><span>📋 Последние действия</span></div>
+        <div class="alog" id="dashLog"><div class="spin"></div></div>
+      </div>
+    </div>
+
+    <!-- PLAYERS -->
+    <div class="tab-panel" id="tp-players">
+      <div class="apan">
+        <div class="apan-tit"><span>👤 Все игроки</span>
+          <button class="act-btn grn" onclick="exportPlayers()">📥 Экспорт CSV</button>
+        </div>
+        <input class="afield" id="playerSearch" placeholder="🔍 Поиск по имени или команде..." oninput="filterPlayers()">
+        <div id="playersTable"><div class="spin"></div></div>
+      </div>
+    </div>
+
+    <!-- CHAT -->
+    <div class="tab-panel" id="tp-chat">
+      <div class="grid2">
+        <div class="apan">
+          <div class="apan-tit"><span>💬 Все сообщения</span>
+            <button class="act-btn warn" onclick="clearAllChat()">🗑 Очистить всё</button>
+          </div>
+          <input class="afield" id="chatSearch" placeholder="🔍 Поиск в чате..." oninput="filterChat()">
+          <div id="chatLog"><div class="spin"></div></div>
+        </div>
+        <div class="apan">
+          <div class="apan-tit"><span>🚩 Подозрительные сообщения</span></div>
+          <div id="flaggedChat"><div class="spin"></div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SCORES -->
+    <div class="tab-panel" id="tp-scores">
+      <div class="apan">
+        <div class="apan-tit"><span>🏆 Таблица рейтинга</span>
+          <button class="act-btn red" onclick="clearScores()">🗑 Очистить рейтинг</button>
+          <button class="act-btn grn" onclick="exportScores()">📥 Экспорт</button>
+        </div>
+        <div id="scoresTable"><div class="spin"></div></div>
+      </div>
+    </div>
+
+    <!-- GAMES -->
+    <div class="tab-panel" id="tp-games">
+      <div class="apan">
+        <div class="apan-tit"><span>🎮 Игровые сессии</span></div>
+        <div id="gamesInfo"><div class="spin"></div></div>
+      </div>
+    </div>
+
+    <!-- MODERATION -->
+    <div class="tab-panel" id="tp-announces">
+      <div class="apan">
+        <div class="apan-tit"><span>📢 Анонсы квизов</span>
+          <button class="act-btn grn" onclick="openAnnounceModal()">+ Создать анонс</button>
+        </div>
+        <div style="font-size:.72rem;color:var(--muted);margin-bottom:12px">Анонсы отображаются на главной странице хаба. Требуется таблица <code>quiz_announcements</code> в Supabase.</div>
+        <div style="background:rgba(255,216,77,.06);border:1px solid rgba(255,216,77,.2);border-radius:10px;padding:10px 12px;margin-bottom:14px;font-size:.72rem;color:#ffd84d">
+          ⚠ SQL для создания таблицы:<br>
+          <code style="display:block;margin-top:6px;background:rgba(0,0,0,.3);padding:8px;border-radius:6px;font-size:.65rem;white-space:pre-wrap">CREATE TABLE IF NOT EXISTS quiz_announcements (
+  id bigserial PRIMARY KEY,
+  title text NOT NULL,
+  description text,
+  emoji text DEFAULT '📢',
+  scheduled_at timestamptz,
+  active boolean DEFAULT true,
+  created_at timestamptz DEFAULT now()
+);</code>
+        </div>
+        <div id="announcesList" style="display:flex;flex-direction:column;gap:8px">
+          <div style="color:var(--muted);font-size:.75rem;padding:12px 0">Загрузка анонсов…</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="tab-panel" id="tp-moderation">
+      <div class="grid2">
+        <div class="apan">
+          <div class="apan-tit"><span>🚫 Чёрный список имён</span>
+            <button class="act-btn grn" onclick="openBanModal()">+ Добавить</button>
+          </div>
+          <div id="banList"><div class="spin"></div></div>
+        </div>
+        <div class="apan">
+          <div class="apan-tit"><span>🔒 Заблокированные игроки</span></div>
+          <div id="blockedPlayers"><div class="spin"></div></div>
+        </div>
+      </div>
+      <div class="apan">
+        <div class="apan-tit"><span>⚡ Быстрые действия</span></div>
+        <div style="display:flex;gap:10px;flex-wrap:wrap;">
+          <button class="act-btn warn" onclick="kickAll()">👢 Кикнуть всех</button>
+          <button class="act-btn red" onclick="clearChat()">🗑 Очистить чат</button>
+          <button class="act-btn warn" onclick="resetScores()">🔄 Сброс очков</button>
+          <button class="act-btn grn" onclick="unlockAll()">🔓 Разблокировать всех</button>
+          <button class="act-btn red" onclick="endGame()">⏹ Завершить игру</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- SETTINGS -->
+    <div class="tab-panel" id="tp-settings">
+      <div class="apan">
+        <div class="apan-tit"><span>⚙️ Настройки игры</span>
+          <button class="act-btn grn" onclick="saveSettings()">💾 Сохранить</button>
+        </div>
+        <div class="set-row">
+          <div class="set-info"><b>Регистрация открыта</b><small>Новые игроки могут заходить</small></div>
+          <button class="tog on" id="tog-reg" onclick="togSetting('reg')"></button>
+        </div>
+        <div class="set-row">
+          <div class="set-info"><b>Чат включён</b><small>Игроки могут писать в чат</small></div>
+          <button class="tog on" id="tog-chat" onclick="togSetting('chat')"></button>
+        </div>
+        <div class="set-row">
+          <div class="set-info"><b>Модерация имён</b><small>Проверять новые имена по чёрному списку</small></div>
+          <button class="tog on" id="tog-namemod" onclick="togSetting('namemod')"></button>
+        </div>
+        <div class="set-row">
+          <div class="set-info"><b>Показывать счёт всем</b><small>Рейтинг виден всем игрокам</small></div>
+          <button class="tog on" id="tog-scores" onclick="togSetting('scores')"></button>
+        </div>
+        <div class="set-row">
+          <div class="set-info"><b>Авторежим чата</b><small>Автоматически скрывать нецензурные слова</small></div>
+          <button class="tog off" id="tog-autocensor" onclick="togSetting('autocensor')"></button>
+        </div>
+        <div style="margin-top:18px;">
+          <div class="mlabel">Время на вопрос (сек)</div>
+          <input class="afield" id="set-qtime" type="number" min="5" max="120" value="25" style="max-width:140px;">
+        </div>
+        <div style="margin-top:12px;">
+          <div class="mlabel">Приветственное сообщение</div>
+          <input class="afield" id="set-welcome" value="Добро пожаловать в АрктикаКвиз! 🧊">
+        </div>
+        <div style="margin-top:12px;">
+          <div class="mlabel">Максимум игроков</div>
+          <input class="afield" id="set-maxplayers" type="number" min="1" max="200" value="50" style="max-width:140px;">
+        </div>
+      </div>
+      <div class="apan">
+        <div class="apan-tit"><span>🔐 Безопасность</span></div>
+        <div style="margin-bottom:12px;">
+          <div class="mlabel">Новый пароль администратора</div>
+          <input class="afield" type="password" id="newPwd" placeholder="Оставьте пустым — не менять">
+          <input class="afield" type="password" id="newPwd2" placeholder="Повторите пароль">
+          <button class="act-btn grn" onclick="changePwd()">Изменить пароль</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- LOG -->
+    <div class="tab-panel" id="tp-log">
+      <div class="apan">
+        <div class="apan-tit"><span>📋 Журнал событий</span>
+          <button class="act-btn warn" onclick="clearLog()">🗑 Очистить</button>
+          <button class="act-btn grn" onclick="exportLog()">📥 Экспорт</button>
+        </div>
+        <div class="alog" id="fullLog" style="max-height:600px;"></div>
+      </div>
+    </div>
+
+  </div><!-- /content -->
+</div><!-- /adminScr -->
+
+<!-- BAN MODAL -->
+<div class="modal-ov" id="banModal">
+  <div class="modal-box">
+    <h3>🚫 Добавить в чёрный список</h3>
+    <div class="mlabel">Слово или имя</div>
+    <input class="afield" id="banWord" placeholder="Введите слово...">
+    <div class="mlabel" style="margin-top:8px;">Причина</div>
+    <input class="afield" id="banReason" placeholder="Нецензурное / оскорбительное / ...">
+    <div class="mbtns">
+      <button class="mbtn2 sec" onclick="closeBanModal()">Отмена</button>
+      <button class="mbtn2 pri" onclick="addBanWord()">Добавить</button>
+    </div>
+  </div>
+</div>
+
+<!-- PLAYER MODAL -->
+<div class="modal-ov" id="playerModal">
+  <div class="modal-box">
+    <h3 id="pmTitle">👤 Игрок</h3>
+    <div id="pmContent"></div>
+    <div class="mbtns">
+      <button class="mbtn2 sec" onclick="closePlayerModal()">Закрыть</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ══ CONFIG ══
+const SUPABASE_URL='https://arpbhbfyucpojvxipqng.supabase.co';
+const SUPABASE_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFycGJoYmZ5dWNwb2p2eGlwcW5nIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIyMTAwNTQsImV4cCI6MjA4Nzc4NjA1NH0.MQWcU9ph2sWNgbHbfDZ0qKEC1V1PzbI7I7TtQyPNyeg';
+const ADMIN_PASSWORD='ArcticAdmin2025!';
+const GID='default';
+
+let sb=null;
+let adminLog=[];
+let allPlayers=[],allChat=[],allScores=[];
+let settings={reg:true,chat:true,namemod:true,scores:true,autocensor:false};
+let banWords=['хрен','дурак','идиот','тупой']; // default; loaded from localStorage
+let pollingInt=null;
+
+// ── HELPERS ──
+const $=id=>document.getElementById(id);
+function ts(){return new Date().toLocaleTimeString('ru-RU',{hour:'2-digit',minute:'2-digit',second:'2-digit'});}
+function alog(msg,cls=''){
+  adminLog.unshift({t:ts(),m:msg,c:cls});if(adminLog.length>500)adminLog.pop();
+  renderLog();
+}
+
+// ── AUTH ──
+function doLogin(){
+  const pwd=$('pwdIn').value;
+  if(pwd===ADMIN_PASSWORD||(localStorage.getItem('ao_admin_pwd')&&pwd===localStorage.getItem('ao_admin_pwd'))){
+    $('loginScr').style.display='none';
+    $('adminScr').style.display='flex';
+    initAdmin();
+  } else {
+    $('lerr').textContent='❌ Неверный пароль';
+    $('pwdIn').value='';
+    setTimeout(()=>$('lerr').textContent='',3000);
+  }
+}
+function doLogout(){if(confirm('Выйти из панели?')){location.reload();}}
+$('pwdIn').addEventListener('keydown',e=>{if(e.key==='Enter')doLogin();});
+
+// ── INIT ──
+async function initAdmin(){
+  clockTick();
+  setInterval(clockTick,1000);
+  await initSupabase();
+  await refreshAll();
+  pollingInt=setInterval(()=>refreshDash(),15000);
+  alog('Вход выполнен','ok');
+  loadSettings();
+  loadBanWords();
+}
+function clockTick(){
+  const now=new Date();
+  $('tbTime').textContent=now.toLocaleString('ru-RU',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'});
+}
+async function initSupabase(){
+  try{
+    const script=document.createElement('script');
+    script.src='https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js';
+    script.onload=async()=>{
+      sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
+      $('tbConnStatus').textContent='🟢 Подключено';$('tbConnStatus').style.borderColor='rgba(93,255,176,.4)';
+      $('tbConnStatus').style.color='var(--eco)';
+      alog('Supabase подключён','ok');
+    };
+    script.onerror=()=>{$('tbConnStatus').textContent='🔴 Нет БД';alog('Supabase недоступен — работа в демо-режиме','warn');};
+    document.head.appendChild(script);
+  }catch(e){alog('Ошибка подключения: '+e.message,'err');}
+}
+
+// ── TABS ──
+function switchTab(id){
+  document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('act'));
+  document.querySelectorAll('.ntab').forEach(t=>t.classList.remove('act'));
+  $('tp-'+id)?.classList.add('act');
+  const idx=['dash','players','chat','scores','games','announces','moderation','settings','log'].indexOf(id);
+  document.querySelectorAll('.ntab')[idx]?.classList.add('act');
+  if(id==='players')renderPlayersTable();
+  if(id==='chat')renderChat();
+  if(id==='scores')renderScores();
+  if(id==='games')renderGames();
+  if(id==='announces')loadAnnounces();
+  if(id==='moderation')renderModeration();
+  if(id==='log')renderLog();
+}
+function goHub(){window.open('hub.html','_blank');}
+
+// ── ANNOUNCES ──
+async function loadAnnounces(){
+  const box=document.getElementById('announcesList');
+  if(!box)return;
+  if(!sb){box.innerHTML='<div style="color:var(--muted);font-size:.75rem">Нет подключения к БД</div>';return;}
+  try{
+    const{data,error}=await sb.from('quiz_announcements').select('*').order('created_at',{ascending:false}).limit(20);
+    if(error){box.innerHTML='<div style="color:#ff5f7a;font-size:.75rem">Ошибка: '+error.message+'<br>Создайте таблицу по инструкции выше.</div>';return;}
+    if(!data||data.length===0){box.innerHTML='<div style="color:var(--muted);font-size:.75rem;padding:12px 0">Анонсов пока нет. Нажмите «+ Создать анонс»</div>';return;}
+    box.innerHTML=data.map(a=>`
+      <div style="background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.07);border-radius:10px;padding:12px;display:flex;align-items:flex-start;gap:10px">
+        <span style="font-size:1.4rem;flex-shrink:0">${a.emoji||'📢'}</span>
+        <div style="flex:1">
+          <div style="font-weight:800;font-size:.82rem;margin-bottom:2px">${a.title||''}</div>
+          ${a.description?`<div style="font-size:.72rem;color:var(--muted);margin-bottom:4px">${a.description}</div>`:''}
+          ${a.scheduled_at?`<div style="font-size:.65rem;color:#4fdfff">📅 ${new Date(a.scheduled_at).toLocaleString('ru-RU')}</div>`:''}
+        </div>
+        <div style="display:flex;flex-direction:column;gap:4px;flex-shrink:0">
+          <button class="act-btn ${a.active?'grn':'red'}" onclick="toggleAnnounce(${a.id},${a.active})">${a.active?'Активен':'Скрыт'}</button>
+          <button class="act-btn red" onclick="deleteAnnounce(${a.id})">Удалить</button>
+        </div>
+      </div>`).join('');
+  }catch(e){box.innerHTML='<div style="color:#ff5f7a;font-size:.75rem">Ошибка: '+e.message+'</div>';}
+}
+function openAnnounceModal(){
+  const emoji=prompt('Эмодзи (например 🎯):','📢');if(emoji===null)return;
+  const title=prompt('Заголовок анонса:');if(!title)return;
+  const desc=prompt('Описание (необязательно):','')||'';
+  const dtStr=prompt('Дата и время (ГГГГ-ММ-ДД ЧЧ:ММ, необязательно):','')||'';
+  saveAnnounce(emoji,title,desc,dtStr);
+}
+async function saveAnnounce(emoji,title,desc,dtStr){
+  if(!sb)return alert('Нет подключения к БД');
+  const obj={emoji,title,description:desc,active:true};
+  if(dtStr){try{obj.scheduled_at=new Date(dtStr).toISOString();}catch(e){}}
+  const{error}=await sb.from('quiz_announcements').insert(obj);
+  if(error)alert('Ошибка: '+error.message);
+  else{alog('Анонс создан');loadAnnounces();}
+}
+async function toggleAnnounce(id,active){
+  if(!sb)return;
+  await sb.from('quiz_announcements').update({active:!active}).eq('id',id);
+  loadAnnounces();
+}
+async function deleteAnnounce(id){
+  if(!sb||!confirm('Удалить анонс?'))return;
+  await sb.from('quiz_announcements').delete().eq('id',id);
+  alog('Анонс удалён');loadAnnounces();
+}
+
+// ── DATA FETCH ──
+async function refreshAll(){
+  await Promise.allSettled([fetchPlayers(),fetchChat(),fetchScores(),fetchGameState()]);
+  refreshDash();
+  alog('Данные обновлены');
+}
+async function fetchPlayers(){
+  if(!sb){allPlayers=[];return;} // нет БД — пустой список, не демо
+  try{
+    const{data}=await sb.from('quiz_players').select('*').order('joined_at',{ascending:false});
+    allPlayers=data||[];
+  }catch(e){allPlayers=[];alog('Ошибка загрузки игроков: '+e.message,'err');}
+}
+async function fetchChat(){
+  if(!sb){allChat=[];return;}
+  try{
+    const{data}=await sb.from('quiz_chat').select('*').order('created_at',{ascending:false}).limit(300);
+    allChat=data||[];
+  }catch(e){allChat=[];alog('Ошибка загрузки чата: '+e.message,'err');}
+}
+async function fetchScores(){
+  if(!sb){allScores=[];return;}
+  try{
+    const{data}=await sb.from('quiz_scores').select('*').order('score',{ascending:false}).limit(100);
+    allScores=data||[];
+  }catch(e){allScores=[];alog('Ошибка загрузки очков: '+e.message,'err');}
+}
+async function fetchGameState(){
+  if(!sb)return;
+  try{await sb.from('quiz_state').select('*').eq('game_id',GID);}catch(e){}
+}
+
+// ── DEMO DATA ──
+function getDemoPlayers(){return[
+  {id:1,student_name:'Полина',team_name:'Синие',joined_at:new Date().toISOString(),chat_blocked:false,last_active:new Date().toISOString()},
+  {id:2,student_name:'Артём',team_name:'Синие',joined_at:new Date(Date.now()-60000).toISOString(),chat_blocked:false,last_active:new Date(Date.now()-30000).toISOString()},
+  {id:3,student_name:'baduser123',team_name:'Красные',joined_at:new Date(Date.now()-120000).toISOString(),chat_blocked:true,last_active:new Date(Date.now()-90000).toISOString()},
+  {id:4,student_name:'Маша',team_name:'Зелёные',joined_at:new Date(Date.now()-180000).toISOString(),chat_blocked:false,last_active:new Date(Date.now()-120000).toISOString()},
+];}
+function getDemoChat(){return[
+  {id:1,student_name:'Полина',team_name:'Синие',message:'Привет всем!',created_at:new Date().toISOString()},
+  {id:2,student_name:'Артём',team_name:'Синие',message:'Когда начинаем?',created_at:new Date(Date.now()-30000).toISOString()},
+  {id:3,student_name:'baduser123',team_name:'Красные',message:'хрен знает',created_at:new Date(Date.now()-60000).toISOString()},
+];}
+function getDemoScores(){return[
+  {student_name:'Полина',team_name:'Синие',score:95},
+  {student_name:'Маша',team_name:'Зелёные',score:87},
+  {student_name:'Артём',team_name:'Синие',score:72},
+];}
+
+// ── DASH ──
+function refreshDash(){
+  const online=allPlayers.filter(p=>{
+    const t=new Date(p.last_active||p.joined_at);return(Date.now()-t.getTime())<120000;
+  });
+  $('st-players').textContent=online.length;$('st-players-d').textContent=allPlayers.length+' всего';
+  $('st-answers').textContent=allScores.length;$('st-answers-d').textContent='ответов в рейтинге';
+  $('st-chats').textContent=allChat.length;$('st-chats-d').textContent='сообщений';
+  const blocked=allPlayers.filter(p=>p.chat_blocked).length;
+  $('st-blocked').textContent=blocked;$('st-blocked-d').textContent='заблокировано';
+
+  // Online list
+  const ol=$('onlineList');
+  if(!online.length){ol.innerHTML='<div class="empty">Никого нет онлайн</div>';return;}
+  ol.innerHTML='<table class="atable"><thead><tr><th>Имя</th><th>Команда</th><th>Статус</th><th></th></tr></thead><tbody>'+
+    online.map(p=>`<tr>
+      <td>${escH(p.student_name||'—')}</td>
+      <td>${escH(p.team_name||'—')}</td>
+      <td><span class="badge ok">Онлайн</span>${p.chat_blocked?'<span class="badge err" style="margin-left:4px">Блок</span>':''}</td>
+      <td class="row-actions">
+        <button class="act-btn red" onclick="blockPlayer('${escH(p.student_name)}','${escH(p.team_name)}',${!p.chat_blocked})">${p.chat_blocked?'Разблок':'Блок'}</button>
+        <button class="act-btn warn" onclick="kickPlayer('${escH(p.student_name)}','${escH(p.team_name)}')">Кик</button>
+      </td></tr>`).join('')+'</tbody></table>';
+
+  // Attention
+  const att=$('attentionList');
+  const flagged=allChat.filter(m=>hasBanWord(m.message||''));
+  const newBad=allPlayers.filter(p=>hasBanWord(p.student_name||''));
+  let attH='';
+  if(newBad.length)attH+=newBad.map(p=>`<div class="chat-msg flagged"><div class="cmeta">⚠️ Подозрительное имя</div><div class="ctxt">${escH(p.student_name)}</div></div>`).join('');
+  if(flagged.length)attH+=flagged.slice(0,5).map(m=>`<div class="chat-msg flagged"><div class="cmeta">🚩 ${escH(m.student_name)} · ${fmtTime(m.created_at)}</div><div class="ctxt">${escH(m.message)}</div></div>`).join('');
+  att.innerHTML=attH||'<div class="empty">✅ Всё в порядке</div>';
+
+  // Dash log
+  const dl=$('dashLog');
+  dl.innerHTML=adminLog.slice(0,20).map(e=>`<div class="alog-e"><span class="alog-t">${e.t}</span><span class="alog-m ${e.c||''}">${escH(e.m)}</span></div>`).join('');
+}
+
+// ── PLAYERS TABLE ──
+function renderPlayersTable(){
+  const q=($('playerSearch')?.value||'').toLowerCase();
+  const data=allPlayers.filter(p=>(p.student_name||'').toLowerCase().includes(q)||(p.team_name||'').toLowerCase().includes(q));
+  if(!data.length){$('playersTable').innerHTML='<div class="empty">Игроков нет</div>';return;}
+  $('playersTable').innerHTML='<table class="atable"><thead><tr><th>#</th><th>Имя</th><th>Команда</th><th>Вошёл</th><th>Статус</th><th>Действия</th></tr></thead><tbody>'+
+    data.map((p,i)=>`<tr>
+      <td style="color:var(--muted)">${i+1}</td>
+      <td><b>${escH(p.student_name||'—')}</b>${hasBanWord(p.student_name||'')?'<span class="badge err" style="margin-left:5px">⚠️</span>':''}</td>
+      <td>${escH(p.team_name||'—')}</td>
+      <td style="color:var(--muted);font-size:.68rem">${fmtTime(p.joined_at)}</td>
+      <td>${p.chat_blocked?'<span class="badge err">Заблокирован</span>':'<span class="badge ok">Активен</span>'}</td>
+      <td class="row-actions">
+        <button class="act-btn" onclick="viewPlayer('${escH(p.student_name)}','${escH(p.team_name)}')">👁</button>
+        <button class="act-btn ${p.chat_blocked?'grn':'warn'}" onclick="blockPlayer('${escH(p.student_name)}','${escH(p.team_name)}',${!p.chat_blocked})">${p.chat_blocked?'Разблок':'Блок'}</button>
+        <button class="act-btn warn" onclick="kickPlayer('${escH(p.student_name)}','${escH(p.team_name)}')">Кик</button>
+        <button class="act-btn red" onclick="deletePlayer('${escH(p.student_name)}','${escH(p.team_name)}')">Удалить</button>
+      </td></tr>`).join('')+'</tbody></table>';
+}
+function filterPlayers(){renderPlayersTable();}
+
+async function blockPlayer(name,team,block){
+  if(!sb){alog(`${block?'Заблок':'Разблок'}: ${name}`,'warn');return;}
+  try{await sb.from('quiz_players').update({chat_blocked:block}).eq('game_id',GID).eq('student_name',name).eq('team_name',team);}catch(e){}
+  await fetchPlayers();renderPlayersTable();refreshDash();
+  alog(`${block?'Заблокирован':'Разблокирован'}: ${name}`,block?'warn':'ok');
+}
+async function kickPlayer(name,team){
+  if(!confirm(`Кикнуть ${name}?`))return;
+  if(sb)try{await sb.from('quiz_players').delete().eq('game_id',GID).eq('student_name',name).eq('team_name',team);}catch(e){}
+  allPlayers=allPlayers.filter(p=>!(p.student_name===name&&p.team_name===team));
+  renderPlayersTable();refreshDash();alog(`Кикнут: ${name}`,'warn');
+}
+async function deletePlayer(name,team){
+  if(!confirm(`Удалить ${name} полностью?`))return;
+  if(sb)try{
+    await sb.from('quiz_players').delete().eq('game_id',GID).eq('student_name',name).eq('team_name',team);
+    await sb.from('quiz_scores').delete().eq('game_id',GID).eq('student_name',name);
+  }catch(e){}
+  allPlayers=allPlayers.filter(p=>!(p.student_name===name&&p.team_name===team));
+  renderPlayersTable();refreshDash();alog(`Удалён: ${name}`,'err');
+}
+function viewPlayer(name,team){
+  const p=allPlayers.find(x=>x.student_name===name&&x.team_name===team);
+  if(!p)return;
+  const sc=allScores.filter(x=>x.student_name===name);
+  const chats=allChat.filter(x=>x.student_name===name);
+  $('pmTitle').textContent='👤 '+name;
+  $('pmContent').innerHTML=`
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px;">
+      <div class="apan" style="margin:0;padding:12px;"><div class="stat-num" style="font-size:1.4rem;">${sc.reduce((a,x)=>a+(x.score||0),0)}</div><div class="stat-lbl">Очков</div></div>
+      <div class="apan" style="margin:0;padding:12px;"><div class="stat-num" style="font-size:1.4rem;">${chats.length}</div><div class="stat-lbl">Сообщений</div></div>
+    </div>
+    <div style="margin-bottom:10px;"><b style="font-size:.72rem;color:var(--muted)">КОМАНДА:</b> ${escH(team)}</div>
+    <div style="margin-bottom:10px;"><b style="font-size:.72rem;color:var(--muted)">ВОШЁЛ:</b> ${fmtTime(p.joined_at)}</div>
+    <div style="margin-bottom:10px;"><b style="font-size:.72rem;color:var(--muted)">СТАТУС:</b> ${p.chat_blocked?'<span class="badge err">Заблокирован</span>':'<span class="badge ok">Активен</span>'}</div>
+    <div style="font-size:.72rem;color:var(--muted);margin-bottom:5px;">ПОСЛЕДНИЕ СООБЩЕНИЯ:</div>
+    ${chats.slice(0,5).map(m=>`<div class="chat-msg ${hasBanWord(m.message)?'flagged':''}"><div class="cmeta">${fmtTime(m.created_at)}</div><div class="ctxt">${escH(m.message)}</div></div>`).join('')||'<div class="empty" style="padding:10px">Сообщений нет</div>'}
+    <div class="mbtns" style="margin-top:10px;">
+      <button class="mbtn2 ${p.chat_blocked?'pri':'sec'}" onclick="blockPlayer('${escH(name)}','${escH(team)}',${!p.chat_blocked});closePlayerModal()">${p.chat_blocked?'Разблокировать':'Заблокировать'}</button>
+      <button class="mbtn2 sec" style="border-color:rgba(255,84,113,.3);color:var(--red)" onclick="kickPlayer('${escH(name)}','${escH(team)}');closePlayerModal()">Кикнуть</button>
+    </div>`;
+  $('playerModal').classList.add('open');
+}
+function closePlayerModal(){$('playerModal').classList.remove('open');}
+
+// ── CHAT ──
+function renderChat(){
+  const q=($('chatSearch')?.value||'').toLowerCase();
+  const data=allChat.filter(m=>(m.message||'').toLowerCase().includes(q)||(m.student_name||'').toLowerCase().includes(q));
+  $('chatLog').innerHTML=data.slice(0,80).map(m=>`
+    <div class="chat-msg ${hasBanWord(m.message||'')?'flagged':''}">
+      <div class="cmeta">
+        <b>${escH(m.student_name||'?')}</b> · ${escH(m.team_name||'')} · ${fmtTime(m.created_at)}
+        ${hasBanWord(m.message||'')?'<span class="badge err" style="margin-left:5px">🚩</span>':''}
+      </div>
+      <div class="ctxt">${escH(m.message||'')}</div>
+      <div class="row-actions" style="margin-top:5px;">
+        <button class="act-btn red" onclick="deleteMsg(${m.id})">🗑 Удалить</button>
+        <button class="act-btn warn" onclick="blockPlayer('${escH(m.student_name)}','${escH(m.team_name)}',true)">🔒 Блок</button>
+      </div>
+    </div>`).join('')||'<div class="empty">Сообщений нет</div>';
+  const flagged=allChat.filter(m=>hasBanWord(m.message||''));
+  $('flaggedChat').innerHTML=flagged.map(m=>`
+    <div class="chat-msg flagged">
+      <div class="cmeta">🚩 <b>${escH(m.student_name)}</b> · ${fmtTime(m.created_at)}</div>
+      <div class="ctxt">${escH(m.message)}</div>
+      <div class="row-actions" style="margin-top:5px;">
+        <button class="act-btn red" onclick="deleteMsg(${m.id})">🗑</button>
+        <button class="act-btn warn" onclick="blockPlayer('${escH(m.student_name)}','${escH(m.team_name)}',true)">🔒</button>
+      </div>
+    </div>`).join('')||'<div class="empty">✅ Нет подозрительных</div>';
+}
+function filterChat(){renderChat();}
+async function deleteMsg(id){
+  if(sb)try{await sb.from('quiz_chat').delete().eq('id',id);}catch(e){}
+  allChat=allChat.filter(m=>m.id!==id);renderChat();alog('Сообщение удалено','warn');
+}
+async function clearChat(){
+  if(!confirm('Удалить все сообщения в чате?'))return;
+  if(sb)try{await sb.from('quiz_chat').delete().eq('game_id',GID);}catch(e){}
+  allChat=[];renderChat();alog('Чат очищен','warn');
+}
+async function clearAllChat(){clearChat();}
+
+// ── SCORES ──
+function renderScores(){
+  if(!allScores.length){$('scoresTable').innerHTML='<div class="empty">Рейтинг пуст</div>';return;}
+  const med=['🥇','🥈','🥉'];
+  $('scoresTable').innerHTML='<table class="atable"><thead><tr><th>#</th><th>Имя</th><th>Команда</th><th>Очки</th></tr></thead><tbody>'+
+    allScores.map((s,i)=>`<tr>
+      <td>${med[i]||i+1}</td>
+      <td><b>${escH(s.student_name||'—')}</b></td>
+      <td>${escH(s.team_name||'—')}</td>
+      <td><b style="color:var(--gold)">${s.score||0}</b></td></tr>`).join('')+'</tbody></table>';
+}
+async function clearScores(){
+  if(!confirm('Очистить таблицу рейтинга?'))return;
+  if(sb)try{await sb.from('quiz_scores').delete().eq('game_id',GID);}catch(e){}
+  allScores=[];renderScores();alog('Рейтинг очищен','warn');
+}
+async function resetScores(){clearScores();}
+
+// ── GAMES ──
+async function renderGames(){
+  const el=$('gamesInfo');
+  if(!sb){el.innerHTML='<div class="empty">БД недоступна — демо-режим</div>';return;}
+  try{
+    const{data}=await sb.from('quiz_state').select('*').eq('game_id',GID).single();
+    if(!data){el.innerHTML='<div class="empty">Игровых сессий нет</div>';return;}
+    el.innerHTML=`<table class="atable"><thead><tr><th>Поле</th><th>Значение</th></tr></thead><tbody>
+      ${Object.entries(data).map(([k,v])=>`<tr><td style="color:var(--muted)">${escH(k)}</td><td>${escH(String(v??'—'))}</td></tr>`).join('')}
+    </tbody></table>
+    <div style="margin-top:14px;display:flex;gap:8px;flex-wrap:wrap;">
+      <button class="act-btn red" onclick="endGame()">⏹ Завершить игру</button>
+      <button class="act-btn warn" onclick="resetGame()">🔄 Сброс игры</button>
+    </div>`;
+  }catch(e){el.innerHTML=`<div class="empty">Ошибка: ${escH(e.message)}</div>`;}
+}
+async function endGame(){
+  if(!confirm('Завершить текущую игру?'))return;
+  if(sb)try{await sb.from('quiz_state').update({phase:'ended'}).eq('game_id',GID);}catch(e){}
+  alog('Игра завершена','warn');
+}
+async function resetGame(){
+  if(!confirm('Сбросить игру к начальному состоянию?'))return;
+  if(sb)try{await sb.from('quiz_state').update({phase:'waiting',current_index:0,round_type:null}).eq('game_id',GID);}catch(e){}
+  alog('Игра сброшена','warn');
+}
+
+// ── MODERATION ──
+function renderModeration(){
+  // Ban words
+  $('banList').innerHTML=banWords.length?banWords.map((w,i)=>`
+    <div style="display:flex;align-items:center;gap:8px;padding:7px 0;border-bottom:1px solid rgba(255,255,255,.04);">
+      <span class="badge err">🚫</span>
+      <span style="flex:1;font-size:.78rem">${escH(w)}</span>
+      <button class="act-btn red" onclick="removeBanWord(${i})">✕</button>
+    </div>`).join(''):'<div class="empty">Список пуст</div>';
+  // Blocked players
+  const bl=allPlayers.filter(p=>p.chat_blocked);
+  $('blockedPlayers').innerHTML=bl.length?bl.map(p=>`
+    <div style="display:flex;align-items:center;gap:8px;padding:7px 0;border-bottom:1px solid rgba(255,255,255,.04);">
+      <span class="badge err">🔒</span>
+      <span style="flex:1;font-size:.78rem">${escH(p.student_name)}</span>
+      <button class="act-btn grn" onclick="blockPlayer('${escH(p.student_name)}','${escH(p.team_name)}',false)">Разблок</button>
+    </div>`).join(''):'<div class="empty">Нет заблокированных</div>';
+}
+function openBanModal(){$('banModal').classList.add('open');}
+function closeBanModal(){$('banModal').classList.remove('open');$('banWord').value='';$('banReason').value='';}
+function addBanWord(){
+  const w=$('banWord').value.trim().toLowerCase();if(!w)return;
+  if(!banWords.includes(w))banWords.push(w);
+  saveBanWords();renderModeration();closeBanModal();
+  alog('В ЧС добавлено: '+w,'warn');
+}
+function removeBanWord(i){banWords.splice(i,1);saveBanWords();renderModeration();}
+function saveBanWords(){localStorage.setItem('ao_banwords',JSON.stringify(banWords));}
+function loadBanWords(){const b=localStorage.getItem('ao_banwords');if(b)try{banWords=JSON.parse(b);}catch(e){}}
+function hasBanWord(txt){return banWords.some(w=>txt.toLowerCase().includes(w));}
+async function kickAll(){
+  if(!confirm('Кикнуть ВСЕХ игроков?'))return;
+  if(sb)try{await sb.from('quiz_players').delete().eq('game_id',GID);}catch(e){}
+  allPlayers=[];renderPlayersTable();refreshDash();alog('Все игроки кикнуты','err');
+}
+async function unlockAll(){
+  if(sb)try{await sb.from('quiz_players').update({chat_blocked:false}).eq('game_id',GID);}catch(e){}
+  allPlayers=allPlayers.map(p=>({...p,chat_blocked:false}));
+  renderModeration();refreshDash();alog('Все разблокированы','ok');
+}
+
+// ── SETTINGS ──
+function loadSettings(){const s=localStorage.getItem('ao_admin_settings');if(s)try{settings=JSON.parse(s);}catch(e){}applySettings();}
+function applySettings(){
+  Object.entries(settings).forEach(([k,v])=>{const el=$('tog-'+k);if(el){el.className='tog '+(v?'on':'off');}});
+}
+function togSetting(k){settings[k]=!settings[k];applySettings();}
+function saveSettings(){
+  const qtime=parseInt($('set-qtime')?.value||25);
+  const welcome=$('set-welcome')?.value||'';
+  localStorage.setItem('ao_admin_settings',JSON.stringify(settings));
+  if(sb)sb.from('quiz_state').update({
+    game_timer:qtime,
+    chat_enabled:settings.chat,
+    registration_open:settings.reg,
+  }).eq('game_id',GID).then(()=>{}).catch(()=>{});
+  alog('Настройки сохранены','ok');
+  showToast('✅ Настройки сохранены');
+}
+function changePwd(){
+  const p1=$('newPwd').value,p2=$('newPwd2').value;
+  if(!p1)return;if(p1!==p2){showToast('❌ Пароли не совпадают');return;}
+  localStorage.setItem('ao_admin_pwd',p1);
+  $('newPwd').value='';$('newPwd2').value='';
+  showToast('✅ Пароль изменён');alog('Пароль администратора изменён','warn');
+}
+
+// ── LOG ──
+function renderLog(){
+  const el=$('fullLog');if(!el)return;
+  el.innerHTML=adminLog.map(e=>`<div class="alog-e"><span class="alog-t">${e.t}</span><span class="alog-m ${e.c||''}">${escH(e.m)}</span></div>`).join('');
+}
+function clearLog(){adminLog=[];renderLog();showToast('Журнал очищен');}
+function exportLog(){download('admin-log.txt',adminLog.map(e=>`${e.t} ${e.m}`).join('\n'));}
+
+// ── EXPORT ──
+function exportPlayers(){
+  const rows=[['Имя','Команда','Вошёл','Блок'],...allPlayers.map(p=>[p.student_name,p.team_name,p.joined_at,p.chat_blocked?'да':'нет'])];
+  download('players.csv',rows.map(r=>r.join(',')).join('\n'));
+}
+function exportScores(){
+  const rows=[['#','Имя','Команда','Очки'],...allScores.map((s,i)=>[i+1,s.student_name,s.team_name,s.score])];
+  download('scores.csv',rows.map(r=>r.join(',')).join('\n'));
+}
+function download(name,data){
+  const a=document.createElement('a');a.href='data:text/plain;charset=utf-8,'+encodeURIComponent(data);a.download=name;a.click();
+}
+
+// ── UTILS ──
+function escH(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+function fmtTime(iso){try{return new Date(iso).toLocaleString('ru-RU',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'});}catch{return iso||'—';}}
+function showToast(msg){
+  const t=document.createElement('div');
+  t.style.cssText='position:fixed;bottom:20px;right:20px;z-index:9999;background:rgba(6,16,42,.99);border:1px solid rgba(79,223,255,.3);border-radius:12px;padding:12px 18px;color:var(--txt);font:.8rem Nunito,sans-serif;font-weight:700;box-shadow:0 8px 32px rgba(0,0,0,.5);animation:tIn .3s ease;';
+  t.textContent=msg;document.body.appendChild(t);
+  setTimeout(()=>t.remove(),3000);
+}
+</script>
+</body>
+</html>
