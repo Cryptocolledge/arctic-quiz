@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>🔬 QuizHub Deep Diagnostics</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--bg:#06101e;--panel:#0b1a30;--b:rgba(79,223,255,.14);--ice:#4fdfff;--ok:#5dffb0;--err:#ff5f7a;--warn:#ffd84d;--mu:rgba(180,220,255,.4);--tx:#e8f4ff}
+body{font:14px/1.5 'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(--tx);min-height:100vh;padding:16px}
+h1{font-size:1.2rem;font-weight:900;background:linear-gradient(90deg,#4fdfff,#5dffb0);-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:2px}
+.sub{font-size:.72rem;color:var(--mu);margin-bottom:16px}
+.card{background:var(--panel);border:1px solid var(--b);border-radius:14px;padding:14px 16px;margin-bottom:10px}
+.sec-title{font-size:.58rem;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:var(--mu);margin-bottom:10px;display:flex;align-items:center;gap:8px}
+.badge{padding:2px 8px;border-radius:999px;font-size:.56rem;font-weight:800}
+.ok{color:var(--ok)}.err{color:var(--err)}.warn{color:var(--warn)}.info{color:var(--ice)}
+.bg-ok{background:rgba(93,255,176,.1);border:1px solid rgba(93,255,176,.3)}
+.bg-err{background:rgba(255,95,122,.1);border:1px solid rgba(255,95,122,.3)}
+.bg-warn{background:rgba(255,216,77,.08);border:1px solid rgba(255,216,77,.25)}
+.bg-info{background:rgba(79,223,255,.08);border:1px solid rgba(79,223,255,.2)}
+.row{display:flex;align-items:flex-start;gap:10px;padding:6px 0;border-bottom:1px solid rgba(255,255,255,.04);font-size:.78rem}
+.row:last-child{border:none}
+.ico{width:20px;height:20px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.68rem;flex-shrink:0;margin-top:1px}
+.ico.ok{background:rgba(93,255,176,.18);color:var(--ok)}
+.ico.err{background:rgba(255,95,122,.18);color:var(--err)}
+.ico.warn{background:rgba(255,216,77,.1);color:var(--warn)}
+.ico.run{background:rgba(79,223,255,.1);color:var(--ice);animation:pulse .9s ease-in-out infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+.row-body{flex:1}.row-name{font-weight:700;margin-bottom:1px}.row-detail{font-size:.7rem;color:var(--mu)}
+.row-detail.err{color:#ffaabc}.row-detail.ok{color:#9affd7}.row-detail.warn{color:#ffe999}
+.mono{background:rgba(0,0,0,.45);border:1px solid rgba(255,255,255,.07);border-radius:8px;padding:8px 10px;font:12px/1.6 'Courier New',monospace;color:#b0d4ff;white-space:pre-wrap;word-break:break-all;max-height:200px;overflow-y:auto;margin-top:6px;cursor:pointer;user-select:all;position:relative}
+.mono::after{content:'click to copy';position:absolute;top:4px;right:7px;font:10px/1 sans-serif;color:rgba(255,255,255,.18)}
+.mono:hover::after{color:var(--ice)}
+.mono.copied::after{content:'copied ✓';color:var(--ok)}
+.btn{padding:8px 16px;border-radius:9px;border:none;font:.78rem/1 'Segoe UI',sans-serif;font-weight:800;cursor:pointer;transition:all .18s}
+.btn.pri{background:linear-gradient(135deg,#4fdfff,#5dffb0);color:#040f1e}
+.btn.pri:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(79,223,255,.3)}
+.btn.sec{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);color:var(--tx)}
+.btn.sec:hover{border-color:rgba(79,223,255,.4)}
+.btn:disabled{opacity:.3;cursor:not-allowed;transform:none!important}
+.btn-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+.pbar{height:3px;background:rgba(255,255,255,.05);border-radius:999px;margin:8px 0 2px;overflow:hidden}
+.pfill{height:100%;background:linear-gradient(90deg,#4fdfff,#5dffb0);border-radius:inherit;transition:width .35s ease}
+.plbl{font-size:.58rem;color:var(--mu);text-align:right}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:8px}
+.stat{background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06);border-radius:10px;padding:10px;text-align:center}
+.stat-v{font-size:1.4rem;font-weight:900}.stat-l{font-size:.56rem;color:var(--mu);text-transform:uppercase;letter-spacing:.08em;margin-top:2px}
+.err-list{background:rgba(255,95,122,.05);border:1px solid rgba(255,95,122,.18);border-radius:10px;padding:10px 12px;margin-top:10px}
+.err-item{padding:4px 0;border-bottom:1px solid rgba(255,95,122,.08);font-size:.72rem;display:flex;gap:6px}
+.err-item:last-child{border:none}
+.log-box{max-height:180px;overflow-y:auto}
+.loge{font-size:.67rem;padding:2px 0;border-bottom:1px solid rgba(255,255,255,.025)}
+.loge.ok{color:#9affd7}.loge.err{color:#ffaabc}.loge.warn{color:#ffe999}.loge.info{color:#b0d4ff}
+.lt{color:rgba(255,255,255,.22);margin-right:5px}
+.hint{font-size:.72rem;color:var(--ice);background:rgba(79,223,255,.06);border:1px solid rgba(79,223,255,.15);border-radius:8px;padding:8px 12px;margin-bottom:8px}
+</style>
+</head>
+<body>
+<h1>🔬 QuizHub Deep Diagnostics</h1>
+<p class="sub">Полная проверка всех компонентов — запускается автоматически</p>
+
+<div class="card">
+  <div class="sec-title"><span>⚡ Управление</span></div>
+  <div class="btn-row">
+    <button class="btn pri" id="btnRun" onclick="runAll()">▶ Полная проверка</button>
+    <button class="btn sec" id="btnCopy" onclick="copyReport()" disabled>📋 Скопировать отчёт</button>
+    <button class="btn sec" onclick="clearJsLog()">🗑 Очистить JS лог</button>
+  </div>
+  <div class="pbar"><div class="pfill" id="pf" style="width:0"></div></div>
+  <div class="plbl" id="plbl">Ожидание</div>
+</div>
+
+<div class="card" id="summaryCard" style="display:none">
+  <div class="sec-title"><span>📊 Итог</span><span id="summBadge" class="badge"></span></div>
+  <div class="stats">
+    <div class="stat"><div class="stat-v ok" id="cntOk">0</div><div class="stat-l">✅ ОК</div></div>
+    <div class="stat"><div class="stat-v err" id="cntErr">0</div><div class="stat-l">❌ Ошибок</div></div>
+    <div class="stat"><div class="stat-v warn" id="cntWarn">0</div><div class="stat-l">⚠ Предупреждений</div></div>
+  </div>
+  <div id="errListBox"></div>
+</div>
+
+<div class="card" id="secDB"><div class="sec-title"><span>🗄 Supabase БД</span><span id="bdg-db" class="badge" style="display:none"></span></div><div id="chk-db"></div></div>
+<div class="card" id="secState"><div class="sec-title"><span>🎮 quiz_state</span><span id="bdg-state" class="badge" style="display:none"></span></div><div id="chk-state"></div></div>
+<div class="card" id="secPlayers"><div class="sec-title"><span>👥 quiz_players</span><span id="bdg-players" class="badge" style="display:none"></span></div><div id="chk-players"></div></div>
+<div class="card" id="secScores"><div class="sec-title"><span>🏆 quiz_scores</span><span id="bdg-scores" class="badge" style="display:none"></span></div><div id="chk-scores"></div></div>
+<div class="card" id="secFiles"><div class="sec-title"><span>📁 Файлы проекта</span><span id="bdg-files" class="badge" style="display:none"></span></div><div id="chk-files"></div></div>
+<div class="card" id="secJs"><div class="sec-title"><span>🐛 JS ошибки</span><span id="bdg-js" class="badge" style="display:none"></span></div><div id="chk-js"></div></div>
+<div class="card" id="secBrowser"><div class="sec-title"><span>🌐 Браузер / окружение</span><span id="bdg-browser" class="badge" style="display:none"></span></div><div id="chk-browser"></div></div>
+
+<div class="card" id="reportCard" style="display:none">
+  <div class="sec-title"><span>📋 Отчёт для разработчика</span></div>
+  <div class="hint">👇 Нажмите на блок — выделится всё. Скопируйте и отправьте.</div>
+  <div class="mono" id="reportText" onclick="copyEl(this)"></div>
+</div>
+
+<div class="card">
+  <div class="sec-title"><span>📜 Лог</span></div>
+  <div class="log-box" id="logBox"></div>
+</div>
+
+<script>
+const SURL='https://arpbhbfyucpojvxipqng.supabase.co';
+const SKEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFycGJoYmZ5dWNwb2p2eGlwcW5nIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIyMTAwNTQsImV4cCI6MjA4Nzc4NjA1NH0.MQWcU9ph2sWNgbHbfDZ0qKEC1V1PzbI7I7TtQyPNyeg';
+const GID='default';
+const FILES=['hub.html','presenter.html','observer.html','projector.html','profiles.html','facts.html','admin.html','arctic-odyssey.html','index.html','debug.html'];
+const TABLES=['quiz_state','quiz_players','quiz_scores','quiz_chat'];
+const REQUIRED_COLS={quiz_state:['game_id','phase','current_index','show_answer','round_type','quiz_id','shuffle_seed','question_visible','music_broadcast'],quiz_players:['game_id','student_name','team_name','last_seen','chat_blocked'],quiz_scores:['game_id','student_name','score'],quiz_chat:['game_id','sender_name','message']};
+
+let sb=null,results=[],logs=[],done=0,total=0,t0=0;
+
+// ── LOGGER ──
+function log(msg,type='info'){
+  const t=new Date().toTimeString().slice(0,8);
+  logs.push({t,msg,type});
+  const d=document.createElement('div');d.className='loge '+type;
+  d.innerHTML=`<span class="lt">${t}</span>${esc(msg)}`;
+  const lb=document.getElementById('logBox');lb.appendChild(d);lb.scrollTop=lb.scrollHeight;
+}
+
+// ── PROGRESS ──
+function prog(d,t,lbl){const p=t>0?Math.round(d/t*100):0;document.getElementById('pf').style.width=p+'%';document.getElementById('plbl').textContent=lbl||d+'/'+t;}
+
+// ── ADD CHECK ──
+function add(cid,bid,name,status,detail,raw){
+  results.push({s:cid,name,status,detail:detail||'',raw:raw||''});
+  const c=document.getElementById('chk-'+cid);if(!c)return;
+  const r=document.createElement('div');r.className='row';
+  const icon=status==='ok'?'✓':status==='err'?'✗':status==='warn'?'!':'…';
+  r.innerHTML=`<div class="ico ${status}">${icon}</div><div class="row-body"><div class="row-name">${esc(name)}</div><div class="row-detail ${status}">${esc(detail||'')}</div>${raw?`<div class="mono" onclick="copyEl(this)">${esc(raw)}</div>`:''}</div>`;
+  c.appendChild(r);
+  done++;prog(done,total,done+'/'+total+' — '+name);
+  updBadge(cid,bid);
+}
+function updLast(cid,bid,status,detail,raw){
+  const c=document.getElementById('chk-'+cid);if(!c)return;
+  const rows=c.querySelectorAll('.row'),last=rows[rows.length-1];
+  const lr=results.filter(r=>r.s===cid).slice(-1)[0];
+  if(lr){lr.status=status;lr.detail=detail||'';if(raw)lr.raw=raw;}
+  if(last){
+    const ic=last.querySelector('.ico'),de=last.querySelector('.row-detail');
+    if(ic){ic.className='ico '+status;ic.textContent=status==='ok'?'✓':status==='err'?'✗':status==='warn'?'!':'…';}
+    if(de){de.className='row-detail '+status;de.textContent=detail||'';}
+    if(raw&&!last.querySelector('.mono')){const m=document.createElement('div');m.className='mono';m.textContent=raw;m.onclick=()=>copyEl(m);last.querySelector('.row-body').appendChild(m);}
+  }
+  updBadge(cid,bid);
+}
+function updBadge(cid,bid){
+  const sr=results.filter(r=>r.s===cid);
+  const hasE=sr.some(r=>r.status==='err'),hasW=sr.some(r=>r.status==='warn');
+  const b=document.getElementById(bid);if(!b)return;
+  b.style.display='';b.className='badge '+(hasE?'bg-err':hasW?'bg-warn':'bg-ok');
+  b.textContent=hasE?'Ошибки':hasW?'Предупреждения':'ОК';
+}
+
+// ── LOAD SUPABASE ──
+async function loadSB(){
+  return new Promise(res=>{
+    if(window.supabase){sb=window.supabase.createClient(SURL,SKEY);res(true);return;}
+    const s=document.createElement('script');s.src='https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2';
+    s.onload=()=>{sb=window.supabase.createClient(SURL,SKEY);res(true);};
+    s.onerror=()=>res(false);document.head.appendChild(s);
+  });
+}
+
+// ── DB CHECKS ──
+async function runDB(){
+  total+=5+TABLES.length*2;
+  add('db','bdg-db','Supabase SDK','run','Загружаем…');
+  const ok=await loadSB();
+  updLast('db','bdg-db',ok?'ok':'err',ok?'SDK загружен':'CDN недоступен — проверь интернет',ok?null:'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2');
+  if(!ok){log('SDK fail','err');return;}log('SDK OK','ok');
+
+  add('db','bdg-db','Ping Supabase','run','…');
+  let pingOk=false,pingMs=0,pingErr='';
+  try{const t0=Date.now();const{data,error}=await sb.from('quiz_state').select('game_id').limit(1);pingMs=Date.now()-t0;if(error)pingErr=error.message+' ('+error.code+')';else{pingOk=true;log('Ping '+pingMs+'ms','ok');}}catch(e){pingErr=e.message;}
+  updLast('db','bdg-db',pingOk?'ok':'err',pingOk?'БД отвечает за '+pingMs+'мс':'Не удалось подключиться',pingOk?null:pingErr);
+  if(!pingOk){log('DB unreachable: '+pingErr,'err');return;}
+
+  for(const tbl of TABLES){
+    add('db','bdg-db','Таблица: '+tbl,'run','…');
+    try{
+      const{data,error}=await sb.from(tbl).select('*').limit(1);
+      if(error){updLast('db','bdg-db','err','"'+tbl+'" недоступна',error.message+' ('+error.code+')');log(tbl+': ERR','err');}
+      else{
+        // Check required columns
+        const row=data?.[0];
+        const reqCols=REQUIRED_COLS[tbl]||[];
+        const missingCols=row?reqCols.filter(c=>!(c in row)):[];
+        if(missingCols.length>0){
+          updLast('db','bdg-db','warn','"'+tbl+'" доступна, но отсутствуют колонки: '+missingCols.join(', '),'ALTER TABLE '+tbl+' ADD COLUMN IF NOT EXISTS '+missingCols[0]+' text;');
+          log(tbl+': missing cols '+missingCols.join(','),'warn');
+        }else{updLast('db','bdg-db','ok','"'+tbl+'" — всё в порядке');log(tbl+': OK','ok');}
+      }
+    }catch(e){updLast('db','bdg-db','err','Исключение',e.message);}
+  }
+
+  // game_state deep check
+  await checkState();
+  await checkPlayers();
+  await checkScores();
+}
+
+async function checkState(){
+  total+=9;
+  add('state','bdg-state','Запись game_id=default','run','…');
+  try{
+    const{data,error}=await sb.from('quiz_state').select('*').eq('game_id',GID).maybeSingle();
+    if(error){updLast('state','bdg-state','err','Ошибка',error.message);return;}
+    if(!data){updLast('state','bdg-state','err','Запись НЕ найдена!','SQL: INSERT INTO quiz_state(game_id,phase) VALUES(\'default\',\'waiting\');');return;}
+    updLast('state','bdg-state','ok','Запись существует');
+    const checks=[
+      ['phase',data.phase,'waiting|running|paused|ended',!data.phase],
+      ['current_index',data.current_index,'0–29',data.current_index===undefined],
+      ['quiz_id',data.quiz_id||'(пусто)','arctic|ecology',false],
+      ['quiz_mode',data.quiz_mode||'(пусто)','spo|school',false],
+      ['show_answer',String(data.show_answer),'true|false',data.show_answer===undefined],
+      ['round_type',data.round_type||'(пусто)','пусто или betting_chips…',false],
+      ['shuffle_seed',data.shuffle_seed,'число или null',data.shuffle_seed===undefined],
+      ['question_visible',String(data.question_visible),'true|false',data.question_visible===undefined],
+    ];
+    for(const [col,val,exp,missing] of checks){
+      add('state','bdg-state','Колонка: '+col,missing?'warn':'ok',missing?'Отсутствует в БД':col+'='+JSON.stringify(val)+' (ожид: '+exp+')',missing?'ALTER TABLE quiz_state ADD COLUMN IF NOT EXISTS '+col+' text;':null);
+    }
+  }catch(e){updLast('state','bdg-state','err','Исключение',e.message);}
+}
+
+async function checkPlayers(){
+  total+=2;
+  add('players','bdg-players','Список игроков','run','…');
+  try{
+    const{data,error}=await sb.from('quiz_players').select('*').eq('game_id',GID).order('joined_at',{ascending:false});
+    if(error){updLast('players','bdg-players','err','Ошибка',error.message);return;}
+    const n=data?.length||0;
+    updLast('players','bdg-players',n===0?'warn':'ok',n===0?'Игроков нет':n+' игрок(ов): '+data.slice(0,4).map(p=>p.student_name).join(', ')+(n>4?' +ещё':''),n>0?JSON.stringify(data.slice(0,3).map(p=>({name:p.student_name,team:p.team_name,seen:p.last_seen})),null,2):null);
+    const blocked=data?.filter(p=>p.chat_blocked)||[];
+    if(blocked.length)add('players','bdg-players','Заблокированы в чате','warn',blocked.map(p=>p.student_name).join(', '));
+    log('Players: '+n,'ok');
+  }catch(e){updLast('players','bdg-players','err','Исключение',e.message);}
+}
+
+async function checkScores(){
+  total+=2;
+  add('scores','bdg-scores','Таблица очков','run','…');
+  try{
+    const{data,error}=await sb.from('quiz_scores').select('*').eq('game_id',GID).order('score',{ascending:false}).limit(20);
+    if(error){updLast('scores','bdg-scores','err','Ошибка',error.message+(error.code?'('+error.code+')':''));
+      if(error.code==='42703')add('scores','bdg-scores','Тип колонки score','warn','Вероятно нужна миграция','ALTER TABLE quiz_scores ALTER COLUMN score TYPE numeric(5,1) USING score::numeric;');
+      return;}
+    const n=data?.length||0;
+    updLast('scores','bdg-scores',n===0?'warn':'ok',n===0?'Очков нет':'Топ: '+data.slice(0,3).map(p=>p.student_name+'='+p.score).join(', '),n>0?JSON.stringify(data.slice(0,5),null,2):null);
+    log('Scores: '+n,'ok');
+  }catch(e){updLast('scores','bdg-scores','err','Исключение',e.message);}
+}
+
+// ── FILE CHECKS ──
+async function runFiles(){
+  total+=FILES.length;
+  const base=location.href.replace(/\/[^/]*$/,'/');
+  log('--- File checks ---','info');
+  for(const f of FILES){
+    add('files','bdg-files',f,'run','HEAD…');
+    try{
+      const t0=Date.now();const r=await fetch(base+f,{method:'HEAD',cache:'no-cache'});const ms=Date.now()-t0;
+      if(r.ok){updLast('files','bdg-files','ok',r.status+' OK ('+ms+'ms)');log(f+': OK '+ms+'ms','ok');}
+      else{updLast('files','bdg-files','err','HTTP '+r.status,r.status===404?'Файл не найден. Загружен на GitHub?':'HTTP '+r.status);log(f+': '+r.status,'err');}
+    }catch(e){updLast('files','bdg-files','err','Сетевая ошибка',e.message);log(f+': '+e.message,'err');}
+  }
+}
+
+// ── JS ERROR CHECK ──
+function checkJS(){
+  total+=1;
+  const stored=[];try{const s=localStorage.getItem('quizhub_errors');if(s)stored.push(...JSON.parse(s));}catch(e){}
+  const b=document.getElementById('bdg-js'),c=document.getElementById('chk-js');
+  if(stored.length===0){
+    c.innerHTML='<div class="row"><div class="ico ok">✓</div><div class="row-body"><div class="row-name">JS ошибок нет</div><div class="row-detail ok">localStorage "quizhub_errors" пуст</div></div></div>';
+    b.style.display='';b.className='badge bg-ok';b.textContent='ОК';
+    results.push({s:'js',name:'JS errors',status:'ok',detail:'нет ошибок',raw:''});
+    done++;prog(done,total);
+  }else{
+    b.style.display='';b.className='badge bg-err';b.textContent=stored.length+' ошибок';
+    results.push({s:'js',name:'JS errors',status:'err',detail:stored.length+' ошибок',raw:JSON.stringify(stored.slice(-5),null,2)});
+    stored.slice(-15).reverse().forEach(e=>{
+      const r=document.createElement('div');r.className='row';
+      r.innerHTML=`<div class="ico err">✗</div><div class="row-body"><div class="row-name">${esc((e.message||'').slice(0,120))}</div><div class="row-detail err">${esc(e.file||'')} строка ${e.line||'?'}:${e.col||'?'} | ${e.time||''}</div>${e.stack?`<div class="mono" onclick="copyEl(this)">${esc(e.stack.slice(0,500))}</div>`:''}</div>`;
+      c.appendChild(r);
+    });
+    done++;prog(done,total);
+  }
+}
+
+// ── BROWSER CHECK ──
+function checkBrowser(){
+  total+=5;
+  const checks=[
+    ['Протокол',location.protocol,location.protocol==='https:'?'ok':'warn',location.protocol==='file:'?'⚠ file:// — CORS заблокирован, открой через сервер':'Протокол: '+location.protocol],
+    ['localStorage',typeof localStorage!=='undefined'?'ok':'err',typeof localStorage!=='undefined'?'ok':'err',typeof localStorage!=='undefined'?'localStorage доступен':'localStorage НЕДОСТУПЕН'],
+    ['fetch API',typeof fetch!=='undefined'?'ok':'err',typeof fetch!=='undefined'?'ok':'err',typeof fetch!=='undefined'?'fetch доступен':'fetch НЕДОСТУПЕН'],
+    ['AudioContext',typeof AudioContext!=='undefined'||typeof webkitAudioContext!=='undefined'?'ok':'warn',typeof AudioContext!=='undefined'||typeof webkitAudioContext!=='undefined'?'ok':'warn','AudioContext '+(typeof AudioContext!=='undefined'?'доступен':'недоступен')],
+    ['User Agent',navigator.userAgent.slice(0,80),'ok','ok',null],
+  ];
+  for(const [name,val,status,detail] of checks){
+    add('browser','bdg-browser',name,status,detail);
+  }
+}
+
+// ── FULL RUN ──
+async function runAll(){
+  results=[];logs=[];done=0;total=0;
+  document.getElementById('logBox').innerHTML='';
+  document.getElementById('summaryCard').style.display='none';
+  document.getElementById('reportCard').style.display='none';
+  document.getElementById('errListBox').innerHTML='';
+  ['db','state','players','scores','files','js','browser'].forEach(s=>{
+    const c=document.getElementById('chk-'+s);if(c)c.innerHTML='';
+    const b=document.getElementById('bdg-'+s);if(b)b.style.display='none';
+  });
+  document.getElementById('btnRun').disabled=true;
+  document.getElementById('btnCopy').disabled=true;
+  t0=Date.now();total=1;prog(0,1,'Запуск…');
+  log('═══ Диагностика началась ═══','ok');
+  checkBrowser();
+  await runDB();
+  await runFiles();
+  checkJS();
+  // Summary
+  const errs=results.filter(r=>r.status==='err'),warns=results.filter(r=>r.status==='warn'),oks=results.filter(r=>r.status==='ok');
+  document.getElementById('cntOk').textContent=oks.length;
+  document.getElementById('cntErr').textContent=errs.length;
+  document.getElementById('cntWarn').textContent=warns.length;
+  const sb2=document.getElementById('summBadge');
+  sb2.className='badge '+(errs.length?'bg-err':warns.length?'bg-warn':'bg-ok');
+  sb2.textContent=errs.length?errs.length+' ошибок':warns.length?warns.length+' предупреждений':'Всё ОК';
+  if(errs.length||warns.length){
+    document.getElementById('errListBox').innerHTML='<div class="err-list"><div style="font-weight:800;font-size:.72rem;color:var(--err);margin-bottom:6px">🔺 Требует внимания:</div>'+[...errs,...warns].map((r,i)=>`<div class="err-item"><span>${r.status==='err'?'❌':'⚠'}</span><span>${esc(r.name)}: ${esc((r.detail||'').slice(0,90))}</span></div>`).join('')+'</div>';
+  }
+  document.getElementById('summaryCard').style.display='';
+  const el=((Date.now()-t0)/1000).toFixed(1);
+  prog(done,done,'✅ Готово за '+el+'с — ❌'+errs.length+' ⚠'+warns.length+' ✅'+oks.length);
+  log('═══ Готово за '+el+'с | ❌'+errs.length+' ⚠'+warns.length+' ✅'+oks.length+' ═══','ok');
+  buildReport();
+  document.getElementById('reportCard').style.display='';
+  document.getElementById('btnRun').disabled=false;
+  document.getElementById('btnCopy').disabled=false;
+}
+
+function buildReport(){
+  const now=new Date().toLocaleString('ru-RU');
+  const errs=results.filter(r=>r.status==='err'),warns=results.filter(r=>r.status==='warn'),oks=results.filter(r=>r.status==='ok');
+  let L=['╔══════════════════════════════════╗','║  QUIZHUB DIAGNOSTIC REPORT       ║','╚══════════════════════════════════╝',
+    'Дата: '+now,'URL: '+location.href,'UA: '+navigator.userAgent.slice(0,80),'',
+    'ИТОГО: ❌ '+errs.length+' | ⚠ '+warns.length+' | ✅ '+oks.length,''];
+  if(errs.length){L.push('══ ОШИБКИ ══');errs.forEach((r,i)=>{L.push((i+1)+'. ['+r.s+'] '+r.name);L.push('   → '+r.detail);if(r.raw)L.push('   '+r.raw.slice(0,200));});L.push('');}
+  if(warns.length){L.push('══ ПРЕДУПРЕЖДЕНИЯ ══');warns.forEach((r,i)=>{L.push((i+1)+'. ['+r.s+'] '+r.name+': '+r.detail);});L.push('');}
+  L.push('══ ВСЕ ПРОВЕРКИ ══');
+  [...new Set(results.map(r=>r.s))].forEach(s=>{L.push('\n['+s+']');results.filter(r=>r.s===s).forEach(r=>{L.push('  '+(r.status==='ok'?'✅':r.status==='err'?'❌':'⚠')+' '+r.name+': '+(r.detail||'').slice(0,100));});});
+  try{const je=JSON.parse(localStorage.getItem('quizhub_errors')||'[]');if(je.length){L.push('\n══ JS ОШИБКИ ══');je.slice(-8).forEach(e=>{L.push('  • ['+e.time+'] '+(e.message||'').slice(0,120));if(e.file)L.push('    @ '+e.file+':'+e.line);if(e.stack)L.push('    '+e.stack.split('\n').slice(0,2).join(' | '));});}}catch(e){}
+  L.push('\n══ ЛОГ ══');logs.forEach(l=>L.push('['+l.t+'] '+l.msg));
+  document.getElementById('reportText').textContent=L.join('\n');
+}
+
+function copyEl(el){const sel=window.getSelection(),r=document.createRange();r.selectNodeContents(el);sel.removeAllRanges();sel.addRange(r);try{document.execCommand('copy');el.classList.add('copied');setTimeout(()=>el.classList.remove('copied'),2000);}catch(e){}}
+function copyReport(){copyEl(document.getElementById('reportText'));const b=document.getElementById('btnCopy'),o=b.textContent;b.textContent='✅ Скопировано!';setTimeout(()=>b.textContent=o,2500);}
+function clearJsLog(){localStorage.removeItem('quizhub_errors');const c=document.getElementById('chk-js');if(c)c.innerHTML='<div style="font-size:.73rem;color:var(--ok);padding:6px 0">✅ Очищено</div>';const b=document.getElementById('bdg-js');if(b){b.className='badge bg-ok';b.textContent='Очищено';}}
+function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+
+// Intercept errors on this page
+window.onerror=function(msg,src,line,col,err){
+  log('JS Error: '+msg+' @ '+src+':'+line,'err');
+  try{const e=JSON.parse(localStorage.getItem('quizhub_errors')||'[]');e.push({type:'onerror',message:msg,file:src,line,col,stack:err?.stack,time:new Date().toISOString()});if(e.length>50)e.shift();localStorage.setItem('quizhub_errors',JSON.stringify(e));}catch(ex){}
+  return false;
+};
+window.addEventListener('unhandledrejection',e=>{
+  log('Promise: '+e.reason,'err');
+  try{const errs=JSON.parse(localStorage.getItem('quizhub_errors')||'[]');errs.push({type:'promise',message:String(e.reason),stack:e.reason?.stack,time:new Date().toISOString()});if(errs.length>50)errs.shift();localStorage.setItem('quizhub_errors',JSON.stringify(errs));}catch(ex){}
+});
+
+window.addEventListener('load',()=>{checkJS();setTimeout(runAll,400);});
+</script>
+</body>
+</html>
