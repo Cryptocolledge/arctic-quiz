@@ -690,16 +690,6 @@ document.addEventListener('DOMContentLoaded',function(){
     </div>
   </div>
 
-  <!-- АНОНСЫ НА ГЛАВНОЙ -->
-  <div id="hubAnnouncesBlock" style="display:none;max-width:1100px;width:100%;margin:0 auto;padding:0 24px 16px;">
-    <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">
-      <div style="flex:1;height:1px;background:rgba(255,255,255,.07)"></div>
-      <div style="font-size:.65rem;font-weight:800;letter-spacing:.15em;text-transform:uppercase;color:rgba(79,223,255,.6);padding:3px 12px;background:rgba(79,223,255,.06);border:1px solid rgba(79,223,255,.12);border-radius:999px;">📢 Анонсы</div>
-      <div style="flex:1;height:1px;background:rgba(255,255,255,.07)"></div>
-    </div>
-    <div id="hubAnnouncesMain" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:10px;"></div>
-  </div>
-
   <div class="hub-grid">
     <!-- Арктика -->
     <div class="hcard hcard-arctic" onclick="hubSelectQuiz('arctic')">
@@ -1134,7 +1124,7 @@ document.addEventListener('DOMContentLoaded',function(){
 <div class="dev-sig" style="display:none"></div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"
-  onload="if(window.supabase&&window.supabase.createClient){try{sb=window.supabase.createClient(SURL,SKEY);window.setTimeout(function(){loadHubTheme();loadHubRating();loadHubAnnouncements();},800);}catch(e){}}"
+  onload="if(window.supabase&&window.supabase.createClient){try{sb=window.supabase.createClient(SURL,SKEY);window.setTimeout(function(){loadHubTheme();loadHubRating();loadHubAnnouncements();subscribeHubTheme();},800);}catch(e){}}"
   onerror="loadSbFallback()"></script>
 <script id="soloQData">
 
@@ -2878,25 +2868,40 @@ async function loadHubTheme(){
   if(!sb) return;
   try{
     const {data,error}=await sb.from('hub_settings').select('value').eq('key','appearance').maybeSingle();
-    if(error||!data) return; // table may not exist yet — silent fail
-    const a=JSON.parse(data.value||'{}');
+    if(error||!data) return;
+    _applyHubAppearance(data.value);
+  }catch(e){}
+}
+
+function _applyHubAppearance(rawValue){
+  try{
+    const a=JSON.parse(rawValue||'{}');
     if(!a.theme) return;
-    // Save to localStorage for next instant load
     localStorage.setItem('hub_appearance', JSON.stringify(a));
-    // Apply theme
     if(window._applyHubTheme) window._applyHubTheme(a.theme, a.customBg, a.customAccent);
-    // Update site title if set
     if(a.title){
       const el=document.querySelector('.hub-logo');
-      if(el&&!el.dataset.custom){el.textContent='🧠 '+a.title;el.dataset.custom='1';}
+      if(el){el.textContent='🧠 '+a.title;}
       document.title=a.title+' — Интерактивные квизы';
     }
-    // Update hub hero heading if set
     if(a.sub){
       const sub=document.querySelector('.hub-sub');
-      if(sub&&!sub.dataset.custom){sub.textContent=a.sub;sub.dataset.custom='1';}
+      if(sub){sub.textContent=a.sub;}
     }
-  }catch(e){/* silent — hub_settings table may not exist */}
+  }catch(e){}
+}
+
+function subscribeHubTheme(){
+  if(!sb) return;
+  try{
+    sb.channel('hub_settings_changes')
+      .on('postgres_changes',{
+        event:'UPDATE', schema:'public', table:'hub_settings', filter:'key=eq.appearance'
+      }, payload=>{
+        if(payload.new&&payload.new.value) _applyHubAppearance(payload.new.value);
+      })
+      .subscribe();
+  }catch(e){}
 }
 
 // ══ РЕЙТИНГ ИГРОКОВ на главной ══
@@ -2953,33 +2958,29 @@ async function loadHubRating(){
 async function loadHubAnnouncements(){
   if(!sb)return;
   try{
+    // Читаем анонсы из quiz_state.announcements колонки или отдельной таблицы
     const {data,error}=await sb.from('quiz_announcements')
       .select('*')
       .eq('active',true)
       .order('scheduled_at',{ascending:true})
       .limit(5);
     if(error||!data||data.length===0)return;
-
+    const block=document.getElementById('hubAnnouncesBlock');
+    const list=document.getElementById('hubAnnouncesList');
+    if(!block||!list)return;
+    // announcements in burger panel
     const annHTML=data.map(a=>{
       const dt=a.scheduled_at?new Date(a.scheduled_at).toLocaleString('ru-RU',{day:'2-digit',month:'long',hour:'2-digit',minute:'2-digit'}):'';
-      return `<div style="background:rgba(79,223,255,.06);border:1px solid rgba(79,223,255,.15);border-radius:10px;padding:10px 12px;">
+      return `<div style="background:rgba(79,223,255,.06);border:1px solid rgba(79,223,255,.15);border-radius:10px;padding:10px 12px;margin-bottom:6px;">
         <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
           <span style="font-size:1.1rem">${a.emoji||'📢'}</span>
           <span style="font-size:.8rem;font-weight:800;color:#f0f6ff">${a.title||''}</span>
         </div>
-        ${a.description?`<div style="font-size:.7rem;color:rgba(180,220,255,.55);margin-bottom:3px">${a.description}</div>`:''}
+        ${a.description?`<div style="font-size:.7rem;color:#4a7a8f;margin-bottom:3px">${a.description}</div>`:''}
         ${dt?`<div style="font-size:.62rem;color:#4fdfff">📅 ${dt}</div>`:''}
       </div>`;
     }).join('');
-
-    // Главная страница — показываем блок и заполняем
-    const block=document.getElementById('hubAnnouncesBlock');
-    const main=document.getElementById('hubAnnouncesMain');
-    if(block&&main){main.innerHTML=annHTML;block.style.display='';}
-
-    // Бургер-меню (десктоп и мобайл)
-    const list=document.getElementById('hubAnnouncesList');
-    if(list)list.innerHTML=annHTML;
+    list.innerHTML=annHTML;
     const mobList=document.getElementById('hubAnnouncesListMob');
     if(mobList)mobList.innerHTML=annHTML;
   }catch(e){}
