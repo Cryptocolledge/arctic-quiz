@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>👁 Наблюдатель · QuizHub</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+:root{--bg:#030a1c;--card:rgba(8,18,40,.96);--accent:#4fdfff;--ok:#61ffb2;--err:#ff5f7a;--gold:#ffd36b;--text:#e8f4ff;--muted:rgba(232,244,255,.45);--border:rgba(79,223,255,.15);}
+body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;display:flex;flex-direction:column;}
+.hdr{padding:14px 24px;background:rgba(5,14,34,.97);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:12px;flex-shrink:0;}
+.hdr-title{font-size:1rem;font-weight:800;letter-spacing:.06em;text-transform:uppercase;}
+.hdr-chip{font-size:.65rem;padding:3px 10px;border-radius:999px;background:rgba(79,223,255,.1);border:1px solid var(--border);color:#9fd8f0;}
+.hdr-right{margin-left:auto;display:flex;align-items:center;gap:10px;}
+.live-dot{width:8px;height:8px;border-radius:50%;background:#61ffb2;box-shadow:0 0 6px #61ffb2;animation:pulse 2s infinite;}
+@keyframes pulse{0%,100%{opacity:1;}50%{opacity:.4;}}
+.status-chip{font-size:.72rem;padding:3px 10px;border-radius:999px;border:1px solid rgba(97,255,178,.4);color:#61ffb2;background:rgba(97,255,178,.08);}
+.main{flex:1;padding:20px;display:grid;grid-template-columns:1fr 1fr;gap:16px;max-width:1100px;margin:0 auto;width:100%;}
+@media(max-width:700px){.main{grid-template-columns:1fr;}}
+.card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:16px;}
+.card-title{font-size:.65rem;color:var(--muted);text-transform:uppercase;letter-spacing:.1em;margin-bottom:12px;display:flex;align-items:center;gap:6px;}
+/* Лидерборд */
+.lb-row{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:10px;transition:background .3s;}
+.lb-row:hover{background:rgba(255,255,255,.04);}
+.lb-rank{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.78rem;font-weight:900;flex-shrink:0;}
+.lb-rank.r1{background:linear-gradient(135deg,#ffd700,#ff8c00);color:#1a0f00;}
+.lb-rank.r2{background:linear-gradient(135deg,#c0c0c0,#a0a0a0);color:#1a1a1a;}
+.lb-rank.r3{background:linear-gradient(135deg,#cd7f32,#8b4513);color:#fff;}
+.lb-rank.rn{background:rgba(255,255,255,.08);color:var(--muted);}
+.lb-name{flex:1;font-size:.88rem;font-weight:600;}
+.lb-team{font-size:.68rem;color:var(--muted);}
+.lb-score{font-size:1rem;font-weight:900;color:var(--gold);font-family:monospace;}
+.lb-bar-wrap{width:100px;height:4px;background:rgba(255,255,255,.08);border-radius:999px;overflow:hidden;}
+.lb-bar{height:100%;background:linear-gradient(90deg,var(--accent),#a78bfa);border-radius:999px;transition:width .6s ease;}
+/* Статистика */
+.stat-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+.stat-box{background:rgba(3,10,28,.8);border:1px solid rgba(255,255,255,.06);border-radius:10px;padding:10px 12px;text-align:center;}
+.stat-num{font-size:1.6rem;font-weight:900;color:var(--accent);font-family:monospace;}
+.stat-lbl{font-size:.62rem;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;margin-top:2px;}
+/* Активность */
+.activity-row{font-size:.78rem;padding:5px 0;border-bottom:1px solid rgba(255,255,255,.04);display:flex;align-items:center;gap:8px;}
+.activity-row:last-child{border-bottom:none;}
+.activity-time{font-size:.65rem;color:var(--muted);min-width:40px;}
+/* Прогресс игры */
+.phase-badge{padding:4px 12px;border-radius:999px;font-size:.72rem;font-weight:700;}
+.phase-running{background:rgba(97,255,178,.12);color:#61ffb2;border:1px solid rgba(97,255,178,.3);}
+.phase-waiting{background:rgba(255,255,255,.06);color:var(--muted);}
+.phase-ended{background:rgba(255,211,107,.12);color:var(--gold);}
+.progress-bar{height:6px;background:rgba(255,255,255,.08);border-radius:999px;overflow:hidden;margin-top:8px;}
+.progress-fill{height:100%;background:linear-gradient(90deg,var(--accent),#a78bfa);border-radius:999px;transition:width .5s;}
+/* Входной экран */
+.enter-screen{position:fixed;inset:0;z-index:100;display:flex;align-items:center;justify-content:center;background:radial-gradient(ellipse at 50% 0%,#0d2a4a,#050816);padding:20px;}
+.enter-card{width:min(420px,100%);background:rgba(8,18,40,.98);border:1px solid var(--border);border-radius:20px;padding:32px;text-align:center;}
+.enter-icon{font-size:2.5rem;margin-bottom:12px;}
+.enter-title{font-size:1.1rem;font-weight:800;letter-spacing:.05em;margin-bottom:6px;}
+.enter-sub{font-size:.78rem;color:var(--muted);margin-bottom:20px;line-height:1.5;}
+.inp{width:100%;padding:10px 14px;border-radius:10px;border:1px solid rgba(79,223,255,.35);background:rgba(3,10,28,.95);color:var(--text);font-size:.9rem;outline:none;margin-bottom:10px;}
+.inp:focus{border-color:var(--accent);}
+.btn{padding:10px 20px;border-radius:10px;border:none;cursor:pointer;font-weight:700;font-size:.85rem;transition:all .2s;}
+.btn-p{background:linear-gradient(135deg,#1a3a6a,#0d2040);border:1px solid rgba(79,223,255,.5);color:var(--accent);width:100%;}
+.btn-p:hover{background:linear-gradient(135deg,#2a4a7a,#1d3050);}
+.err-msg{font-size:.75rem;color:var(--err);margin-top:6px;display:none;}
+footer{text-align:center;padding:12px;font-size:.6rem;color:rgba(255,255,255,.15);}
+</style>
+</head>
+<body>
+
+<!-- ВХОДНОЙ ЭКРАН -->
+<div id="enterScreen" class="enter-screen">
+  <div class="enter-card">
+    <div class="enter-icon">👁</div>
+    <div class="enter-title">Режим наблюдателя</div>
+    <div class="enter-sub">Вы будете видеть статистику игры и таблицу лидеров в реальном времени.<br>Вопросы и ответы участников не отображаются.</div>
+    <input class="inp" id="obsCodeInp" type="text" placeholder="Код игры (4 цифры)" maxlength="6" autocapitalize="characters" style="letter-spacing:.15em;text-align:center;font-size:1.1rem;font-weight:700;font-family:monospace;"/>
+    <div class="err-msg" id="obsCodeErr"></div>
+    <button class="btn btn-p" id="obsEnterBtn" style="margin-top:8px;">👁 Войти как наблюдатель</button>
+    <div style="margin-top:14px;font-size:.68rem;color:var(--muted);">Получите код у ведущего мероприятия</div>
+  </div>
+</div>
+
+<!-- ОСНОВНОЙ ЭКРАН -->
+<div id="mainScreen" style="display:none;flex:1;flex-direction:column;min-height:100vh;">
+  <div class="hdr">
+    <span style="font-size:1.2rem;">👁</span>
+    <div class="hdr-title" id="obsQuizName">Квиз</div>
+    <div class="hdr-chip" id="obsQuizChip">НАБЛЮДАТЕЛЬ</div>
+    <div class="hdr-right">
+      <div id="obsPhase" class="phase-badge phase-waiting">⏳ Ожидание</div>
+      <div style="display:flex;align-items:center;gap:5px;font-size:.7rem;color:#61ffb2;"><div class="live-dot"></div>LIVE</div>
+    </div>
+  </div>
+
+  <div class="main">
+
+    <!-- ТАБЛИЦА ЛИДЕРОВ -->
+    <div class="card" style="grid-row:span 2;">
+      <div class="card-title">🏆 Таблица лидеров</div>
+      <div id="leaderboard">
+        <div style="font-size:.78rem;color:var(--muted);text-align:center;padding:20px;">Ожидаем начала игры…</div>
+      </div>
+    </div>
+
+    <!-- СТАТИСТИКА -->
+    <div class="card">
+      <div class="card-title">📊 Статистика игры</div>
+      <div class="stat-grid">
+        <div class="stat-box">
+          <div class="stat-num" id="statPlayers">0</div>
+          <div class="stat-lbl">Участников</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-num" id="statOnline" style="color:#61ffb2;">0</div>
+          <div class="stat-lbl">Онлайн</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-num" id="statQuestion" style="color:#a78bfa;">—</div>
+          <div class="stat-lbl">Вопрос</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-num" id="statAnswered" style="color:var(--gold);">—</div>
+          <div class="stat-lbl">Ответили</div>
+        </div>
+      </div>
+      <div style="margin-top:12px;">
+        <div style="font-size:.6rem;color:var(--muted);margin-bottom:4px;text-transform:uppercase;letter-spacing:.07em;">Прогресс игры</div>
+        <div class="progress-bar"><div class="progress-fill" id="gameProgress" style="width:0%"></div></div>
+        <div style="display:flex;justify-content:space-between;font-size:.62rem;color:var(--muted);margin-top:4px;">
+          <span id="progressLabel">Вопрос 0 из —</span>
+          <span id="progressPct">0%</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- АКТИВНОСТЬ / ЛОГ -->
+    <div class="card">
+      <div class="card-title">📋 Активность</div>
+      <div id="activityLog" style="max-height:160px;overflow-y:auto;">
+        <div style="font-size:.75rem;color:var(--muted);">Здесь появятся события игры…</div>
+      </div>
+    </div>
+
+  </div>
+  <footer>QuizHub · Режим наблюдателя · Разработано: КвизЦентр · QuizHub · При поддержке АНО «Поколение Побед» · © 2025</footer>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+const SURL="https://arpbhbfyucpojvxipqng.supabase.co";
+const SKEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFycGJoYmZ5dWNwb2p2eGlwcW5nIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIyMTAwNTQsImV4cCI6MjA4Nzc4NjA1NH0.MQWcU9ph2sWNgbHbfDZ0qKEC1V1PzbI7I7TtQyPNyeg";
+const GID="default";
+let sb=null, lastState=null, refreshTimer=null;
+const ONLINE_MS=15000;
+
+// Инициализация Supabase
+async function initSb(){
+  let tries=0;
+  while(!window.supabase?.createClient&&tries<40){
+    await new Promise(r=>setTimeout(r,250)); tries++;
+  }
+  if(!window.supabase?.createClient){console.error("Supabase not loaded");return;}
+  sb=window.supabase.createClient(SURL,SKEY);
+}
+
+// Вход как наблюдатель
+document.getElementById("obsEnterBtn").addEventListener("click",enterObserver);
+document.getElementById("obsCodeInp").addEventListener("keydown",e=>{if(e.key==="Enter")enterObserver();});
+
+async function enterObserver(){
+  const code=document.getElementById("obsCodeInp").value.trim().toUpperCase();
+  const err=document.getElementById("obsCodeErr");
+  err.style.display="none";
+  if(!code){err.textContent="Введите код игры";err.style.display="block";return;}
+  if(!sb){await initSb();}
+  if(!sb){err.textContent="Нет соединения с сервером";err.style.display="block";return;}
+  // Проверяем код
+  try{
+    const{data}=await sb.from("quiz_state").select("session_code,quiz_id,phase").eq("game_id",GID).maybeSingle();
+    if(!data){err.textContent="Игра не найдена";err.style.display="block";return;}
+    if(data.session_code&&data.session_code.toUpperCase()!==code){
+      err.textContent="❌ Неверный код игры";err.style.display="block";return;
+    }
+    // Входим
+    document.getElementById("enterScreen").style.display="none";
+    const ms=document.getElementById("mainScreen");
+    ms.style.display="flex";
+    startObserving();
+  }catch(e){
+    err.textContent="Ошибка соединения: "+e.message;err.style.display="block";
+  }
+}
+
+function logActivity(msg,icon="ℹ️"){
+  const log=document.getElementById("activityLog");
+  const empty=log.querySelector("div:not(.activity-row)");
+  if(empty)empty.remove();
+  const time=new Date().toLocaleTimeString("ru",{hour:"2-digit",minute:"2-digit",second:"2-digit"});
+  const row=document.createElement("div");
+  row.className="activity-row";
+  row.innerHTML=`<span class="activity-time">${time}</span><span>${icon}</span><span>${msg}</span>`;
+  log.insertBefore(row,log.firstChild);
+  // Максимум 20 записей
+  while(log.children.length>20)log.removeChild(log.lastChild);
+}
+
+function updateLeaderboard(players){
+  const lb=document.getElementById("leaderboard");
+  if(!players||players.length===0){
+    lb.innerHTML='<div style="font-size:.78rem;color:var(--muted);text-align:center;padding:20px;">Участников пока нет…</div>';
+    return;
+  }
+  const sorted=[...players].sort((a,b)=>(b.score||0)-(a.score||0));
+  const maxScore=Math.max(1,...sorted.map(p=>p.score||0));
+  lb.innerHTML=sorted.map((p,i)=>{
+    const rank=i+1;
+    const rankClass=rank===1?"r1":rank===2?"r2":rank===3?"r3":"rn";
+    const rankLabel=rank===1?"🥇":rank===2?"🥈":rank===3?"🥉":rank;
+    const now=Date.now();
+    const isOnline=p.last_seen&&(now-new Date(p.last_seen).getTime())<ONLINE_MS;
+    const score=typeof p.score==="number"?p.score.toFixed(p.score%1?1:0):0;
+    const barWidth=Math.max(0,Math.min(100,((p.score||0)/maxScore)*100));
+    return `<div class="lb-row">
+      <div class="lb-rank ${rankClass}">${rankLabel}</div>
+      <div style="flex:1;min-width:0;">
+        <div class="lb-name" style="display:flex;align-items:center;gap:6px;">
+          <span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${p.student_name||"Игрок"}</span>
+          ${isOnline?'<span style="width:6px;height:6px;border-radius:50%;background:#61ffb2;flex-shrink:0;"></span>':''}
+        </div>
+        <div class="lb-team">${p.team_name||""}</div>
+        <div class="lb-bar-wrap" style="margin-top:4px;"><div class="lb-bar" style="width:${barWidth}%"></div></div>
+      </div>
+      <div class="lb-score">${score}</div>
+    </div>`;
+  }).join("");
+}
+
+function updateStats(players,state){
+  const pl=players||[];
+  const now=Date.now();
+  const online=pl.filter(p=>p.last_seen&&(now-new Date(p.last_seen).getTime())<ONLINE_MS).length;
+  document.getElementById("statPlayers").textContent=pl.length;
+  document.getElementById("statOnline").textContent=online;
+  if(state){
+    const idx=(state.current_index??-1)+1;
+    // Нельзя показывать точный номер вопроса наблюдателю? Можно — это только номер
+    document.getElementById("statQuestion").textContent=state.phase==="running"?idx:"—";
+    const total=30; // примерное кол-во вопросов
+    const pct=state.phase==="running"?Math.min(100,Math.round(idx/total*100)):0;
+    document.getElementById("gameProgress").style.width=pct+"%";
+    document.getElementById("progressLabel").textContent="Вопрос "+idx+" из ~"+total;
+    document.getElementById("progressPct").textContent=pct+"%";
+  }
+}
+
+function updatePhase(state){
+  const el=document.getElementById("obsPhase");
+  const quizNames={arctic:"🧊 Арктический квиз",ecology:"🌿 Экология и природа"};
+  const qn=quizNames[state?.quiz_id||"arctic"]||"Квиз";
+  document.getElementById("obsQuizName").textContent=qn;
+  document.title="👁 "+qn+" · Наблюдатель";
+  if(!state){el.textContent="⏳ Ожидание";el.className="phase-badge phase-waiting";return;}
+  if(state.phase==="running"){el.textContent="▶ Идёт игра";el.className="phase-badge phase-running";}
+  else if(state.phase==="ended"){el.textContent="✓ Завершено";el.className="phase-badge phase-ended";}
+  else if(state.phase==="paused"){el.textContent="⏸ Пауза";el.className="phase-badge phase-waiting";}
+  else{el.textContent="⏳ Ожидание";el.className="phase-badge phase-waiting";}
+}
+
+let _prevPhase=null, _prevIdx=-1;
+async function refresh(){
+  if(!sb)return;
+  try{
+    const[{data:state},{data:players},{data:scores}]=await Promise.all([
+      sb.from("quiz_state").select("*").eq("game_id",GID).maybeSingle(),
+      sb.from("quiz_players").select("student_name,team_name,last_seen,joined_at").eq("game_id",GID),
+      sb.from("quiz_scores").select("student_name,team_name,score").eq("game_id",GID).order("score",{ascending:false})
+    ]);
+    // Мёрджим очки из quiz_scores в players
+    const playersWithScores=(players||[]).map(p=>{
+      const sc=(scores||[]).find(s=>s.student_name===p.student_name&&s.team_name===p.team_name);
+      return {...p,score:sc?.score||0};
+    });
+    updateLeaderboard(playersWithScores);
+    updateStats(playersWithScores,state);
+    updatePhase(state);
+    // Логируем изменения фазы
+    if(state?.phase!==_prevPhase){
+      if(state?.phase==="running")logActivity("Игра началась","▶️");
+      else if(state?.phase==="ended")logActivity("Игра завершена","🏁");
+      else if(state?.phase==="paused")logActivity("Пауза","⏸️");
+      else if(state?.phase==="waiting"&&_prevPhase)logActivity("Ожидание игроков","⏳");
+      _prevPhase=state?.phase;
+    }
+    // Логируем смену вопроса
+    if(state?.phase==="running"&&state?.current_index!==_prevIdx&&state?.current_index!=null){
+      logActivity("Вопрос "+(state.current_index+1),"❓");
+      _prevIdx=state.current_index;
+      document.getElementById("statAnswered").textContent="0/"+(players?.length||"?");
+    }
+  }catch(e){console.warn("Refresh error:",e);}
+}
+
+async function startObserving(){
+  await refresh();
+  // Polling каждые 2 сек
+  refreshTimer=setInterval(refresh,2000);
+  logActivity("Вы подключились как наблюдатель","👁");
+  // Realtime подписка
+  if(sb){
+    sb.channel("obs_state_"+GID)
+      .on("postgres_changes",{event:"UPDATE",schema:"public",table:"quiz_state",filter:"game_id=eq."+GID},()=>setTimeout(refresh,200))
+      .on("postgres_changes",{event:"UPDATE",schema:"public",table:"quiz_players",filter:"game_id=eq."+GID},()=>setTimeout(refresh,300))
+      .on("postgres_changes",{event:"INSERT",schema:"public",table:"quiz_players",filter:"game_id=eq."+GID},payload=>{
+        if(payload.new?.student_name)logActivity(payload.new.student_name+" присоединился","👤");
+        setTimeout(refresh,300);
+      })
+      .subscribe();
+  }
+}
+
+// Инициализируем сразу чтобы не ждать
+initSb();
+</script>
+</body>
+</html>
