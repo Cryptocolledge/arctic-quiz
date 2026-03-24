@@ -1,0 +1,2860 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8"/>
+<title>Панель ведущего · QuizHub</title>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<style>
+:root{--bg:#050816;--card:rgba(8,18,40,0.95);--muted:#b5c2d9;--text:#f7fbff;--accent:#4fdfff;--ok:#61ffb2;--err:#ff5f7a;--gold:#ffd36b;--border:rgba(255,255,255,0.07);--r:14px;}
+*{box-sizing:border-box;margin:0;padding:0}
+body{min-height:100vh;font-family:system-ui,-apple-system,"Segoe UI",sans-serif;background:radial-gradient(ellipse at top,#0d2a4a,#050816);color:var(--text);padding:8px;}
+.wrap{max-width:1500px;margin:0 auto;display:flex;flex-direction:column;gap:6px;}
+.topbar{display:flex;align-items:center;justify-content:space-between;gap:6px;flex-wrap:wrap;padding:8px 12px;border:1px solid var(--border);background:var(--card);border-radius:var(--r);}
+@media(max-width:768px){
+  body{padding:4px;}
+  .wrap{gap:4px;}
+  .topbar{flex-direction:column;align-items:flex-start;padding:8px 10px;gap:8px;}
+  .btns{flex-wrap:wrap;gap:4px;width:100%;}
+  .btns .btn{font-size:.68rem;padding:5px 8px;min-height:30px;}
+  .btns .chip{font-size:.65rem;}
+  .grid{grid-template-columns:1fr!important;}
+  .stats{flex-wrap:wrap;}
+  .stat{min-width:calc(50% - 4px);}
+  .prep-card{padding:16px;}
+  .qr-block{flex-direction:column;align-items:center;text-align:center;}
+  .prep-players{max-height:100px;}
+  .session-code-badge{font-size:1.4rem;}
+}
+@media(max-width:480px){
+  .btns .btn{font-size:.62rem;padding:4px 6px;min-height:28px;}
+  .sval{font-size:.76rem;}
+}
+.ttl{font-weight:750;letter-spacing:.06em;text-transform:uppercase;font-size:.9rem;}
+.sub{color:var(--muted);font-size:.73rem;margin-top:2px;}
+.btns{display:flex;gap:5px;flex-wrap:wrap;align-items:center;}
+.chip{padding:3px 8px;border-radius:999px;border:1px solid rgba(175,238,255,.3);background:rgba(3,10,28,.8);color:#d8f9ff;font-size:.73rem;white-space:nowrap;}
+.chip.ok{border-color:rgba(97,255,178,.6);color:var(--ok);}
+.chip.warn{border-color:rgba(255,200,80,.6);color:#ffe080;}
+.btn{border-radius:999px;border:1px solid rgba(255,255,255,.13);padding:7px 12px;font-size:.76rem;font-weight:650;letter-spacing:.04em;text-transform:uppercase;cursor:pointer;background:rgba(4,12,30,.95);color:var(--text);min-height:34px;transition:filter .14s,transform .12s;}
+.btn:hover:not(:disabled){filter:brightness(1.2);transform:translateY(-1px);}
+.btn:disabled{opacity:.35;cursor:default;}
+.bp{background:linear-gradient(120deg,#4fdfff,#6b7aff);color:#02111f;border-color:rgba(160,240,255,.8);}
+.bg{background:transparent;}
+.bd{background:linear-gradient(120deg,#ff5f7a,#c0392b);color:#fff;border-color:rgba(255,120,140,.8);}
+.btn-reveal{background:linear-gradient(120deg,var(--gold),#ffb300);color:#1a0f00;border-color:rgba(255,211,107,.8);}
+.btn-sm{padding:3px 8px;font-size:.68rem;min-height:26px;}
+@keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(79,223,255,.5)}50%{box-shadow:0 0 0 8px rgba(79,223,255,0)}}
+.pulsing{animation:pulse 2s infinite;}
+.stats{display:flex;gap:5px;flex-wrap:nowrap;}
+.stat{flex:1;min-width:70px;padding:4px 8px 5px;border-radius:9px;background:rgba(3,10,28,.85);border:1px solid rgba(79,223,255,.12);display:flex;flex-direction:column;gap:1px;}
+.slbl{font-size:.58rem;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;}
+.sval{font-size:.88rem;font-weight:750;color:var(--accent);}
+.sval.alert{color:var(--err);}
+.grid{display:grid;grid-template-columns:minmax(0,1.65fr) minmax(0,1fr);gap:8px;}
+@media(max-width:1050px){.grid{grid-template-columns:1fr}}
+.right{display:flex;flex-direction:column;gap:6px;}
+.card{border:1px solid var(--border);background:var(--card);border-radius:var(--r);padding:10px 12px;}
+.ctitle{color:var(--muted);font-size:.63rem;letter-spacing:.1em;text-transform:uppercase;margin-bottom:5px;display:flex;align-items:center;justify-content:space-between;gap:5px;}
+/* answered bar */
+.ans-bar-wrap{margin:6px 0;padding:8px 10px;border-radius:10px;background:rgba(3,10,28,.85);border:1px solid rgba(79,223,255,.2);}
+.ans-bar-lbl{font-size:.68rem;color:var(--muted);margin-bottom:5px;display:flex;justify-content:space-between;}
+.ans-bar-track{height:8px;background:rgba(255,255,255,.06);border-radius:999px;overflow:hidden;}
+.ans-bar-fill{height:100%;border-radius:inherit;background:linear-gradient(90deg,#4fdfff,#61ffb2);transition:width .4s;}
+/* question */
+.qmeta{display:flex;gap:4px;flex-wrap:wrap;margin-bottom:5px;align-items:center;}
+.qchip{padding:2px 7px;border-radius:999px;font-size:.68rem;background:rgba(4,14,38,.9);border:1px solid rgba(79,223,255,.7);color:#cff6ff;}
+.qpts{padding:2px 7px;border-radius:999px;font-size:.68rem;font-weight:700;background:rgba(255,211,107,.1);border:1px solid rgba(255,211,107,.4);color:var(--gold);}
+.qdif{padding:2px 6px;border-radius:999px;font-size:.68rem;border:1px solid rgba(255,255,255,.13);color:var(--muted);}
+.qtext{font-size:clamp(.85rem,1.1vw,1.3rem);line-height:1.22;font-weight:720;margin-bottom:6px;}
+.ans-grid{display:grid;grid-template-columns:1fr 1fr;gap:4px;margin-top:6px;}
+.ans-row{display:flex;align-items:center;gap:5px;padding:5px 8px;border-radius:9px;background:rgba(3,10,28,.75);border:1px solid rgba(255,255,255,.05);font-size:.79rem;overflow:hidden;}
+.ans-ltr{width:19px;height:19px;border-radius:6px;border:1px solid rgba(175,195,255,.55);font-size:.68rem;display:flex;align-items:center;justify-content:center;background:rgba(6,14,38,.9);flex-shrink:0;}
+.ans-row.correct{border-color:rgba(97,255,178,.5);background:rgba(6,28,26,.8);}
+.ans-row.correct .ans-ltr{border-color:rgba(97,255,178,.9);color:var(--ok);}
+/* timer */
+.timer-blk{margin-top:8px;padding:8px 10px;border-radius:11px;background:rgba(3,10,28,.9);border:1px solid rgba(79,223,255,.22);}
+.timer-lbl{font-size:.62rem;color:var(--muted);text-transform:uppercase;letter-spacing:.09em;margin-bottom:4px;}
+.timer-row{display:flex;align-items:center;gap:9px;}
+.timer-num{font-weight:800;font-size:1.7rem;min-width:44px;text-align:center;font-variant-numeric:tabular-nums;color:#e5f9ff;}
+.tbar-shell{flex:1;height:8px;background:rgba(255,255,255,.07);border-radius:999px;overflow:hidden;}
+.tbar-fill{height:100%;border-radius:inherit;transition:width .22s linear;}
+.ans-state{padding:6px 11px;border-radius:9px;font-size:.83rem;font-weight:600;text-align:center;display:none;margin-top:6px;}
+.ans-state.show{display:block;}
+.ans-state.locked{background:rgba(255,200,80,.08);border:1px solid rgba(255,200,80,.3);color:#ffe080;}
+.ans-state.open{background:rgba(97,255,178,.08);border:1px solid rgba(97,255,178,.3);color:var(--ok);}
+/* table */
+.tbl-wrap{overflow-x:auto;max-height:180px;overflow-y:auto;}
+table{width:100%;border-collapse:collapse;min-width:280px;}
+th,td{padding:5px 6px;border-bottom:1px solid rgba(255,255,255,.04);text-align:left;font-size:.78rem;}
+th{color:var(--muted);font-size:.63rem;text-transform:uppercase;letter-spacing:.08em;position:sticky;top:0;background:rgba(8,18,40,.97);z-index:1;}
+tr:hover td{background:rgba(79,223,255,.03);}
+.online-dot{display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--ok);box-shadow:0 0 5px var(--ok);animation:ob 2s infinite;margin-right:3px;vertical-align:middle;}
+.offline-dot{display:inline-block;width:6px;height:6px;border-radius:50%;background:#555;margin-right:3px;vertical-align:middle;}
+@keyframes ob{0%,100%{opacity:1}50%{opacity:.3}}
+.hint{color:var(--muted);font-size:.67rem;margin-top:5px;}
+/* chat */
+.chat-wrap{display:flex;flex-direction:column;gap:6px;}
+.chat-msgs{max-height:200px;overflow-y:auto;display:flex;flex-direction:column;gap:3px;}
+.chat-msgs::-webkit-scrollbar{width:3px;}
+.chat-msgs::-webkit-scrollbar-thumb{background:rgba(79,223,255,.3);border-radius:999px;}
+.cmsg{padding:4px 8px;border-radius:8px;font-size:.76rem;line-height:1.3;position:relative;}
+.cmsg.host-msg{background:rgba(79,223,255,.1);border:1px solid rgba(79,223,255,.22);}
+.cmsg.player-msg{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.06);}
+.cmsg.alert-msg{background:rgba(255,159,67,.1);border:1px solid rgba(255,159,67,.38);}
+.cmsg.private-msg{background:rgba(107,122,255,.1);border:1px solid rgba(107,122,255,.38);}
+.cname{font-size:.64rem;font-weight:700;opacity:.8;margin-bottom:1px;}
+.ctime{font-size:.6rem;color:var(--muted);margin-left:3px;}
+.del-btn{position:absolute;top:4px;right:4px;background:rgba(255,95,122,.1);border:1px solid rgba(255,95,122,.3);border-radius:5px;color:rgba(255,95,122,.7);cursor:pointer;font-size:.75rem;padding:2px 6px;line-height:1.4;min-width:22px;min-height:22px;display:flex;align-items:center;justify-content:center;}
+.del-btn:hover{color:#fff;background:rgba(255,95,122,.6);border-color:rgba(255,95,122,.9);}
+.chat-input-row{display:flex;gap:5px;flex-wrap:wrap;}
+.chat-inp{flex:1;min-width:0;padding:5px 8px;border-radius:8px;border:1px solid rgba(122,142,255,.32);background:rgba(3,10,28,.96);color:var(--text);font-size:.78rem;outline:none;}
+.chat-inp:focus{border-color:rgba(79,223,255,.7);}
+.chat-inp::placeholder{color:var(--muted);opacity:.5;}
+.team-sel{padding:5px 8px;border-radius:8px;border:1px solid rgba(122,142,255,.32);background:rgba(3,10,28,.96);color:var(--text);font-size:.76rem;outline:none;max-width:130px;}
+/* alert notif */
+.alert-item{background:rgba(255,159,67,.12);border:1px solid rgba(255,159,67,.45);color:#ffb347;border-radius:8px;padding:5px 8px;font-size:.76rem;margin-bottom:4px;display:flex;justify-content:space-between;align-items:flex-start;gap:5px;}
+.alert-item-del{background:none;border:none;color:rgba(255,95,122,.5);cursor:pointer;font-size:.7rem;flex-shrink:0;}
+.alert-item-del:hover{color:var(--err);}
+/* registered badge */
+.reg-notif{background:rgba(97,255,178,.1);border:1px solid rgba(97,255,178,.35);color:var(--ok);border-radius:8px;padding:5px 8px;font-size:.76rem;margin-bottom:4px;display:flex;justify-content:space-between;align-items:center;gap:5px;}
+/* PREP OVERLAY */
+.prep-ov{position:fixed;inset:0;z-index:100;display:flex;align-items:flex-start;justify-content:center;background:radial-gradient(ellipse at top,#0d2a4a,#050816);padding:16px;overflow-y:auto;}
+.prep-card{width:min(620px,100%);background:rgba(8,18,40,.98);border:1px solid rgba(79,223,255,.35);border-radius:20px;padding:28px;box-shadow:0 24px 80px rgba(0,0,0,.9);display:flex;flex-direction:column;gap:14px;margin:auto;}
+.prep-title{font-size:1.15rem;font-weight:800;letter-spacing:.07em;text-transform:uppercase;display:flex;align-items:center;gap:9px;}
+.prep-sub{font-size:.82rem;color:var(--muted);}
+.prep-divider{height:1px;background:rgba(255,255,255,.07);}
+.prep-row{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:9px 12px;border-radius:11px;background:rgba(3,10,28,.85);border:1px solid rgba(255,255,255,.06);}
+.prep-row-lbl{font-size:.78rem;color:var(--muted);}
+.prep-row-val{font-size:.82rem;font-weight:650;}
+.prep-status{display:flex;align-items:center;gap:6px;padding:7px 12px;border-radius:999px;font-size:.78rem;}
+.prep-status.idle{background:rgba(255,211,107,.08);border:1px solid rgba(255,211,107,.35);color:#ffe080;}
+.prep-status.active{background:rgba(97,255,178,.08);border:1px solid rgba(97,255,178,.35);color:var(--ok);}
+.prep-warn{background:rgba(255,159,67,.08);border:1px solid rgba(255,159,67,.35);border-radius:11px;padding:9px 13px;font-size:.78rem;color:#ffb347;}
+.prep-actions{display:flex;gap:8px;flex-wrap:wrap;}
+.qr-block{background:rgba(8,18,40,.9);border:1px solid rgba(79,223,255,.3);border-radius:14px;padding:14px;display:flex;align-items:center;gap:14px;}
+.session-code-badge{font-size:1.8rem;font-weight:900;letter-spacing:.18em;color:#4fdfff;font-family:monospace;text-align:center;padding:6px 0;}
+.session-code-sub{font-size:.65rem;color:var(--muted);text-align:center;text-transform:uppercase;letter-spacing:.08em;}
+.prep-players{display:flex;flex-direction:column;gap:4px;max-height:160px;overflow-y:auto;}
+.prep-player{padding:5px 10px;border-radius:8px;background:rgba(3,10,28,.85);border:1px solid rgba(122,142,255,.2);font-size:.78rem;display:flex;align-items:center;gap:6px;}
+.cmsg.warn-msg{background:rgba(255,159,67,.12);border:1px solid rgba(255,159,67,.5);}
+/* Super game overlay */
+.sg-ov{position:fixed;inset:0;z-index:200;display:flex;align-items:center;justify-content:center;background:rgba(2,6,18,.96);padding:16px;}
+.sg-card{width:min(720px,100%);background:rgba(8,18,40,.99);border:2px solid rgba(255,211,107,.5);border-radius:20px;padding:28px;box-shadow:0 0 80px rgba(255,180,0,.15);display:flex;flex-direction:column;gap:14px;max-height:90vh;overflow-y:auto;}
+.sg-title{font-size:1.2rem;font-weight:800;text-align:center;background:linear-gradient(135deg,#ffd36b,#ff9f1c);-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+.sg-table{width:100%;border-collapse:collapse;}
+.sg-table th{font-size:.65rem;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;padding:6px 8px;border-bottom:1px solid rgba(255,255,255,.08);text-align:left;}
+.sg-table td{padding:7px 8px;font-size:.82rem;border-bottom:1px solid rgba(255,255,255,.04);}
+.sg-table tr.tied td{background:rgba(255,211,107,.06);}
+.sg-table tr.winner td{background:rgba(97,255,178,.08);}
+.sg-table tr.winner td:first-child{border-left:3px solid var(--ok);}
+.sg-timer-ring{width:90px;height:90px;position:relative;margin:0 auto;}
+.sg-timer-svg{transform:rotate(-90deg);}
+.sg-timer-num{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:1.8rem;font-weight:900;color:#fff;}
+.sg-question-box{background:linear-gradient(135deg,rgba(79,223,255,.08),rgba(107,122,255,.08));border:2px solid rgba(79,223,255,.35);border-radius:16px;padding:20px 24px;text-align:center;}
+.sg-q-text{font-size:1.05rem;font-weight:700;line-height:1.5;margin-bottom:14px;}
+.sg-opts{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+.sg-opt{padding:10px 14px;border-radius:10px;border:1px solid rgba(255,255,255,.15);background:rgba(3,10,28,.7);font-size:.85rem;text-align:left;transition:all .2s;cursor:default;}
+.sg-opt.correct{border-color:var(--ok);background:rgba(97,255,178,.15);color:var(--ok);font-weight:700;}
+.sg-opt.incorrect{border-color:var(--err);background:rgba(255,95,122,.1);color:var(--err);}
+@keyframes sg-pulse{0%,100%{box-shadow:0 0 0 0 rgba(255,180,0,.6)}50%{box-shadow:0 0 0 16px rgba(255,180,0,0)}}
+.sg-glow{animation:sg-pulse 1.5s infinite;}
+@keyframes sg-countdown{from{stroke-dashoffset:0}to{stroke-dashoffset:251.2}}
+
+/* === СПРАВКА === */
+.help-ov{position:fixed;inset:0;z-index:500;display:flex;align-items:flex-start;justify-content:center;background:rgba(2,6,18,.97);padding:16px;overflow-y:auto;}
+.help-card{width:min(860px,100%);margin:auto;background:rgba(8,18,40,.99);border:1px solid rgba(79,223,255,.3);border-radius:20px;padding:32px;display:flex;flex-direction:column;gap:20px;}
+.help-title{font-size:1.3rem;font-weight:900;letter-spacing:.07em;text-transform:uppercase;background:linear-gradient(90deg,#4fdfff,#61ffb2);-webkit-background-clip:text;-webkit-text-fill-color:transparent;display:flex;align-items:center;gap:10px;}
+.help-section{border:1px solid rgba(255,255,255,.06);border-radius:14px;overflow:hidden;}
+.help-sec-title{padding:10px 16px;background:rgba(79,223,255,.07);font-size:.8rem;font-weight:800;text-transform:uppercase;letter-spacing:.1em;color:var(--accent);display:flex;align-items:center;gap:7px;cursor:pointer;user-select:none;}
+.help-sec-body{padding:14px 16px;display:flex;flex-direction:column;gap:8px;animation:fadeIn .2s ease;}
+.help-step{display:flex;align-items:flex-start;gap:10px;padding:8px 10px;border-radius:9px;background:rgba(3,10,28,.6);}
+.help-num{width:24px;height:24px;border-radius:50%;background:rgba(79,223,255,.15);border:1px solid rgba(79,223,255,.4);color:var(--accent);font-size:.72rem;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.help-step-text{font-size:.78rem;line-height:1.5;color:#d8eaf8;}
+.help-step-text b{color:#fff;}
+.help-step-text .kbd{display:inline-flex;align-items:center;padding:1px 7px;border-radius:5px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);font-size:.72rem;font-family:monospace;color:#cff6ff;margin:0 2px;}
+.help-tip{padding:8px 12px;border-radius:9px;background:rgba(255,211,107,.07);border:1px solid rgba(255,211,107,.25);font-size:.75rem;color:#ffe0a0;line-height:1.5;}
+.help-tip b{color:var(--gold);}
+.help-warn{padding:8px 12px;border-radius:9px;background:rgba(255,95,122,.07);border:1px solid rgba(255,95,122,.25);font-size:.75rem;color:#ffb0b8;line-height:1.5;}
+.help-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+@media(max-width:600px){.help-grid{grid-template-columns:1fr}}
+.help-btn-chip{display:inline-flex;align-items:center;gap:4px;padding:2px 8px;border-radius:6px;font-size:.72rem;font-weight:700;background:rgba(79,223,255,.12);border:1px solid rgba(79,223,255,.3);color:#cff6ff;margin:0 2px;}
+.help-btn-chip.green{background:rgba(97,255,178,.12);border-color:rgba(97,255,178,.3);color:#b0ffd8;}
+.help-btn-chip.red{background:rgba(255,95,122,.12);border-color:rgba(255,95,122,.3);color:#ffb0b8;}
+.help-btn-chip.gold{background:rgba(255,211,107,.12);border-color:rgba(255,211,107,.3);color:var(--gold);}
+/* === СТАВКИ И БЛИЦ === */
+.round-ov{position:fixed;inset:0;z-index:150;display:flex;align-items:center;justify-content:center;background:rgba(2,6,18,.97);padding:16px;}
+.round-card{width:min(700px,100%);background:rgba(8,18,40,.99);border-radius:20px;padding:28px;display:flex;flex-direction:column;gap:16px;max-height:92vh;overflow-y:auto;}
+.round-card.betting{border:2px solid rgba(167,139,250,.6);box-shadow:0 0 80px rgba(124,58,237,.2);}
+.round-card.blitz{border:2px solid rgba(249,115,22,.6);box-shadow:0 0 80px rgba(249,115,22,.2);}
+.round-title{font-size:1.3rem;font-weight:900;text-align:center;letter-spacing:.06em;}
+.round-title.betting{background:linear-gradient(135deg,#a78bfa,#7c3aed);-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+.round-title.blitz{background:linear-gradient(135deg,#fbbf24,#f97316,#dc2626);-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+.blitz-timer-wrap{display:flex;align-items:center;justify-content:center;gap:20px;}
+.blitz-tnum{font-size:3.5rem;font-weight:900;color:#f97316;min-width:60px;text-align:center;font-variant-numeric:tabular-nums;}
+.blitz-tbar{height:10px;background:rgba(255,255,255,.07);border-radius:999px;overflow:hidden;flex:1;}
+.blitz-tbar-fill{height:100%;border-radius:inherit;background:linear-gradient(90deg,#f97316,#fbbf24);transition:width .3s linear;}
+.blitz-q{font-size:1.1rem;font-weight:700;line-height:1.4;padding:16px 20px;background:rgba(249,115,22,.07);border:1px solid rgba(249,115,22,.3);border-radius:14px;}
+.blitz-opts{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+.blitz-opt{padding:10px 14px;border-radius:10px;border:1px solid rgba(255,255,255,.12);background:rgba(3,10,28,.7);font-size:.85rem;text-align:left;cursor:default;}
+.blitz-opt.correct{border-color:var(--ok)!important;background:rgba(97,255,178,.15)!important;color:var(--ok)!important;font-weight:700;}
+.blitz-opt.wrong{border-color:var(--err)!important;background:rgba(255,95,122,.1)!important;}
+.blitz-progress{display:flex;gap:6px;justify-content:center;}
+.blitz-dot{width:28px;height:28px;border-radius:50%;border:2px solid rgba(249,115,22,.4);background:rgba(3,10,28,.8);display:flex;align-items:center;justify-content:center;font-size:.72rem;font-weight:800;transition:all .3s;}
+.blitz-dot.done-ok{background:rgba(97,255,178,.2);border-color:var(--ok);color:var(--ok);}
+.blitz-dot.done-err{background:rgba(255,95,122,.15);border-color:var(--err);color:var(--err);}
+.blitz-dot.active{background:rgba(249,115,22,.25);border-color:#f97316;color:#f97316;transform:scale(1.2);}
+.bet-q{font-size:1.05rem;font-weight:700;line-height:1.4;padding:18px 22px;background:rgba(167,139,250,.07);border:1px solid rgba(167,139,250,.3);border-radius:14px;text-align:center;}
+.bet-chips{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;}
+.bet-chip{width:70px;height:70px;border-radius:50%;border:3px solid;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:1.4rem;font-weight:900;cursor:pointer;transition:all .2s;}
+.bet-chip[data-val="0"]{border-color:rgba(255,255,255,.2);color:var(--muted);}
+.bet-chip[data-val="1"]{border-color:rgba(97,255,178,.6);color:var(--ok);}
+.bet-chip[data-val="2"]{border-color:rgba(255,211,107,.7);color:var(--gold);}
+.bet-chip[data-val="3"]{border-color:rgba(249,115,22,.8);color:#f97316;}
+.bet-chip:hover{transform:scale(1.15);filter:brightness(1.2);}
+.bet-live-list{display:flex;flex-direction:column;gap:5px;max-height:180px;overflow-y:auto;}
+.bet-live-row{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:5px 10px;border-radius:8px;background:rgba(167,139,250,.07);border:1px solid rgba(167,139,250,.2);font-size:.78rem;}
+.bet-stake-badge{padding:2px 8px;border-radius:999px;font-weight:800;font-size:.8rem;}
+.bet-stake-0{background:rgba(180,180,200,.15);color:#9ca3af;}
+.bet-stake-1{background:rgba(97,255,178,.15);color:var(--ok);}
+.bet-stake-2{background:rgba(255,211,107,.15);color:var(--gold);}
+.bet-stake-3{background:rgba(249,115,22,.2);color:#f97316;}
+.bet-answer-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+.bet-ans{padding:10px 14px;border-radius:10px;border:1px solid rgba(255,255,255,.12);background:rgba(3,10,28,.7);font-size:.85rem;}
+.bet-ans.correct{border-color:var(--ok);background:rgba(97,255,178,.15);color:var(--ok);font-weight:700;}
+.bet-ans.wrong{border-color:rgba(255,255,255,.12);opacity:.45;}
+@keyframes blitz-flash{0%,100%{background:rgba(8,18,40,.99)}50%{background:rgba(249,115,22,.08)}}
+.blitz-flash{animation:blitz-flash .4s;}
+
+/* Экран пароля presenter */
+.pres-lock{position:fixed;inset:0;z-index:9999;display:flex;align-items:center;justify-content:center;background:radial-gradient(ellipse at top,#0d2a4a,#050816);padding:16px;}
+.pres-lock-card{width:min(380px,100%);background:rgba(8,18,40,.99);border:1px solid rgba(255,255,255,.12);border-radius:20px;padding:32px;display:flex;flex-direction:column;gap:16px;text-align:center;}
+.pres-lock-icon{font-size:2.5rem;}
+.pres-lock-title{font-family:system-ui;font-size:1.1rem;font-weight:800;}
+.pres-lock-sub{font-size:.78rem;color:var(--muted);line-height:1.5;}
+.pres-lock-inp{width:100%;padding:12px 16px;border-radius:10px;border:2px solid rgba(255,255,255,.1);background:rgba(3,10,28,.9);color:var(--text);font-size:1.1rem;outline:none;letter-spacing:.2em;text-align:center;font-weight:700;transition:border-color .2s;}
+.pres-lock-inp:focus{border-color:rgba(79,223,255,.5);}
+.pres-lock-err{font-size:.75rem;color:var(--err);min-height:18px;}
+</style>
+</head>
+<body>
+
+<!-- OVERLAY ПОДГОТОВКИ — показывается при открытии страницы -->
+
+<div class="pres-lock" id="presLock" style="display:none">
+  <div class="pres-lock-card">
+    <div class="pres-lock-icon">🎙</div>
+    <div class="pres-lock-title">Панель ведущего</div>
+    <div class="pres-lock-sub">Введите пароль для доступа к управлению квизом</div>
+    <input class="pres-lock-inp" id="presLockInp" type="password" placeholder="••••••" maxlength="20" autocomplete="off"/>
+    <div class="pres-lock-err" id="presLockErr"></div>
+    <button class="btn bp" id="presLockBtn" style="padding:12px">Войти →</button>
+    <div style="font-size:.65rem;color:rgba(255,255,255,.15)">Открыто из: QuizHub · Разработчик: Широков А.Д.</div>
+  </div>
+</div>
+
+<div class="prep-ov" id="prepOv">
+  <div class="prep-card">
+
+    <!-- ШАПКА -->
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:4px;">
+      <div id="topbarQuizName" style="font-size:1rem;font-weight:900;letter-spacing:.05em;text-transform:uppercase;flex:1;">🎙 Управление игрой</div>
+      <span style="font-size:.65rem;padding:3px 10px;border-radius:999px;background:rgba(79,223,255,.15);border:1px solid rgba(79,223,255,.35);color:#cff6ff;font-weight:700;letter-spacing:.08em">ВЕДУЩИЙ</span>
+    </div>
+    <div class="prep-sub" id="presenterSub">Подготовьтесь перед запуском. Убедитесь что все игроки зарегистрировались.</div>
+
+    <!-- КОД ИГРЫ -->
+    <div style="background:rgba(3,10,28,.9);border:1px solid rgba(79,223,255,.18);border-radius:14px;padding:16px;display:flex;flex-direction:column;gap:10px;">
+
+      <!-- Очный режим -->
+      <div id="offlineCodeBlock">
+        <div style="font-size:.6rem;color:var(--muted);text-transform:uppercase;letter-spacing:.1em;margin-bottom:10px;display:flex;align-items:center;gap:6px;">
+          <span style="display:inline-block;width:6px;height:6px;border-radius:50%;background:#4fdfff;box-shadow:0 0 6px #4fdfff"></span>КОД ИГРЫ
+        </div>
+        <div id="sessionCodeDisplay" style="font-size:2.8rem;font-weight:900;letter-spacing:.25em;color:#4fdfff;font-family:monospace;text-align:center;line-height:1;padding:12px 16px;background:linear-gradient(135deg,rgba(79,223,255,.06),rgba(107,122,255,.04));border:2px solid rgba(79,223,255,.3);border-radius:12px;text-shadow:0 0 20px rgba(79,223,255,.4)">——</div>
+        <div style="font-size:.65rem;color:var(--muted);text-align:center;margin-top:8px;">Показажите этот код участникам · они вводят его на <b>hub.html</b></div>
+        <div style="display:flex;gap:6px;margin-top:10px;">
+          <a id="btnOpenPlayer" href="#" target="_blank" class="btn bp btn-sm" style="flex:1;text-decoration:none;display:flex;align-items:center;justify-content:center;gap:5px;font-size:.72rem;">🎮 Открыть hub для игрока</a>
+          <button class="btn bg btn-sm" id="btnNewCode" style="font-size:.68rem;padding:5px 12px;">🔄 Новый код</button>
+        </div>
+      </div>
+
+      <!-- Онлайн режим -->
+      <div id="onlineCodeBlock" style="display:none;">
+        <div style="font-size:.6rem;color:#a78bfa;text-transform:uppercase;letter-spacing:.1em;margin-bottom:10px;display:flex;align-items:center;gap:6px;">
+          <span style="display:inline-block;width:6px;height:6px;border-radius:50%;background:#a78bfa;box-shadow:0 0 6px #a78bfa"></span>КОД ОНЛАЙН-ИГРЫ
+        </div>
+        <div id="sessionCodeDisplayOnline" style="font-size:2.2rem;font-weight:900;letter-spacing:.2em;color:#a78bfa;font-family:monospace;text-align:center;line-height:1;padding:10px 16px;background:linear-gradient(135deg,rgba(167,139,250,.07),rgba(107,122,255,.04));border:2px solid rgba(167,139,250,.3);border-radius:12px;text-shadow:0 0 16px rgba(167,139,250,.4)">——</div>
+        <div style="font-size:.65rem;color:var(--muted);text-align:center;margin-top:8px;">Отправьте участникам ссылку на <b>hub.html</b> и этот код</div>
+        <div style="display:flex;gap:6px;margin-top:10px;flex-wrap:wrap;">
+          <a id="btnOpenPlayerOnline" href="#" target="_blank" class="btn btn-sm" style="flex:1;text-decoration:none;display:flex;align-items:center;justify-content:center;gap:5px;font-size:.7rem;background:rgba(167,139,250,.15);border-color:rgba(167,139,250,.5);color:#c4b5fd;">🎮 Открыть hub</a>
+          <button class="btn btn-sm" id="btnCopyLink" style="flex:1;font-size:.7rem;background:rgba(167,139,250,.1);border-color:rgba(167,139,250,.35);color:#c4b5fd;">📋 Скопировать ссылку</button>
+          <button class="btn bg btn-sm" id="btnNewCode2" style="font-size:.68rem;padding:5px 10px;">🔄 Новый код</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- СТАТУСЫ -->
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;">
+      <div style="background:rgba(3,10,28,.8);border:1px solid rgba(79,223,255,.1);border-radius:10px;padding:8px 10px;">
+        <div style="font-size:.58rem;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:4px;">База данных</div>
+        <div id="prepDbStatus" style="font-size:.75rem;font-weight:700;">⏳ Проверка…</div>
+      </div>
+      <div style="background:rgba(3,10,28,.8);border:1px solid rgba(79,223,255,.1);border-radius:10px;padding:8px 10px;">
+        <div style="font-size:.58rem;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:4px;">Фаза игры</div>
+        <div id="prepPhase" style="font-size:.75rem;font-weight:700;color:var(--muted);">—</div>
+      </div>
+      <div style="background:rgba(3,10,28,.8);border:1px solid rgba(79,223,255,.1);border-radius:10px;padding:8px 10px;">
+        <div style="font-size:.58rem;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:4px;">Игроков</div>
+        <div id="prepPlayerCount" style="font-size:.75rem;font-weight:700;color:var(--gold);">0</div>
+      </div>
+    </div>
+
+    <!-- НАСТРОЙКИ КВИЗА -->
+    <div style="background:rgba(3,10,28,.8);border:1px solid rgba(79,223,255,.12);border-radius:12px;padding:12px 14px;display:flex;flex-direction:column;gap:10px;">
+      <div style="font-size:.62rem;color:var(--muted);text-transform:uppercase;letter-spacing:.1em;">⚙️ Настройки квиза</div>
+
+      <!-- ТЕМА — 2 ряда × 4 кнопки, на всю ширину -->
+      <div>
+        <div style="font-size:.6rem;color:var(--muted);margin-bottom:6px;text-transform:uppercase;letter-spacing:.07em;">📚 Тема квиза</div>
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px;">
+          <button class="btn btn-sm" id="quizBtnArctic"  onclick="presSetQuiz('arctic')"  style="font-size:.72rem;padding:8px 4px;justify-content:center;">🧊 Арктика</button>
+          <button class="btn btn-sm" id="quizBtnEco"     onclick="presSetQuiz('ecology')" style="font-size:.72rem;padding:8px 4px;justify-content:center;background:rgba(97,255,178,.05);border-color:rgba(97,255,178,.25);color:#b0ffd8;">🌿 Экология</button>
+          <button class="btn btn-sm" id="quizBtnHistory" onclick="presSetQuiz('history')" style="font-size:.72rem;padding:8px 4px;justify-content:center;background:rgba(255,211,107,.05);border-color:rgba(255,211,107,.25);color:#ffd36b;">📜 История</button>
+          <button class="btn btn-sm" id="quizBtnScience" onclick="presSetQuiz('science')" style="font-size:.72rem;padding:8px 4px;justify-content:center;background:rgba(167,139,250,.05);border-color:rgba(167,139,250,.25);color:#c4b5fd;">🔬 Наука</button>
+          <button class="btn btn-sm" id="quizBtnPatriot" onclick="presSetQuiz('patriot')" style="font-size:.72rem;padding:8px 4px;justify-content:center;background:rgba(255,95,90,.05);border-color:rgba(255,95,90,.25);color:#ff9f9a;">🏅 Патриотика</button>
+          <button class="btn btn-sm" id="quizBtnGeo"     onclick="presSetQuiz('geo')"     style="font-size:.72rem;padding:8px 4px;justify-content:center;background:rgba(52,211,153,.05);border-color:rgba(52,211,153,.25);color:#6ee7b7;">🌍 География</button>
+          <button class="btn btn-sm" id="quizBtnSpace"   onclick="presSetQuiz('space')"   style="font-size:.72rem;padding:8px 4px;justify-content:center;background:rgba(139,92,246,.05);border-color:rgba(139,92,246,.25);color:#a78bfa;">🚀 Космос</button>
+          <button class="btn btn-sm" id="quizBtnSport"   onclick="presSetQuiz('sport')"   style="font-size:.72rem;padding:8px 4px;justify-content:center;background:rgba(251,146,60,.05);border-color:rgba(251,146,60,.25);color:#fdba74;">🏆 Спорт</button>
+        </div>
+      </div>
+
+      <!-- УРОВЕНЬ + ФОРМАТ рядом -->
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+        <!-- Уровень -->
+        <div>
+          <div style="font-size:.6rem;color:var(--muted);margin-bottom:6px;text-transform:uppercase;letter-spacing:.07em;">🎓 Уровень</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:5px;">
+            <button class="btn" id="modeBtnSpo" style="font-size:.72rem;padding:7px 8px;line-height:1.3;">🎓 СПО<br><span style="font-size:.6rem;opacity:.7;font-weight:400">Средний</span></button>
+            <button class="btn" id="modeBtnSchool" style="font-size:.72rem;padding:7px 8px;line-height:1.3;background:rgba(97,255,178,.07);border-color:rgba(97,255,178,.3);color:#b0ffd8;">🏫 Школа<br><span style="font-size:.6rem;opacity:.7;font-weight:400">Базовый</span></button>
+          </div>
+        </div>
+        <!-- Формат -->
+        <div>
+          <div style="font-size:.6rem;color:var(--muted);margin-bottom:6px;text-transform:uppercase;letter-spacing:.07em;">🖥 Формат</div>
+          <div id="modeDisplay" style="font-size:.78rem;font-weight:800;color:var(--accent);margin-bottom:4px;">🖥 Очное мероприятие</div>
+          <div id="modeDesc" style="font-size:.62rem;color:var(--muted);">Все участники в одном зале</div>
+          <button onclick="togglePresenterMode()" style="margin-top:5px;padding:4px 10px;border-radius:6px;border:1px solid rgba(79,223,255,.3);background:rgba(79,223,255,.08);color:var(--accent);cursor:pointer;font-size:.66rem;font-weight:700;">Изменить</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ИГРОКИ -->
+    <div>
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:5px;">
+        <div style="font-size:.62rem;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;display:flex;align-items:center;gap:5px;"><span class="online-dot"></span>Игроки онлайн <span id="prepOnlineHint" style="color:#666">(зелёный = активен)</span></div>
+        <button class="btn bg btn-sm" id="prepBtnClearOffline" style="font-size:.6rem;padding:2px 8px;min-height:20px;">🧹 Удалить офлайн</button>
+      </div>
+      <div class="prep-players" id="prepPlayerList">
+        <div style="font-size:.75rem;color:var(--muted);padding:6px">Никто ещё не зарегистрировался…</div>
+      </div>
+    </div>
+
+    <div class="prep-warn" id="prepWarn" style="display:none;">
+      ⚠️ <b>Игра уже запущена.</b> Вы можете продолжить управление или сбросить и начать заново.
+    </div>
+    <div id="hubQuizBadge" style="display:none;padding:6px 12px;border-radius:8px;background:rgba(97,255,178,.1);border:1px solid rgba(97,255,178,.3);font-size:.78rem;font-weight:700;color:#61ffb2;text-align:center;"></div>
+
+    <div class="prep-actions">
+      <button class="btn bp" id="prepBtnStart" style="flex:1;font-size:.88rem;padding:13px;min-height:46px" disabled>▶ Начать новую игру</button>
+      <button class="btn bg" id="prepBtnResume" style="display:none;flex:1;">▶ Продолжить текущую</button>
+      <button class="btn bd btn-sm" id="prepBtnReset" style="display:none;">✕ Сбросить и начать заново</button>
+    </div>
+
+    <div style="font-size:.62rem;color:rgba(255,255,255,.2);text-align:center;line-height:1.7;">
+      Разработчик: Широков А.Д. · QuizHub<br>
+      При поддержке АНО «Поколение Побед» · © 2025 Все права защищены
+    </div>
+  </div>
+</div>
+
+<div class="wrap">
+
+<div class="topbar">
+  <div>
+    <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+      <div class="ttl" id="quizNameBadge">🎙 Режим ведущего</div>
+      <div id="liveCodeBadge" style="font-size:.75rem;padding:3px 12px;border-radius:999px;background:rgba(79,223,255,.12);border:1px solid rgba(79,223,255,.35);color:#4fdfff;font-family:monospace;font-weight:700;letter-spacing:.12em;display:none;"></div>
+    </div>
+    <div class="sub" id="presenterSub">Управляйте игрой. Студенты видят вопросы в реальном времени.</div>
+  </div>
+  <div class="btns">
+    <span class="chip" id="chipPhase">⏳ Ожидание</span>
+    <span class="chip" id="chipQ">Вопрос: —</span>
+    <button class="btn bp pulsing" id="btnStart">▶ Старт</button>
+    <button class="btn" id="btnShowQ" style="display:none;background:linear-gradient(120deg,#61ffb2,#00c97a);color:#012010;border-color:rgba(97,255,178,.8);animation:pulse 1.5s infinite" title="Онлайн: показать вопрос игрокам">👁 Показать вопрос</button>
+    <button class="btn bg" id="btnPause">⏸ Пауза</button>
+    <button class="btn bg" id="btnPrev">◀ Назад</button>
+    <button class="btn bg" id="btnNext">Далее ▶</button>
+    <button class="btn bd" id="btnReset">✕ Сброс</button>
+    <span style="width:1px;background:rgba(255,255,255,.12);align-self:stretch;margin:0 2px"></span>
+    <button class="btn" id="btnSuperGame" style="background:linear-gradient(120deg,#ffd36b,#ff9f1c);color:#1a0f00;border-color:rgba(255,200,80,.8);" title="Суперигра при ничьей">⚡ Суперигра</button>
+    <button class="btn" id="btnBetting" style="background:linear-gradient(120deg,#a78bfa,#7c3aed);color:#fff;border-color:rgba(167,139,250,.8);" title="Раунд ставок">🎰 Ставки</button>
+    <button class="btn" id="btnBlitz" style="background:linear-gradient(120deg,#f97316,#dc2626);color:#fff;border-color:rgba(249,115,22,.8);" title="Блиц-раунд">⚡ Блиц</button>
+    <span style="width:1px;background:rgba(255,255,255,.12);align-self:stretch;margin:0 2px"></span>
+    <button class="btn bg" id="btnPdfReport" style="border-color:rgba(97,255,178,.4);color:var(--ok);" title="Скачать PDF протокол">📄 PDF</button>
+    <button class="btn bg" id="btnMusicPanel" onclick="toggleMusicPanel()" style="border-color:rgba(97,255,178,.3);color:#61ffb2;font-size:.7rem;padding:5px 10px;" title="Плейлист и управление музыкой">🎵 Музыка</button>
+    <button class="btn bg" id="btnHelp" style="border-color:rgba(255,211,107,.4);color:var(--gold);" title="Справка ведущего">❓ Справка</button>
+    <button class="btn" id="btnProjector" style="background:rgba(255,211,107,.08);border-color:rgba(255,211,107,.5);color:var(--gold);" title="Открыть проектор на втором экране">🖥 Проектор</button>
+    <button id="btnMode" onclick="togglePresenterMode()" title="Режим проведения" style="font-size:.72rem;padding:5px 10px;border-radius:8px;border:1px solid rgba(79,223,255,.5);background:rgba(79,223,255,.1);color:var(--accent);cursor:pointer;font-weight:800;white-space:nowrap">🖥 ОЧНО</button>
+  </div>
+</div>
+
+<div class="stats">
+  <div class="stat"><div class="slbl">Статус</div><div class="sval" id="stPhase">Ожидание</div></div>
+  <div class="stat"><div class="slbl">Вопрос</div><div class="sval" id="stQ">—</div></div>
+  <div class="stat"><div class="slbl">Онлайн</div><div class="sval" id="stOnline">0</div></div>
+  <div class="stat"><div class="slbl">Всего</div><div class="sval" id="stAll">0</div></div>
+  <div class="stat"><div class="slbl">Ответили</div><div class="sval" id="stAnswered">0 / 0</div></div>
+  <div class="stat"><div class="slbl">Лидер</div><div class="sval" style="font-size:.76rem" id="stLeader">—</div></div>
+</div>
+
+<div class="grid">
+  <div style="display:flex;flex-direction:column;gap:8px;">
+
+    <div class="card">
+      <!-- Заголовок + управление в одну строку -->
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:7px;flex-wrap:wrap;">
+        <div class="qmeta" style="margin:0">
+          <span class="qchip" id="qChipType">—</span>
+          <span class="qpts" id="qChipPts">—</span>
+          <span class="qdif" id="qChipDiff">—</span>
+        </div>
+        <button class="btn btn-reveal" id="btnReveal" disabled style="white-space:nowrap;padding:5px 12px;font-size:.75rem;">🔓 Показать ответ</button>
+      </div>
+      <div class="qtext" id="qtext">Нажмите «Старт»</div>
+      <div class="ans-grid" id="ansGrid"></div>
+      <!-- Таймер + счётчик в одну строку -->
+      <div style="display:flex;gap:8px;align-items:stretch;margin-top:8px;flex-wrap:wrap;">
+        <div class="timer-blk" style="flex:1;margin:0;min-width:200px;">
+          <div style="display:flex;align-items:center;gap:8px;">
+            <div class="timer-num" id="tleft" style="min-width:28px">—</div>
+            <div style="flex:1"><div class="tbar-shell"><div class="tbar-fill" id="tbarFill" style="width:0%"></div></div></div>
+            <span class="chip" style="font-size:.65rem" id="timerChip">25 сек</span>
+          </div>
+        </div>
+        <div class="ans-bar-wrap" id="ansBarWrap" style="display:none;flex:0 0 auto;min-width:160px;margin:0;">
+          <div class="ans-bar-lbl" style="margin-bottom:3px"><span>Ответили</span><span id="ansBarLbl">0 / 0</span></div>
+          <div class="ans-bar-track"><div class="ans-bar-fill" id="ansBarFill" style="width:0%"></div></div>
+        </div>
+      </div>
+      <div class="ans-state" id="ansState" style="margin-top:4px"></div>
+    </div>
+
+  </div>
+
+  <div class="right">
+
+    <!-- Готовность игроков -->
+    <div id="readyPanel" style="display:none;background:rgba(97,255,178,.05);border:1px solid rgba(97,255,178,.35);border-radius:12px;padding:10px 12px;margin-bottom:8px">
+      <div style="font-size:.65rem;color:var(--ok);text-transform:uppercase;letter-spacing:.09em;margin-bottom:7px;display:flex;justify-content:space-between;align-items:center">
+        <span>✋ Готовы к игре</span>
+        <span id="readyCount" style="font-weight:800;background:rgba(97,255,178,.15);padding:1px 7px;border-radius:999px">0</span>
+      </div>
+      <div id="readyList" style="display:flex;flex-wrap:wrap;gap:5px"></div>
+    </div>
+
+    <!-- Регистрации новых игроков -->
+    <div class="card">
+      <div class="ctitle">
+        <span>✅ Зарегистрировались</span>
+        <button class="btn bg btn-sm" id="btnClearReg">✕ Очистить</button>
+      </div>
+      <div id="regList"><div style="font-size:.75rem;color:var(--muted)">Пока никто не зарегистрировался</div></div>
+    </div>
+
+    <!-- Вызовы -->
+    <div class="card">
+      <div class="ctitle">
+        <span>🚨 Вызовы</span>
+        <button class="btn bg btn-sm" id="btnClearAlerts">✕ Все</button>
+      </div>
+      <div id="alertList"><div style="font-size:.75rem;color:var(--muted)">Нет вызовов</div></div>
+    </div>
+
+    <!-- Чат -->
+    <div class="card">
+      <div class="ctitle">💬 Чат с игроками</div>
+      <div class="chat-wrap">
+        <div class="chat-msgs" id="chatMsgs"></div>
+        <div class="chat-input-row" style="flex-wrap:wrap;gap:4px;">
+          <select class="team-sel" id="chatTarget" title="Кому (команда/все)" style="max-width:110px;">
+            <option value="">👥 Всем</option>
+          </select>
+          <select class="team-sel" id="chatTargetPlayer" title="Лично игроку" style="max-width:120px;">
+            <option value="">👤 Все игроки</option>
+          </select>
+          <input class="chat-inp" id="chatInp" type="text" maxlength="200" placeholder="Написать…" style="flex:1;min-width:120px;"/>
+          <button class="btn bp btn-sm" id="chatSend" style="padding:4px 10px;">➤</button>
+        </div>
+        <div style="display:flex;gap:5px;flex-wrap:wrap;margin-top:3px;">
+          <button class="btn bg btn-sm" id="btnWarnPlayer" style="background:rgba(255,159,67,.12);border-color:rgba(255,159,67,.5);color:#ffb347;">⚠️ Предупреждение</button>
+        </div>
+        <div style="font-size:.65rem;color:var(--muted)">Выберите игрока для личного сообщения или предупреждения</div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ЕДИНОЕ ТАБЛО ИГРОКОВ -->
+<div class="card" style="margin-top:0">
+  <div class="ctitle" style="flex-wrap:wrap;gap:6px;">
+    <span style="display:flex;align-items:center;gap:6px;"><span class="online-dot"></span>Игроки онлайн · Табло результатов</span>
+    <div style="display:flex;gap:4px;flex-wrap:wrap;">
+      <button class="btn bg btn-sm" id="btnClearOffline">🧹 Офлайн</button>
+      <button class="btn bg btn-sm" id="btnClearPlayers">🗑 Игроков</button>
+      <button class="btn bg btn-sm" id="btnClearScores" style="border-color:rgba(255,95,122,.3);color:#ff8fa0;">🗑 Очки</button>
+    </div>
+  </div>
+  <div class="tbl-wrap">
+    <table id="unifiedTable">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Участник</th>
+          <th>Группа</th>
+          <th style="text-align:center" title="Онлайн">🟢</th>
+          <th style="text-align:center" title="Готов к игре">✅</th>
+          <th style="text-align:center" title="Ответил на текущий вопрос">💬</th>
+          <th style="text-align:right">⭐ Очки</th>
+          <th style="text-align:center">Вопр.</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody id="unifiedBody">
+        <tr><td colspan="9" style="color:var(--muted);text-align:center;padding:14px">Никто ещё не зарегистрировался</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="hint">🟢 онлайн · ✅ нажал «Готов» · 💬 ответил на текущий вопрос · ⭐ очки</div>
+</div>
+<!-- Скрытые элементы для совместимости со старым кодом -->
+<table style="display:none"><tbody id="playersBody"></tbody></table>
+<table style="display:none"><tbody id="scoresBody"></tbody></table>
+</div>
+
+<!-- Footer разработчика -->
+<div style="text-align:center;padding:12px 10px 18px;display:flex;align-items:center;justify-content:center;gap:9px;opacity:.5;">
+  <div style="width:24px;height:24px;border-radius:50%;background:linear-gradient(135deg,#4fdfff,#c26bff);display:flex;align-items:center;justify-content:center;font-size:.6rem;font-weight:800;color:#02111f;flex-shrink:0;">ША</div>
+  <div style="display:flex;flex-direction:column;align-items:center;gap:3px;">
+    <span style="font-size:.7rem;color:#7090b0;letter-spacing:.03em;">Разработано: <b style="color:#90b8d8;">Широков А.Д.</b> · Арктический квиз</span>
+    <span style="font-size:.63rem;color:#506070;">Нашли ошибку? Напишите: <a href="/cdn-cgi/l/email-protection#7b081e0f134b4f4a4a3b021a151f1e0355090e" style="color:rgba(79,223,255,.4);text-decoration:none"><span class="__cf_email__" data-cfemail="e49781908cd4d0d5d5a49d858a80819cca9691">[email&#160;protected]</span></a></span>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════
+     СПРАВКА ДЛЯ ВЕДУЩЕГО
+══════════════════════════════════════════════════ -->
+<div class="help-ov" id="helpOverlay" style="display:none">
+<div class="help-card">
+  <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px">
+    <div class="help-title">📖 Справка ведущего</div>
+    <button onclick="document.getElementById('helpOverlay').style.display='none'" class="btn bg btn-sm" style="font-size:.8rem;padding:5px 14px">✕ Закрыть</button>
+  </div>
+
+  <!-- 1. Подготовка -->
+  <div class="help-section">
+    <div class="help-sec-title" onclick="toggleHelp('h1')">🚀 Шаг 1 — Подготовка перед игрой <span style="margin-left:auto;font-size:.8rem;opacity:.6">▼</span></div>
+    <div class="help-sec-body" id="h1">
+      <div class="help-step"><div class="help-num">1</div><div class="help-step-text">При открытии presenter.html появляется <b>экран подготовки</b>. Дождитесь надписи <b style="color:var(--ok)">✓ Подключено</b> — без этого игра не начнётся.</div></div>
+      <div class="help-step"><div class="help-num">2</div><div class="help-step-text">Выберите <b>режим квиза</b>: <span class="help-btn-chip">🎓 СПО / Колледж</span> — средний/сложный уровень, или <span class="help-btn-chip">🏫 Школьники</span> — базовый уровень. <b>Выбор влияет на все вопросы!</b></div></div>
+      <div class="help-step"><div class="help-num">3</div><div class="help-step-text">Выберите <b>режим проведения</b>: <span class="help-btn-chip">🖥 Очно</span> — таймер 20 сек, варианты ответов перемешаны у каждого игрока; <span class="help-btn-chip" style="background:rgba(167,139,250,.12);border-color:rgba(167,139,250,.3);color:#c4b5fd">🌐 Онлайн</span> — таймер 35 сек, вопрос скрыт до вашего нажатия.</div></div>
+      <div class="help-step"><div class="help-num">4</div><div class="help-step-text">Игроки открывают <b>hub.html</b> — это главная страница. Они выбирают квиз, вводят <b>код игры</b> или сканируют <b>QR-код</b> и регистрируются. Нажмите <span class="help-btn-chip green">🎮 Открыть для игрока</span> чтобы открыть hub.html в новой вкладке.</div></div>
+      <div class="help-step"><div class="help-num">5</div><div class="help-step-text">Дождитесь пока все игроки зарегистрируются — счётчик <b>Зарегистрировано игроков</b> покажет их число. Зелёная точка = игрок онлайн.</div></div>
+      <div class="help-step"><div class="help-num">6</div><div class="help-step-text">Нажмите <span class="help-btn-chip green">▶ Начать новую игру</span> — квиз запустится!</div></div>
+      <div class="help-tip">💡 <b>Для очного режима:</b> откройте projector.html на втором экране/проекторе кнопкой <span class="help-btn-chip gold">🖥 Проектор</span> в топбаре — там только вопрос и варианты крупным шрифтом.</div>
+    </div>
+  </div>
+
+  <!-- 2. Управление игрой -->
+  <div class="help-section">
+    <div class="help-sec-title" onclick="toggleHelp('h2')">🎮 Шаг 2 — Управление во время игры <span style="margin-left:auto;font-size:.8rem;opacity:.6">▼</span></div>
+    <div class="help-sec-body" id="h2">
+      <div class="help-grid">
+        <div class="help-step"><div class="help-step-text"><span class="help-btn-chip green">Далее ▶</span><br>Следующий вопрос. Нажимайте когда большинство ответило или время вышло.</div></div>
+        <div class="help-step"><div class="help-step-text"><span class="help-btn-chip">⏸ Пауза</span><br>Останавливает таймер. Повторное нажатие — продолжить.</div></div>
+        <div class="help-step"><div class="help-step-text"><span class="help-btn-chip">🔓 Показать ответ</span><br>Раскрывает правильный ответ игрокам. Очки начисляются автоматически.</div></div>
+        <div class="help-step"><div class="help-step-text"><span class="help-btn-chip">◀ Назад</span><br>Вернуться на предыдущий вопрос (таймер перезапускается).</div></div>
+        <div class="help-step"><div class="help-step-text"><span class="help-btn-chip red">✕ Сброс</span><br>Полный сброс игры. Подтверждается кнопкой в диалоге.</div></div>
+        <div class="help-step"><div class="help-step-text"><span class="help-btn-chip green" style="background:rgba(79,223,255,.12);color:#cff6ff">👁 Показать вопрос</span><br><b>Только онлайн-режим.</b> Открывает вопрос для игроков и запускает таймер.</div></div>
+      </div>
+      <div class="help-tip">💡 <b>Рекомендуемый порядок:</b> нажать <b>Далее ▶</b> → дать время прочитать → таймер сам отсчитывает → нажать <b>🔓 Показать ответ</b> → обсудить → снова <b>Далее ▶</b></div>
+      <div class="help-tip" style="background:rgba(97,255,178,.06);border-color:rgba(97,255,178,.2);">🌿 <b>Выбор квиза:</b> В блоке «Режим квиза» выберите тему — <b>🧊 Арктика</b> или <b>🌿 Экология</b>. Игроки увидят вопросы именно выбранного квиза. Один код — один квиз!</div>
+      <div class="help-warn">⚠️ <b>Онлайн-режим:</b> после нажатия «Далее ▶» вопрос у игроков скрыт — не забудьте нажать <b>👁 Показать вопрос</b> когда будете готовы запустить таймер!</div>
+    </div>
+  </div>
+
+  <!-- 3. Панель справа -->
+  <div class="help-section">
+    <div class="help-sec-title" onclick="toggleHelp('h3')">📊 Правая панель — что здесь? <span style="margin-left:auto;font-size:.8rem;opacity:.6">▼</span></div>
+    <div class="help-sec-body" id="h3">
+      <div class="help-step"><div class="help-num">✋</div><div class="help-step-text"><b>Готовы к игре</b> — игроки могут нажать кнопку «Готов» или «Прошу паузу» на своём устройстве. Здесь отображаются их сигналы.</div></div>
+      <div class="help-step"><div class="help-num">✅</div><div class="help-step-text"><b>Зарегистрировались</b> — уведомления о новых участниках по мере их входа в игру.</div></div>
+      <div class="help-step"><div class="help-num">🚨</div><div class="help-step-text"><b>Вызовы</b> — если игрок нажал кнопку вызова ведущего (поднял руку). Появляется красное уведомление.</div></div>
+      <div class="help-step"><div class="help-num">💬</div><div class="help-step-text"><b>Чат</b> — переписка с игроками. Можно отправить сообщение всем, одной команде или личное. Кнопка <span class="help-btn-chip red">⚠️ Предупреждение</span> — выдать нарушителю предупреждение с готовым текстом.</div></div>
+    </div>
+  </div>
+
+  <!-- 4. Спецраунды -->
+  <div class="help-section">
+    <div class="help-sec-title" onclick="toggleHelp('h4')">⚡ Специальные раунды <span style="margin-left:auto;font-size:.8rem;opacity:.6">▼</span></div>
+    <div class="help-sec-body" id="h4">
+      <div class="help-step"><div class="help-num" style="background:rgba(249,115,22,.2);border-color:rgba(249,115,22,.5);color:#f97316">⚡</div><div class="help-step-text"><b>Блиц-раунд</b> — нажмите <span class="help-btn-chip" style="background:rgba(249,115,22,.15);border-color:rgba(249,115,22,.5);color:#f97316">⚡ Блиц</span>. Игроки самостоятельно отвечают на 10 быстрых вопросов (10 сек каждый). Вы наблюдаете в реальном времени. Нажмите «Завершить блиц» когда все ответят.</div></div>
+      <div class="help-step"><div class="help-num" style="background:rgba(167,139,250,.2);border-color:rgba(167,139,250,.5);color:#a78bfa">🎰</div><div class="help-step-text"><b>Раунд ставок</b> — нажмите <span class="help-btn-chip" style="background:rgba(167,139,250,.15);border-color:rgba(167,139,250,.5);color:#a78bfa">🎰 Ставки</span>. Игроки делают ставку (0/1/2/3 очка), затем вы открываете вопрос. Угадал → получает ×ставку; ошибся → теряет ставку.</div></div>
+      <div class="help-step"><div class="help-num" style="background:rgba(255,211,107,.2);border-color:rgba(255,211,107,.5);color:var(--gold)">⚡</div><div class="help-step-text"><b>Суперигра</b> — нажмите <span class="help-btn-chip gold">⚡ Суперигра</span> в конце квиза. Если несколько игроков набрали одинаковые очки — запускается тайбрейк с вопросом и таймером 60 сек. Кто ответит первым и правильно — победитель!</div></div>
+      <div class="help-tip">💡 Спецраунды можно запустить <b>в любой момент игры</b> — до, во время или после основных вопросов.</div>
+    </div>
+  </div>
+
+  <!-- 4.5 Музыка -->
+  <div class="help-section">
+    <div class="help-sec-title" onclick="toggleHelp('h45')">🎵 Музыка и звуки <span style="margin-left:auto;font-size:.8rem;opacity:.6">▼</span></div>
+    <div class="help-sec-body" id="h45">
+      <div class="help-step"><div class="help-num">🎵</div><div class="help-step-text"><b>Фоновая музыка</b> — игроки нажимают кнопку <span class="help-btn-chip">🎵 Музыка</span> в шапке страницы. Включается атмосферное звуковое оформление.</div></div>
+      <div class="help-step"><div class="help-num">📂</div><div class="help-step-text"><b>Своя музыка</b> — рядом кнопка <span class="help-btn-chip">📂 Своя музыка</span>. Игрок может загрузить mp3 или ogg-файл с телефона/планшета/ПК — он заменит стандартный звук.</div></div>
+      <div class="help-step"><div class="help-num">🔔</div><div class="help-step-text"><b>Звуки ответов</b> — правильный ответ: мелодичный мажорный аккорд; неправильный: диссонанс с затуханием. Генерируются прямо в браузере.</div></div>
+    </div>
+  </div>
+
+  <!-- 5. Очки и правила -->
+  <div class="help-section">
+    <div class="help-sec-title" onclick="toggleHelp('h5')">🏆 Система очков <span style="margin-left:auto;font-size:.8rem;opacity:.6">▼</span></div>
+    <div class="help-sec-body" id="h5">
+      <div class="help-grid">
+        <div class="help-step"><div class="help-step-text">⭐ <b>Лёгкий вопрос (★☆☆)</b> — 1 очко</div></div>
+        <div class="help-step"><div class="help-step-text">⭐⭐ <b>Средний (★★☆)</b> — 2 очка</div></div>
+        <div class="help-step"><div class="help-step-text">⭐⭐⭐ <b>Сложный (★★★)</b> — 3 очка</div></div>
+        <div class="help-step"><div class="help-step-text">⚡ <b>Блиц-вопрос</b> — 0.5 очка</div></div>
+        <div class="help-step"><div class="help-step-text">🔥 <b>Серия ×3 подряд</b> — бонус +0.5 очка</div></div>
+        <div class="help-step"><div class="help-step-text red">⏰ <b>Не ответил вовремя</b> — штраф −0.5 очка</div></div>
+        <div class="help-step"><div class="help-step-text">🔄 <b>Смена ответа</b> — 1-я раз бесплатно, каждая следующая −0.5 очка</div></div>
+        <div class="help-step"><div class="help-step-text">🎰 <b>Ставки</b> — угадал: +ставка, ошибся: −ставка (0/1/2/3 очка)</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 6. PDF -->
+  <div class="help-section">
+    <div class="help-sec-title" onclick="toggleHelp('h6')">📄 PDF-протокол и завершение <span style="margin-left:auto;font-size:.8rem;opacity:.6">▼</span></div>
+    <div class="help-sec-body" id="h6">
+      <div class="help-step"><div class="help-num">1</div><div class="help-step-text">После окончания квиза нажмите <span class="help-btn-chip green">📄 PDF</span> в правом верхнем углу — откроется страница протокола с итоговой таблицей.</div></div>
+      <div class="help-step"><div class="help-num">2</div><div class="help-step-text">В открывшемся окне нажмите <b>Ctrl+P</b> (или Cmd+P на Mac) → выберите <b>«Сохранить как PDF»</b> → готово!</div></div>
+      <div class="help-step"><div class="help-num">3</div><div class="help-step-text">Дополнительно появляется кнопка <b>«⬇ Скачать HTML-файл»</b> — сохраняет протокол как файл на компьютер.</div></div>
+      <div class="help-tip">💡 Протокол содержит: дату/время, режим, итоговую таблицу с очками и временем ответов, список всех участников.</div>
+    </div>
+  </div>
+
+  <div style="text-align:center;padding:8px;font-size:.72rem;color:var(--muted);">
+    Нашли ошибку или есть предложение? Пишите разработчику:
+    <a href="/cdn-cgi/l/email-protection#7f0c1a0b174f4b4e4e3f061e111b1a07510d0a" style="color:rgba(79,223,255,.4);text-decoration:none"><span class="__cf_email__" data-cfemail="3b485e4f530b0f0a0a7b425a555f5e4315494e">[email&#160;protected]</span></a>
+  </div>
+
+</div>
+</div>
+
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"
+  onerror="loadSupabaseFallback()"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script>
+'use strict';
+const SURL="https://arpbhbfyucpojvxipqng.supabase.co";
+const SKEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFycGJoYmZ5dWNwb2p2eGlwcW5nIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIyMTAwNTQsImV4cCI6MjA4Nzc4NjA1NH0.MQWcU9ph2sWNgbHbfDZ0qKEC1V1PzbI7I7TtQyPNyeg";
+const GID="default";
+let QT=25;
+
+// ── ПАРАМЕТРЫ ОТ HUB (через localStorage) ───────────────────
+// hub.html сохраняет выбор в localStorage, мы читаем при загрузке
+function _readHubChoice() {
+  try {
+    const ts = parseInt(localStorage.getItem("hub_quiz_ts")||"0");
+    // Считаем свежим если открыт не более 30 сек назад
+    if(Date.now()-ts < 30000) {
+      return {
+        quizId: localStorage.getItem("hub_quiz_id")||"arctic",
+        mode:   localStorage.getItem("hub_quiz_mode")||null
+      };
+    }
+  } catch(e) {}
+  return { quizId: "arctic", mode: null };
+}
+const _hubChoice = _readHubChoice();
+const QUIZ_ID = _hubChoice.quizId; // arctic | ecology
+const URL_MODE = _hubChoice.mode;  // spo | school | null
+let QUIZ_ID_CURRENT = QUIZ_ID; // изменяется через presSetQuiz()
+// Очищаем чтобы следующее открытие не унаследовало тот же выбор
+try { localStorage.removeItem("hub_quiz_ts"); } catch(e) {} // обновляется при смене режима (очно=20, онлайн=35)
+
+// Fallback CDN список — начинаем с unpkg (jsdelivr уже в основном теге)
+const _SB_CDNS=[
+  "https://unpkg.com/@supabase/supabase-js@2/dist/umd/supabase.js",
+  "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"
+];
+let _sbCdnIdx=0;
+function loadSupabaseFallback(){
+  if(_sbCdnIdx>=_SB_CDNS.length)return;
+  const s=document.createElement("script");
+  s.src=_SB_CDNS[_sbCdnIdx++];
+  s.onload=()=>{ if(!sb&&window.supabase?.createClient){ try{sb=window.supabase.createClient(SURL,SKEY);}catch(e){} } };
+  s.onerror=loadSupabaseFallback;
+  document.head.appendChild(s);
+}
+// Запускаем fallback сразу — не ждём onerror от основного тега
+loadSupabaseFallback();
+
+let sb=window.supabase?.createClient?window.supabase.createClient(SURL,SKEY):null;
+function pts(d){return d<=1?1:d===2?2:3;}
+
+// Два набора — краткие версии для presenter (только q, opts, ci, dif)
+const Q_SPO=[  {tp:"text",dif:2,q:"Назовите единственный океан, центральная часть которого совпадает с географическим Северным полюсом.",opts:["Атлантический","Северный Ледовитый","Тихий","Южный"],ci:1},
+  {tp:"text",dif:2,q:"Арктика — это прежде всего…",opts:["Континент со льдом","Область вокруг Северного полюса: океан, острова и прибрежные территории","Только российские территории севернее 70-й параллели","Архипелаг в Норвегии"],ci:1},
+  {tp:"svg",dif:1,q:"Крупнейший наземный хищник планеты и символ Арктики:",svg:"polar_bear",cap:"Единственный полностью морской медведь",opts:["Бурый медведь","Белый медведь","Гризли","Барибал"],ci:1},
+  {tp:"text",dif:2,q:"Мхи, лишайники и карликовые кустарники — типичная растительность…",opts:["Тропического леса","Пустыни","Арктической тундры","Широколиственного леса"],ci:2},
+  {tp:"text",dif:2,q:"Вечная мерзлота — это…",opts:["Сезонный промерзающий слой","Грунт, не оттаивающий тысячелетиями","Ледяной покров океана","Криоосадки высокогорий"],ci:1},
+  {tp:"text",dif:3,q:"«Арктическое усиление» (Arctic Amplification) — это…",opts:["Рост магнитного поля у полюса","Потепление в Арктике в 2–4 раза быстрее среднепланетарного","Увеличение льда зимой","Рост давления над полярными широтами"],ci:1},
+  {tp:"text",dif:2,q:"Какое из перечисленных морей НЕ относится к Северному Ледовитому океану?",opts:["Баренцево","Карское","Красное","Чукотское"],ci:2},
+  {tp:"text",dif:2,q:"Какая из стран не имеет выхода к Арктике?",opts:["Россия","Канада","Норвегия","Германия"],ci:3},
+  {tp:"text",dif:3,q:"Многолетний дрейфующий морской лёд толщиной 3–4 м называется…",opts:["Паковый лёд","Глетчер","Шельфовый лёд","Торос"],ci:0},
+  {tp:"text",dif:2,q:"Полярный день — явление, при котором…",opts:["Солнце не поднимается над горизонтом","Солнце непрерывно светит более суток","Температура выше нуля весь год","Луна видна круглые сутки"],ci:1},
+  {tp:"svg",dif:1,q:"Оптическое явление в атмосфере, вызванное взаимодействием солнечного ветра с магнитным полем Земли:",svg:"aurora",cap:"Видно выше 60-й параллели",opts:["Молния","Радуга","Северное сияние","Зарница"],ci:2},
+  {tp:"text",dif:2,q:"Арктический зверь, меняющий окраску с бурой (лето) на белую (зима):",opts:["Белый медведь","Северный олень","Песец","Нарвал"],ci:2},
+  {tp:"text",dif:2,q:"Граница Арктики условно проводится по…",opts:["Экватору","Северному полярному кругу (66°33′ с.ш.)","Тропику Рака","Меридиану 0°"],ci:1},
+  {tp:"rebus",dif:2,q:"Плавучая ледяная гора — большая часть скрыта под водой:",rp:["АЙС","БЕРГ"],rh:"Англ. ice + нем. Berg (гора)",opts:["Ледник","Айсберг","Шельф","Торос"],ci:1},
+  {tp:"text",dif:3,q:"Главная угроза таяния арктических льдов для человечества — это…",opts:["Исчезновение туристических маршрутов","Подъём уровня Мирового океана и дестабилизация климата","Сокращение пляжей","Снижение солёности рек"],ci:1},
+  {tp:"svg",dif:2,q:"Ластоногое с парой длинных клыков, обитатель арктических льдин:",svg:"walrus",cap:"Единственный вид семейства моржовых",opts:["Тюлень","Морж","Морской котик","Касатка"],ci:1},
+  {tp:"text",dif:2,q:"Коренные малочисленные народы российской Арктики — это…",opts:["Казаки и поморы","Ненцы, чукчи, эвенки, эскимосы","Скандинавы и финны","Казахи и буряты"],ci:1},
+  {tp:"text",dif:3,q:"Российские дрейфующие станции «Северный полюс» ведут…",opts:["Добычу нефти","Круглогодичные наблюдения: метеорология, океанология, ледовая обстановка","Контроль судоходства","Военные учения"],ci:1},
+  {tp:"text",dif:3,q:"Северный Ледовитый океан уникален тем, что он…",opts:["Самый солёный","Почти полностью окружён материками и покрыт льдом круглый год","Наименее изучен","Не имеет течений"],ci:1},
+  {tp:"rebus",dif:2,q:"Природная зона с вечной мерзлотой и карликовой растительностью:",rp:["ТУН","ДРА"],rh:"К северу от тайги",opts:["Тайга","Тундра","Степь","Лесостепь"],ci:1},
+  {tp:"text",dif:3,q:"Атомные ледоколы России обеспечивают работу…",opts:["Рыбопромыслового флота","Круизов","Северного морского пути — кратчайшего маршрута Европа–Азия","Военных баз"],ci:2},
+  {tp:"text",dif:3,q:"Почему нефтяные разливы в Арктике особенно опасны?",opts:["Нефть там безвредна","Микроорганизмы почти не работают в холоде — восстановление занимает десятилетия","Там нет организмов","Нефть образует лёд"],ci:1},
+  {tp:"svg",dif:2,q:"Единственный кит с прямым спиральным бивнем — «единорог морей»:",svg:"narwhal",cap:"Арктический вид, бивень — увеличенный зуб",opts:["Кашалот","Нарвал","Белуга","Гринда"],ci:1},
+  {tp:"text",dif:3,q:"Снежная буря с ветром выше 15 м/с в Арктике — это…",opts:["Муссон","Ураган","Пурга","Смерч"],ci:2},
+  {tp:"text",dif:3,q:"Арктическая зима характеризуется…",opts:["Температурой около +5°C","Морозом до −50°C, сильными ветрами, скудными осадками","Частыми грозами","Тёплым течением"],ci:1},
+  {tp:"rebus",dif:2,q:"Световое явление полярного неба:",rp:["СЕВЕРНОЕ","СИЯНИЕ"],rh:"Наблюдается с сентября по март",opts:["Полярная ночь","Северное сияние","Полярный день","Ледяная дуга"],ci:1},
+  {tp:"text",dif:3,q:"Тёплое атлантическое течение, смягчающее климат Норвегии и Баренцева моря:",opts:["Куросио","Гольфстрим","Северо-Тихоокеанское","Лабрадорское"],ci:1},
+  {tp:"text",dif:3,q:"Стратегическая ценность Арктики определяется…",opts:["Пляжами","Запасами нефти, газа, редких металлов и контролем над СМП","Дешёвой гидроэнергией","Отсутствием льда"],ci:1},
+  {tp:"text",dif:3,q:"Зимой площадь морского льда в Арктике по сравнению с летом…",opts:["Одинакова","Уменьшается","Увеличивается примерно в 2,5 раза","Полностью исчезает"],ci:2},
+  {tp:"text",dif:3,q:"На каком принципе основана работа атомного ледокола в отличие от дизельного?",opts:["Использует солнечную энергию","Ядерный реактор даёт практически неограниченную автономность плавания","Работает на сжиженном газе","Движется только по воде, не ломая лёд"],ci:1},
+];
+const Q_SCHOOL=[  {tp:"text",dif:1,q:"Где находится Северный полюс?",opts:["В центре Африки","В центре Северного Ледовитого океана","На вершине Эвереста","В Антарктиде"],ci:1},
+  {tp:"svg",dif:1,q:"Какое животное является символом Арктики?",svg:"polar_bear",cap:"Крупнейший наземный хищник планеты",opts:["Бурый медведь","Белый медведь","Лев","Тигр"],ci:1},
+  {tp:"text",dif:1,q:"Какой океан омывает Северный полюс?",opts:["Тихий","Атлантический","Северный Ледовитый","Индийский"],ci:2},
+  {tp:"text",dif:1,q:"Как называется явление, когда солнце не заходит несколько суток подряд?",opts:["Солнечное затмение","Полярный день","Ночная радуга","Белая ночь"],ci:1},
+  {tp:"text",dif:1,q:"Полярная ночь — это когда…",opts:["Солнце не поднимается над горизонтом несколько суток","Идёт снег","Очень холодно","Нет электричества"],ci:0},
+  {tp:"svg",dif:1,q:"Красивое природное явление на ночном небе — разноцветные световые дуги:",svg:"aurora",cap:"Одно из самых зрелищных природных явлений",opts:["Молния","Радуга","Северное сияние","Салют"],ci:2},
+  {tp:"text",dif:1,q:"Как называется природная зона с мхами, лишайниками и вечной мерзлотой?",opts:["Саванна","Тайга","Тундра","Пустыня"],ci:2},
+  {tp:"text",dif:2,q:"Что такое айсберг?",opts:["Высокая гора","Плавучая глыба льда","Ледяной домик","Снежная буря"],ci:1},
+  {tp:"text",dif:1,q:"Какой цвет имеет мех белого медведя на самом деле (цвет волоска)?",opts:["Белый","Жёлтый","Прозрачный","Серый"],ci:2},
+  {tp:"text",dif:2,q:"Какой зверь Арктики меняет цвет шубки с бурого летом на белый зимой?",opts:["Белый медведь","Морж","Песец","Нарвал"],ci:2},
+  {tp:"rebus",dif:1,q:"Сложи два слова вместе:",rp:["АЙС","БЕРГ"],rh:"Плавучая ледяная гора в море",opts:["Ледник","Айсберг","Шельф","Сугроб"],ci:1},
+  {tp:"text",dif:1,q:"Какое животное с длинными клыками живёт на льдинах Арктики?",opts:["Тюлень","Котик","Морж","Дельфин"],ci:2},
+  {tp:"text",dif:2,q:"Как называют снежную бурю с сильным ветром в Арктике?",opts:["Муссон","Ураган","Пурга","Тайфун"],ci:2},
+  {tp:"text",dif:1,q:"Сколько примерно длится зима в Арктике?",opts:["2 месяца","5 месяцев","9–10 месяцев","Круглый год"],ci:2},
+  {tp:"svg",dif:2,q:"Кит с длинным спиральным рогом — «единорог морей»:",svg:"narwhal",cap:"Обитает в арктических водах",opts:["Дельфин","Белуга","Нарвал","Касатка"],ci:2},
+  {tp:"text",dif:2,q:"Почему белый медведь хорошо плавает?",opts:["У него нет шерсти","Лапы работают как вёсла, а шерсть не намокает","Он очень лёгкий","Он надувается как шарик"],ci:1},
+  {tp:"text",dif:1,q:"Кто живёт в Арктике — пингвины или белые медведи?",opts:["Оба","Только пингвины","Только белые медведи","Никто"],ci:2},
+  {tp:"text",dif:2,q:"Что такое вечная мерзлота?",opts:["Снег, который не тает летом","Грунт, который никогда полностью не оттаивает","Ледяной покров океана","Замёрзшая река"],ci:1},
+  {tp:"rebus",dif:1,q:"Природная зона Арктики:",rp:["ТУН","ДРА"],rh:"Там растут мхи и лишайники",opts:["Тайга","Тундра","Степь","Пустыня"],ci:1},
+  {tp:"text",dif:2,q:"Какое растение НЕ растёт в тундре?",opts:["Мох","Карликовая берёза","Лишайник","Пальма"],ci:3},
+  {tp:"text",dif:2,q:"Чем питается белый медведь в основном?",opts:["Рыбой и тюленями","Ягодами и мхом","Только снегом","Птицами"],ci:0},
+  {tp:"text",dif:1,q:"Как называется маршрут для кораблей вдоль берегов России на севере?",opts:["Великий шёлковый путь","Северный морской путь","Транссибирская магистраль","Путь из варяг в греки"],ci:1},
+  {tp:"text",dif:2,q:"Какая страна имеет самое длинное арктическое побережье?",opts:["США","Норвегия","Россия","Канада"],ci:2},
+  {tp:"svg",dif:1,q:"Что изображено на картинке?",svg:"walrus",cap:"Семейство моржовых",opts:["Тюлень","Дельфин","Морж","Котик"],ci:2},
+  {tp:"text",dif:2,q:"Почему в Арктике так холодно?",opts:["Там нет солнца вообще","Солнечные лучи падают под маленьким углом и слабо греют","Там дует особый холодный ветер","Там живут ледяные великаны"],ci:1},
+  {tp:"rebus",dif:1,q:"Красивое явление в небе:",rp:["СЕВЕРНОЕ","СИЯНИЕ"],rh:"Разноцветные дуги в ночном небе",opts:["Полярная ночь","Северное сияние","Полярный день","Радуга"],ci:1},
+  {tp:"text",dif:2,q:"Что происходит с льдами Арктики из-за глобального потепления?",opts:["Они растут","Они тают и уменьшаются","Они становятся крепче","Ничего не происходит"],ci:1},
+  {tp:"text",dif:2,q:"Как называют коренных жителей российской Арктики?",opts:["Казаки","Ненцы, чукчи, эвенки","Скандинавы","Поляки"],ci:1},
+  {tp:"text",dif:2,q:"Зачем России нужны атомные ледоколы?",opts:["Для рыбалки","Чтобы проводить корабли по Северному морскому пути","Для военных игр","Для туристов"],ci:1},
+  {tp:"text",dif:2,q:"Какая часть айсберга скрыта под водой?",opts:["Одна четверть","Половина","Примерно 7/8 (около 87%)","Айсберг плавает целиком на поверхности"],ci:2},
+];
+const Q_ECO_SPO=[
+  {tp:"text",dif:2,q:"Какой газ является основным «виновником» парникового эффекта, создаваемого человеческой деятельностью?",opts:["Кислород","Азот","Углекислый газ (CO₂)","Аргон"],ci:2},
+  {tp:"text",dif:2,q:"Как называется процесс, при котором леса вырубаются и не восстанавливаются?",opts:["Рекультивация","Дефорестация","Ирригация","Эрозия"],ci:1},
+  {tp:"text",dif:2,q:"Что такое биоразнообразие?",opts:["Разнообразие климатических зон","Количество видов живых организмов в экосистеме","Число заповедников в стране","Площадь лесного покрова"],ci:1},
+  {tp:"text",dif:2,q:"Какой слой атмосферы защищает Землю от ультрафиолетового излучения Солнца?",opts:["Тропосфера","Стратосфера — озоновый слой","Мезосфера","Экзосфера"],ci:1},
+  {tp:"text",dif:2,q:"Какая страна является крупнейшим эмитентом CO₂ в мире?",opts:["США","Индия","Россия","Китай"],ci:3},
+  {tp:"text",dif:2,q:"Что изучает экология как наука?",opts:["Только загрязнение воды","Взаимодействие организмов между собой и с окружающей средой","Строение Земли","Только атмосферу"],ci:1},
+  {tp:"text",dif:2,q:"Как называется территория, полностью изъятая из хозяйственного использования для охраны природы?",opts:["Национальный парк","Заказник","Заповедник","Лесничество"],ci:2},
+  {tp:"text",dif:2,q:"Что такое «красная книга»?",opts:["Список опасных химикатов","Перечень охраняемых редких и исчезающих видов","Реестр загрязнённых территорий","Список заповедников"],ci:1},
+  {tp:"text",dif:2,q:"Какой тип энергии является наиболее экологически чистым?",opts:["Атомная","Угольная","Возобновляемая (солнечная, ветровая)","Газовая"],ci:2},
+  {tp:"text",dif:2,q:"Что такое «углеродный след»?",opts:["Полоса выжженной земли","Суммарный объём выбросов CO₂ от деятельности человека","Следы нефтяного разлива","Маршрут лесного пожара"],ci:1},
+  {tp:"text",dif:3,q:"Экосистема — это…",opts:["Только совокупность животных одного вида","Совокупность живых организмов и среды их обитания, связанных круговоротом веществ","Набор климатических условий региона","Территория национального парка"],ci:1},
+  {tp:"text",dif:3,q:"Какой процент кислорода в атмосфере Земли производят океанские фитопланктон и водоросли?",opts:["Около 10%","Около 30%","Более 50%","Менее 5%"],ci:2},
+  {tp:"text",dif:3,q:"Кислотные дожди возникают из-за выброса в атмосферу…",opts:["Углекислого газа","Оксидов серы и азота","Метана","Водяного пара"],ci:1},
+  {tp:"text",dif:3,q:"Парижское соглашение по климату было подписано в…",opts:["1997","2005","2015","2021"],ci:2},
+  {tp:"text",dif:3,q:"Эвтрофикация водоёмов — это…",opts:["Очищение воды от примесей","Избыточное насыщение воды питательными веществами, вызывающее цветение водорослей","Промерзание водоёма","Испарение воды летом"],ci:1},
+  {tp:"text",dif:3,q:"Какой термин означает устойчивое развитие, удовлетворяющее нужды настоящего без ущерба для будущих поколений?",opts:["Биоэкономика","Экоцид","Sustainable development (устойчивое развитие)","Ресурсный цикл"],ci:2},
+  {tp:"text",dif:3,q:"Вещества, разрушающие озоновый слой — это прежде всего…",opts:["Углекислый газ и метан","Хлорфторуглероды (фреоны)","Пары воды","Угарный газ"],ci:1},
+  {tp:"text",dif:3,q:"Что такое «зелёные лёгкие планеты»?",opts:["Атмосфера Земли","Тропические леса Амазонии","Океаны","Болота умеренного пояса"],ci:1},
+  {tp:"text",dif:3,q:"Принцип «нулевых отходов» (Zero Waste) означает…",opts:["Полный запрет производства","Минимизацию отходов через повторное использование и переработку","Захоронение всего мусора под землёй","Сжигание отходов для получения энергии"],ci:1},
+  {tp:"text",dif:3,q:"Какой международный день отмечается 22 апреля?",opts:["Всемирный день воды","День Земли","День биоразнообразия","День лесов"],ci:1},
+  {tp:"text",dif:1,q:"Как называется сортировка мусора для последующей переработки?",opts:["Компостирование","Рециклинг (раздельный сбор)","Захоронение","Сжигание"],ci:1},
+  {tp:"text",dif:1,q:"Что такое возобновляемые ресурсы?",opts:["Нефть и газ","Ресурсы, которые восстанавливаются быстрее, чем расходуются","Уголь и торф","Металлические руды"],ci:1},
+  {tp:"text",dif:1,q:"Какой газ выделяют растения при фотосинтезе?",opts:["Углекислый газ","Азот","Кислород","Водород"],ci:2},
+  {tp:"text",dif:2,q:"Какой процент поверхности Земли покрыт водой?",opts:["51%","61%","71%","81%"],ci:2},
+  {tp:"text",dif:2,q:"Самый распространённый вид загрязнения Мирового океана:",opts:["Радиоактивное","Пластиковый мусор","Нефтяное","Химическое"],ci:1},
+  {tp:"text",dif:3,q:"«Петля мусора» в Тихом океане — это…",opts:["Течение, переносящее суда","Огромное скопление пластиковых отходов, удерживаемых океанскими течениями","Вулканическая активность","Морской биосферный заповедник"],ci:1},
+  {tp:"text",dif:2,q:"Какой вид транспорта имеет наименьший углеродный след на пассажиро-км?",opts:["Самолёт","Автомобиль","Поезд (электрический)","Автобус (дизельный)"],ci:2},
+  {tp:"text",dif:3,q:"Биом — это…",opts:["Один вид животного","Крупная экосистема с характерными климатом, почвой, флорой и фауной","Сеть охраняемых территорий","Единица измерения загрязнения"],ci:1},
+  {tp:"text",dif:3,q:"Концепция «планетарных границ» включает 9 систем. Какая из них НЕ входит в список?",opts:["Изменение климата","Утрата биоразнообразия","Рост численности населения","Закисление океана"],ci:2},
+  {tp:"text",dif:2,q:"Что такое «зелёная экономика»?",opts:["Экономика стран с зелёным флагом","Экономика, снижающая экологические риски и улучшающая благополучие людей","Экономика сельского хозяйства","Экономия на всём"],ci:1},
+];
+const Q_ECO_SCHOOL=[
+  {tp:"text",dif:1,q:"Что такое экология?",opts:["Наука о строении Земли","Наука о взаимодействии живых существ и окружающей среды","Наука о космосе","Наука о химических реакциях"],ci:1},
+  {tp:"text",dif:1,q:"Как называется уборка мусора на природе?",opts:["Субботник","Покос","Посадка","Орошение"],ci:0},
+  {tp:"text",dif:1,q:"Что делают с макулатурой для защиты лесов?",opts:["Сжигают","Закапывают","Сдают в переработку","Топят в воде"],ci:2},
+  {tp:"text",dif:1,q:"Что нельзя выбрасывать в обычный мусор, а нужно сдавать отдельно?",opts:["Бумагу","Батарейки и аккумуляторы","Хлеб","Воду"],ci:1},
+  {tp:"text",dif:1,q:"Почему нельзя оставлять костёр в лесу без присмотра?",opts:["Это некрасиво","Огонь может вызвать лесной пожар","Дым пугает птиц","Костёр потухнет"],ci:1},
+  {tp:"text",dif:1,q:"Какой ресурс нужно беречь, закрывая кран во время чистки зубов?",opts:["Газ","Воду","Электричество","Нефть"],ci:1},
+  {tp:"text",dif:1,q:"Как называют животных и растения, которые могут исчезнуть?",opts:["Дикими","Вредными","Исчезающими (редкими)","Перелётными"],ci:2},
+  {tp:"text",dif:2,q:"Что такое парниковый эффект?",opts:["Выращивание растений в теплице","Удержание тепла у поверхности Земли газами атмосферы","Охлаждение воздуха зимой","Испарение воды"],ci:1},
+  {tp:"text",dif:1,q:"Почему нельзя рвать цветы в заповеднике?",opts:["Они невкусные","Это запрещено — заповедники охраняют природу нетронутой","Там нет цветов","Они ядовитые"],ci:1},
+  {tp:"text",dif:2,q:"Сколько лет разлагается пластиковый пакет?",opts:["1 год","10 лет","Около 100–500 лет","10 000 лет"],ci:2},
+  {tp:"text",dif:1,q:"Какой цвет контейнера обычно используется для сбора стекла?",opts:["Красный","Зелёный","Синий","Жёлтый"],ci:1},
+  {tp:"text",dif:2,q:"Что произойдёт, если в реку попадут удобрения с полей?",opts:["Рыба станет крупнее","Вода станет чище","Водоросли разрастутся и задушат другую жизнь","Ничего не изменится"],ci:2},
+  {tp:"text",dif:2,q:"Как называется природная зона с самым богатым биоразнообразием?",opts:["Тундра","Тропический лес","Пустыня","Степь"],ci:1},
+  {tp:"text",dif:1,q:"Что значит 'сохранить природу для потомков'?",opts:["Сфотографировать лес","Не загрязнять и не разрушать то, чем смогут пользоваться будущие поколения","Посадить один цветок","Купить новый телефон"],ci:1},
+  {tp:"text",dif:2,q:"Какой газ делает газировку шипучей и одновременно является парниковым?",opts:["Кислород","Азот","Углекислый газ (CO₂)","Водород"],ci:2},
+  {tp:"text",dif:2,q:"Что такое компост?",opts:["Химическое удобрение","Перегнившие остатки еды и растений — натуральное удобрение","Отходы от заводов","Уголь"],ci:1},
+  {tp:"text",dif:1,q:"Зачем нужны пчёлы в экосистеме?",opts:["Только для мёда","Опыляют растения — без них погибнут многие виды растений и урожай","Поедают вредителей","Очищают воздух"],ci:1},
+  {tp:"text",dif:2,q:"Что такое солнечная панель?",opts:["Зеркало для красоты","Устройство, преобразующее солнечный свет в электроэнергию","Тепловой радиатор","Водяной насос"],ci:1},
+  {tp:"text",dif:2,q:"Для чего нужны мангровые леса на побережьях?",opts:["Для производства мебели","Защищают берег от эрозии, служат домом для рыбы, поглощают CO₂","Только для туризма","Для выработки кислорода в городах"],ci:1},
+  {tp:"text",dif:1,q:"Как экономить электричество дома?",opts:["Оставлять все лампочки включёнными","Выключать свет когда выходишь из комнаты","Никак — это бесполезно","Покупать больше приборов"],ci:1},
+  {tp:"text",dif:1,q:"Что такое Красная книга?",opts:["Учебник биологии","Список редких и исчезающих видов, нуждающихся в охране","Кулинарная книга","Список заповедников"],ci:1},
+  {tp:"text",dif:2,q:"Почему важно сохранять болота?",opts:["Болота бесполезны","Болота — крупнейшие хранилища углерода, очищают воду и служат домом для редких видов","Только потому что там живут лягушки","Для добычи торфа"],ci:1},
+  {tp:"text",dif:2,q:"Что такое биосферный заповедник ЮНЕСКО?",opts:["Просто красивый лес","Особо охраняемая территория для изучения и сохранения природных экосистем","Зоопарк под открытым небом","Туристический парк"],ci:1},
+  {tp:"text",dif:1,q:"Почему нельзя мыть машину на берегу реки?",opts:["Вода будет грязнее","Химия из автохимии отравит воду и живых существ в реке","Машина не отмоется","Это слишком далеко от дороги"],ci:1},
+  {tp:"text",dif:2,q:"Что такое «органическое земледелие»?",opts:["Земледелие в открытом космосе","Выращивание без синтетических удобрений и пестицидов","Только выращивание фруктов","Автоматическое земледелие с роботами"],ci:1},
+  {tp:"text",dif:2,q:"Почему в городах нужны парки и зелёные зоны?",opts:["Только для красоты","Для очистки воздуха, снижения жары и отдыха людей","Чтобы было где парковаться","Для прибыли города"],ci:1},
+  {tp:"text",dif:1,q:"Что происходит когда мы сажаем деревья?",opts:["Ничего особенного","Деревья поглощают CO₂, выделяют кислород и улучшают климат","Деревья только забирают воду","Они мешают урожаю"],ci:1},
+  {tp:"text",dif:2,q:"Сколько видов животных ежегодно исчезает по оценкам учёных?",opts:["1–5 видов","10–50 видов","Сотни и тысячи видов","Только 1–2 вида"],ci:2},
+  {tp:"text",dif:2,q:"Что такое «экологический след»?",opts:["Следы животных в лесу","Количество природных ресурсов, которые потребляет человек","Загрязнение почвы","Вырубленные деревья"],ci:1},
+  {tp:"text",dif:2,q:"Какой вид транспорта наиболее экологичен?",opts:["Самолёт","Личный автомобиль","Велосипед или электросамокат","Дизельный автобус"],ci:2},
+];
+const Q_ECO_BLITZ=[
+  {q:"Как называется газ, вызывающий парниковый эффект?",opts:["Кислород","CO₂","Азот","Аргон"],ci:1},
+  {q:"Что сортируют при раздельном сборе мусора?",opts:["Только еду","Бумагу, стекло, пластик","Только батарейки","Ничего"],ci:1},
+  {q:"Самый большой «остров мусора» — в каком океане?",opts:["Атлантическом","Индийском","Тихом","Арктическом"],ci:2},
+  {q:"Какой лес называют «лёгкими планеты»?",opts:["Тайга","Амазонка","Тундра","Саванна"],ci:1},
+  {q:"Сколько % пресной воды доступно людям?",opts:["50%","25%","Менее 1%","10%"],ci:2},
+  {q:"Что разрушает озоновый слой?",opts:["CO₂","Фреоны (ХФУ)","Кислород","Пар"],ci:1},
+  {q:"Самый «зелёный» вид транспорта?",opts:["Самолёт","Машина","Велосипед","Корабль"],ci:2},
+  {q:"Что такое рециклинг?",opts:["Сжигание мусора","Переработка материалов","Захоронение","Производство пластика"],ci:1},
+  {q:"Сколько лет живёт пластиковая бутылка?",opts:["1 год","10 лет","450 лет","10 000 лет"],ci:2},
+  {q:"Главный источник энергии для Земли?",opts:["Луна","Солнце","Недра Земли","Ветер"],ci:1},
+];
+const Q_ECO_BET=[
+  {q:"В каком году принято Парижское соглашение?",opts:["2005","2010","2015","2020"],ci:2},
+  {q:"Сколько видов занесено в Красную книгу России?",opts:["Менее 100","Около 500","Более 1000","Более 4000"],ci:2},
+  {q:"Какой % электроэнергии ЕС из возобновляемых источников (2023)?",opts:["5%","22%","43%","67%"],ci:2},
+  {q:"Сколько тонн пластика ежегодно попадает в океан?",opts:["10 тысяч","100 тысяч","8 миллионов","1 миллиард"],ci:2},
+  {q:"На сколько °C потеплела Земля с доиндустриального периода?",opts:["0.3°C","0.8°C","1.2°C","2.5°C"],ci:2},
+];
+
+let Q=Q_SPO;
+
+
+
+
+// ── БЛИЦ-ВОПРОСЫ ──────────────────────────────────────────────
+
+// ── Блиц/Ставка для новых квизов (скопировано из hub) ──
+const Q_HISTORY_BLITZ=[
+  {q:"В каком году основана Москва?",opts:["1097","1147","1223","1380"],ci:1},
+  {q:"Как звали первого русского царя?",opts:["Иван III","Иван IV","Пётр I","Борис Годунов"],ci:1},
+  {q:"Кто разгромил шведов в Невской битве (1240)?",opts:["Дмитрий Донской","Иван Грозный","Александр Невский","Ярослав Мудрый"],ci:2},
+  {q:"В каком году Россия стала империей?",opts:["1700","1703","1721","1762"],ci:2},
+  {q:"В каком веке произошло Крещение Руси?",opts:["IX","X","XI","XII"],ci:1},
+  {q:"Как называлась столица до Петербурга?",opts:["Новгород","Киев","Москва","Владимир"],ci:2},
+  {q:"Кем была Екатерина Великая по происхождению?",opts:["Дочь Петра I","Немецкая принцесса","Жена Павла I","Дочь Ивана Грозного"],ci:1},
+  {q:"В каком году Гагарин полетел в космос?",opts:["1957","1959","1961","1963"],ci:2},
+  {q:"Когда распался СССР?",opts:["1989","1990","1991","1993"],ci:2},
+  {q:"Кто отменил крепостное право?",opts:["Пётр I","Екатерина II","Александр II","Николай II"],ci:2},
+];
+const Q_HISTORY_BET=[
+  {q:"В каком году произошла Невская битва?",opts:["1223","1237","1240","1242"],ci:2},
+  {q:"Сколько дней длилась блокада Ленинграда?",opts:["500","700","872","1000"],ci:2},
+  {q:"В каком году Россия впервые присоединила Крым?",opts:["1762","1783","1812","1856"],ci:1},
+  {q:"В каком году принята первая советская Конституция?",opts:["1918","1922","1924","1936"],ci:2},
+  {q:"Когда принята действующая Конституция России?",opts:["1991","1992","1993","1995"],ci:2},
+];
+const Q_SCIENCE_BLITZ=[
+  {q:"Символ воды в химии?",opts:["HO","H₂O","H₃O","OH"],ci:1},
+  {q:"Скорость света приблизительно?",opts:["30 000 км/с","300 000 км/с","3 000 000 км/с","3 000 км/с"],ci:1},
+  {q:"Сколько байт в килобайте?",opts:["100","512","1024","2048"],ci:2},
+  {q:"Кто открыл пенициллин?",opts:["Пастер","Флеминг","Кюри","Дарвин"],ci:1},
+  {q:"Символ золота в таблице Менделеева?",opts:["Go","Gl","Au","Gd"],ci:2},
+  {q:"pH=7 — это?",opts:["Кислота","Нейтральная среда","Щёлочь","Соль"],ci:1},
+  {q:"Основа кремниевых микросхем?",opts:["Углерод","Кремний","Германий","Галлий"],ci:1},
+  {q:"Сколько цветов у радуги?",opts:["5","6","7","8"],ci:2},
+  {q:"Что такое ДНК?",opts:["Белок","Носитель генетической информации","Витамин","Фермент"],ci:1},
+  {q:"Второй закон Ньютона?",opts:["F=ma","E=mc²","V=IR","P=mv"],ci:0},
+];
+const Q_SCIENCE_BET=[
+  {q:"При какой температуре кипит вода при нормальном давлении?",opts:["90°C","95°C","100°C","105°C"],ci:2},
+  {q:"Сколько электронов у атома углерода?",opts:["4","6","8","12"],ci:1},
+  {q:"Число π приблизительно равно?",opts:["2.14","3.14","4.14","3.41"],ci:1},
+  {q:"Сколько бит в одном байте?",opts:["4","6","8","16"],ci:2},
+  {q:"При какой температуре замерзает вода?",opts:["-5°C","-1°C","0°C","1°C"],ci:2},
+];
+const Q_PATRIOT_BLITZ=[
+  {q:"Столица России?",opts:["Москва","Санкт-Петербург","Казань","Новосибирск"],ci:0},
+  {q:"День Победы — какое число?",opts:["23 февраля","1 мая","9 мая","12 июня"],ci:2},
+  {q:"Что изображено на гербе России?",opts:["Медведь","Орёл","Лев","Конь"],ci:1},
+  {q:"Сколько полос на флаге России?",opts:["2","3","4","5"],ci:1},
+  {q:"День России — какое число?",opts:["9 мая","1 июня","12 июня","4 ноября"],ci:2},
+  {q:"Главный закон России?",opts:["Кодекс","Конституция","Устав","Манифест"],ci:1},
+  {q:"Первый президент России?",opts:["Путин","Горбачёв","Ельцин","Медведев"],ci:2},
+  {q:"Символ воинской славы — чёрно-оранжевая лента?",opts:["Андреевская","Гвардейская","Георгиевская","Орденская"],ci:2},
+  {q:"День народного единства — какое число?",opts:["4 октября","4 ноября","7 ноября","12 декабря"],ci:1},
+  {q:"День защитника Отечества?",opts:["23 января","23 февраля","23 марта","8 марта"],ci:1},
+];
+const Q_PATRIOT_BET=[
+  {q:"В каком году принята Конституция России?",opts:["1991","1992","1993","1995"],ci:2},
+  {q:"Сколько субъектов в составе РФ?",opts:["72","83","89","91"],ci:2},
+  {q:"Сколько звёзд на кокарде офицеров российской армии?",opts:["4","5","6","8"],ci:1},
+  {q:"В каком году Россия стала федерацией?",opts:["1917","1991","1993","2000"],ci:1},
+  {q:"Орден Святого Георгия — сколько степеней?",opts:["2","3","4","5"],ci:2},
+];
+const Q_GEO_BLITZ=[
+  {q:"Столица России?",opts:["Москва","СПб","Казань","Новосибирск"],ci:0},
+  {q:"Самое глубокое озеро мира?",opts:["Каспий","Байкал","Ладога","Онега"],ci:1},
+  {q:"Высшая точка России?",opts:["Казбек","Белуха","Эльбрус","Ключевская"],ci:2},
+  {q:"Самая длинная река России?",opts:["Волга","Обь","Лена","Енисей"],ci:2},
+  {q:"Природная зона с вечной мерзлотой?",opts:["Степь","Тундра","Тайга","Пустыня"],ci:1},
+  {q:"Горы между Европой и Азией?",opts:["Кавказ","Урал","Алтай","Саяны"],ci:1},
+  {q:"Полуостров вулканов?",opts:["Ямал","Кольский","Камчатка","Чукотка"],ci:2},
+  {q:"Крупнейший остров России?",opts:["Новая Земля","Сахалин","Врангеля","Колгуев"],ci:1},
+  {q:"Северная столица России?",opts:["Казань","Нижний Новгород","Санкт-Петербург","Архангельск"],ci:2},
+  {q:"Самая длинная ж/д магистраль мира?",opts:["БАМ","Транссиб","Восточная","Северная"],ci:1},
+];
+const Q_GEO_BET=[
+  {q:"Сколько часовых поясов в России?",opts:["9","10","11","12"],ci:2},
+  {q:"Высота Эльбруса (округлённо)?",opts:["5100 м","5300 м","5600 м","5900 м"],ci:2},
+  {q:"Длина Транссиба (примерно)?",opts:["6000 км","7500 км","9288 км","11000 км"],ci:2},
+  {q:"Площадь Байкала (примерно)?",opts:["15 000 км²","31 500 км²","58 000 км²","80 000 км²"],ci:1},
+  {q:"Сколько регионов в России?",opts:["72","83","85","89"],ci:3},
+];
+const Q_SPACE_BLITZ=[
+  {q:"Первый космонавт Земли?",opts:["Титов","Гагарин","Армстронг","Леонов"],ci:1},
+  {q:"Год первого полёта в космос?",opts:["1957","1959","1961","1965"],ci:2},
+  {q:"Первая женщина-космонавт?",opts:["Савицкая","Терешкова","Кондакова","Кикина"],ci:1},
+  {q:"Главный российский космодром?",opts:["Плесецк","Восточный","Байконур","Капустин Яр"],ci:2},
+  {q:"Российская навигационная система?",opts:["GPS","ГЛОНАСС","Galileo","BeiDou"],ci:1},
+  {q:"Первый выход в открытый космос?",opts:["Гагарин","Титов","Леонов","Терешкова"],ci:2},
+  {q:"Корпорация космической деятельности РФ?",opts:["Роскосмос","РКК","Росатом","Ростех"],ci:0},
+  {q:"Звезда нашей Солнечной системы?",opts:["Альфа Центавра","Сириус","Солнце","Полярная"],ci:2},
+  {q:"Сколько планет в Солнечной системе?",opts:["7","8","9","10"],ci:1},
+  {q:"Новый российский космодром?",opts:["Байконур","Восточный","Плесецк","Свободный"],ci:1},
+];
+const Q_SPACE_BET=[
+  {q:"Длительность полёта Гагарина?",opts:["68 мин","88 мин","108 мин","128 мин"],ci:2},
+  {q:"Год запуска первого спутника?",opts:["1954","1957","1960","1962"],ci:1},
+  {q:"Высота МКС над Землёй (примерно)?",opts:["200 км","400 км","800 км","1200 км"],ci:1},
+  {q:"Первая космическая скорость (примерно)?",opts:["5 км/с","8 км/с","11 км/с","15 км/с"],ci:1},
+  {q:"В каком году Леонов вышел в открытый космос?",opts:["1963","1965","1967","1969"],ci:1},
+];
+const Q_SPORT_BLITZ=[
+  {q:"Олимпиада 2014 прошла в...",opts:["Москве","Казани","Сочи","Питере"],ci:2},
+  {q:"ГТО расшифровывается как...",opts:["Гос. технич. орден","Готов к труду и обороне","Гос. тренировоч. орг.","Городской турнир Олимпийцев"],ci:1},
+  {q:"Лев Яшин — вратарь в...",opts:["Хоккее","Футболе","Баскетболе","Гандболе"],ci:1},
+  {q:"Длина марафона?",opts:["21 км","38 км","42,195 км","50 км"],ci:2},
+  {q:"Александр Карелин — чемпион по...",opts:["Боксу","Дзюдо","Греко-римской борьбе","Самбо"],ci:2},
+  {q:"Сколько колец у Олимпийского символа?",opts:["4","5","6","7"],ci:1},
+  {q:"Самбо — это...",opts:["Японский спорт","Российский вид борьбы","Корейское единоборство","Китайское ушу"],ci:1},
+  {q:"Первая Олимпиада в СССР?",opts:["1952","1960","1980","1988"],ci:2},
+  {q:"Чемпион по шахматам дольше всех?",opts:["Фишер","Ботвинник","Карпов","Каспаров"],ci:3},
+  {q:"Эндорфины выделяются при...",opts:["Стрессе","Еде","Физнагрузке","Сне"],ci:2},
+];
+const Q_SPORT_BET=[
+  {q:"Сколько золотых медалей у СССР на Олимпиаде 1980?",opts:["55","62","80","91"],ci:3},
+  {q:"Голов забил Овечкин в НХЛ (на 2024 год)?",opts:["700+","800+","870+","950+"],ci:2},
+  {q:"Рекорд Ларисы Латыниной — сколько олимпийских медалей?",opts:["12","16","18","20"],ci:3},
+  {q:"Высота стандартной баскетбольной корзины?",opts:["2,8 м","3,05 м","3,2 м","3,5 м"],ci:1},
+  {q:"Длина олимпийского бассейна?",opts:["25 м","40 м","50 м","75 м"],ci:2},
+];
+
+const Q_BLITZ_SPO = [
+  {q:"Как называется самый маленький по площади океан?",opts:["Тихий","Индийский","Северный Ледовитый","Южный"],ci:2},
+  {q:"Столица Норвегии — арктической страны?",opts:["Хельсинки","Копенгаген","Осло","Стокгольм"],ci:2},
+  {q:"Как называется лёд, образующийся из морской воды?",opts:["Ледник","Морской лёд","Айсберг","Торос"],ci:1},
+  {q:"Сколько государств являются «арктической восьмёркой» в Арктическом совете?",opts:["5","6","8","10"],ci:2},
+  {q:"Какое животное называют «нарвал»?",opts:["Рыба","Кит с бивнем","Морской котик","Тюлень"],ci:1},
+  {q:"Полярная ночь длится в Арктике примерно…",opts:["3 дня","1 месяц","До 6 месяцев","Весь год"],ci:2},
+  {q:"Северный морской путь соединяет…",opts:["Европу и Африку","Европу и Азию","Азию и Америку","Россию и Антарктиду"],ci:1},
+  {q:"Что такое «торос»?",opts:["Вид тюленя","Нагромождение льда","Арктический ветер","Снежная пещера"],ci:1},
+  {q:"Россия занимает первое место в мире по…",opts:["Добыче золота","Протяжённости арктического побережья","Числу ледоколов","Всё перечисленное"],ci:1},
+  {q:"Как называется слой подземного льда в тундре?",opts:["Пермафрост","Вечная мерзлота","Криолит","Оба первых варианта верны"],ci:3},
+];
+const Q_BLITZ_SCHOOL = [
+  {q:"Белый медведь живёт в Арктике или Антарктиде?",opts:["В Антарктиде","В Арктике","И там, и там","Нигде"],ci:1},
+  {q:"Сколько Северных полюсов у Земли?",opts:["Один","Два","Три","Четыре"],ci:0},
+  {q:"Пингвины живут в Арктике?",opts:["Да","Нет, только в Антарктиде","Везде","Только на Северном полюсе"],ci:1},
+  {q:"Из чего состоят льды Арктики?",opts:["Из соли","Из воды","Из снега","Из льда и снега"],ci:1},
+  {q:"Как называют людей, которые исследуют Арктику?",opts:["Туристы","Полярники","Моряки","Охотники"],ci:1},
+  {q:"Что такое полярное сияние?",opts:["Закат","Свечение газов в небе","Молния","Отражение льда"],ci:1},
+  {q:"Самое холодное время суток в Арктике — это…",opts:["Утро","Полдень","Ночь","Вечер"],ci:2},
+  {q:"Северный олень — животное тундры. Его другое название?",opts:["Карибу","Лось","Яков","Зубр"],ci:0},
+  {q:"Чем покрыта большая часть Северного Ледовитого океана?",opts:["Песком","Льдом","Водой без льда","Травой"],ci:1},
+  {q:"Как называется снежный домик эскимосов?",opts:["Юрта","Вигвам","Иглу","Чум"],ci:2},
+];
+
+// ── СТАВКИ — ВОПРОСЫ ──────────────────────────────────────────
+const Q_BET_SPO = [
+  {q:"Площадь Северного Ледовитого океана составляет примерно:",opts:["7 млн км²","14 млн км²","21 млн км²","28 млн км²"],ci:1},
+  {q:"В каком году Россия впервые установила флаг на дне Арктики подводными аппаратами?",opts:["2001","2007","2012","2015"],ci:1},
+  {q:"Скорость ветра во время арктической пурги может достигать:",opts:["20 м/с","40 м/с","60 м/с","80 м/с"],ci:1},
+  {q:"Сколько процентов пресной воды Земли содержится в арктических льдах?",opts:["5%","10%","20%","30%"],ci:2},
+  {q:"На сколько градусов ось Земли наклонена к плоскости орбиты (причина полярного дня)?",opts:["17,5°","23,5°","30°","45°"],ci:1},
+];
+const Q_BET_SCHOOL = [
+  {q:"Какой высоты может достигать айсберг над водой?",opts:["5–10 м","20–30 м","50–100 м","200–300 м"],ci:2},
+  {q:"Сколько месяцев длится полярная ночь на Северном полюсе?",opts:["1 месяц","3 месяца","6 месяцев","9 месяцев"],ci:2},
+  {q:"При какой температуре замерзает морская вода (она солёнее пресной)?",opts:["0°C","−1.8°C","−5°C","−10°C"],ci:1},
+  {q:"Какой остров является самым большим в мире?",opts:["Исландия","Гренландия","Мадагаскар","Суматра"],ci:1},
+  {q:"Скорость движения льдин в Арктике в среднем составляет примерно:",opts:["1 км/ч","5 км/ч","10 км/ч","20 км/ч"],ci:0},
+];
+
+const $=id=>document.getElementById(id);
+const chipPhase=$("chipPhase"),chipQ=$("chipQ");
+const stPhase=$("stPhase"),stQ=$("stQ"),stOnline=$("stOnline"),stAll=$("stAll"),stAnswered=$("stAnswered"),stLeader=$("stLeader");
+const qChipType=$("qChipType"),qChipPts=$("qChipPts"),qChipDiff=$("qChipDiff"),qtextEl=$("qtext"),ansGrid=$("ansGrid");
+const tleft=$("tleft"),tbarFill=$("tbarFill"),ansState=$("ansState");
+const ansBarWrap=$("ansBarWrap"),ansBarLbl=$("ansBarLbl"),ansBarFill=$("ansBarFill");
+const playersBody=$("playersBody"),scoresBody=$("scoresBody");
+const btnStart=$("btnStart"),btnPause=$("btnPause"),btnPrev=$("btnPrev"),btnNext=$("btnNext"),btnReset=$("btnReset"),btnReveal=$("btnReveal");
+const btnClearPlayers=$("btnClearPlayers"),btnClearOffline=$("btnClearOffline"),btnClearScores=$("btnClearScores"),btnClearAlerts=$("btnClearAlerts"),btnClearReg=$("btnClearReg");
+const chatMsgs=$("chatMsgs"),chatInp=$("chatInp"),chatSend=$("chatSend"),chatTarget=$("chatTarget");
+const alertList=$("alertList"),regList=$("regList");
+
+let lastState=null,timerTick=null,lastChatId=0,chatReady=false;
+const ONLINE_MS=15000;
+let knownPlayers=new Set(); // для уведомлений о новых регистрациях
+let totalOnline=0;
+
+// ── РЕНДЕР ВОПРОСА ────────────────────────────────────────────
+function renderQ(idx){
+  const q=Q[Math.max(0,Math.min(Q.length-1,idx))];if(!q)return;
+  qChipType.textContent="Вопрос";
+  const p=pts(q.dif);qChipPts.textContent="+"+p+" очк"+(p===1?"о":p<5?"а":"ов");
+  qChipDiff.textContent=q.dif<=1?"★☆☆":q.dif===2?"★★☆":"★★★";
+  qtextEl.textContent=q.q;
+  ansGrid.innerHTML="";
+  q.opts.forEach((o,i)=>{
+    const row=document.createElement("div");row.className="ans-row"+(i===q.ci?" correct":"");
+    const ltr=document.createElement("div");ltr.className="ans-ltr";ltr.textContent=String.fromCharCode(65+i);
+    const txt=document.createElement("div");txt.style.flex="1";txt.textContent=o;
+    if(i===q.ci){const m=document.createElement("span");m.textContent=" ✓";m.style.cssText="color:var(--ok);font-weight:700;";txt.appendChild(m);}
+    row.appendChild(ltr);row.appendChild(txt);ansGrid.appendChild(row);
+  });
+  ansBarWrap.style.display="";
+}
+
+// ── ТАЙМЕР ────────────────────────────────────────────────────
+function stopPresTimer(){if(timerTick){clearInterval(timerTick);timerTick=null;}tleft.textContent="—";tbarFill.style.width="0%";}
+function parseTs(iso){
+  if(!iso)return NaN;
+  let s=String(iso).trim();
+  s=s.replace(" ","T");
+  s=s.replace(/\+00:00$/,"Z");
+  s=s.replace(/\+00$/,"Z");
+  s=s.replace(/(\.\d+)\+00$/,"$1Z");
+  s=s.replace(/(\.\d+)\+00:00$/,"$1Z");
+  const t=Date.parse(s);
+  return isNaN(t)?Date.parse(iso):t;
+}
+function startPresTimer(at,qtOverride){
+  stopPresTimer();
+  const ms=parseTs(at);
+  if(isNaN(ms)){console.warn("presenter timer bad ts:",at);return;}
+  const qt=qtOverride||lastState?.game_timer||QT;
+  const chip=$("timerChip"); if(chip) chip.textContent=qt+" сек";
+  function tick(){const left=Math.max(0,Math.ceil(qt-(Date.now()-ms)/1000));tleft.textContent=String(left);tbarFill.style.width=Math.max(0,left/qt*100)+"%";tbarFill.style.background=left<=5?"linear-gradient(90deg,#ff5f7a,#c0392b)":left<=10?"linear-gradient(90deg,#ffe080,#ffb300)":"linear-gradient(90deg,#4fdfff,#ff6ec7)";if(left<=0)stopPresTimer();}
+  tick();timerTick=setInterval(tick,200);
+}
+
+// ── СОСТОЯНИЕ ─────────────────────────────────────────────────
+function applyState(s){
+  lastState=s;
+  if(!s){chipPhase.textContent="⏳";chipPhase.className="chip";stPhase.textContent="Ожидание";stopPresTimer();btnReveal.disabled=true;ansState.className="ans-state";return;}
+  // Переключаем набор вопросов по quiz_mode
+  const qmode=s.quiz_mode||"spo";
+  const currentQId = s.quiz_id||QUIZ_ID_CURRENT||QUIZ_ID;
+  // Роутинг вопросов по квизу и режиму
+  let newQ;
+  if(currentQId==='ecology')       newQ = qmode==='school'?Q_ECO_SCHOOL:Q_ECO_SPO;
+  else if(currentQId==='history')  newQ = qmode==='school'?(typeof Q_HISTORY_SCHOOL!=='undefined'?Q_HISTORY_SCHOOL:Q_SCHOOL):(typeof Q_HISTORY_SPO!=='undefined'?Q_HISTORY_SPO:Q_SPO);
+  else if(currentQId==='science')  newQ = qmode==='school'?(typeof Q_SCIENCE_SCHOOL!=='undefined'?Q_SCIENCE_SCHOOL:Q_SCHOOL):(typeof Q_SCIENCE_SPO!=='undefined'?Q_SCIENCE_SPO:Q_SPO);
+  else if(currentQId==='patriot')  newQ = qmode==='school'?(typeof Q_PATRIOT_SCHOOL!=='undefined'?Q_PATRIOT_SCHOOL:Q_SCHOOL):(typeof Q_PATRIOT_SPO!=='undefined'?Q_PATRIOT_SPO:Q_SPO);
+  else if(currentQId==='geo')      newQ = qmode==='school'?(typeof Q_GEO_SCHOOL!=='undefined'?Q_GEO_SCHOOL:Q_SCHOOL):(typeof Q_GEO_SPO!=='undefined'?Q_GEO_SPO:Q_SPO);
+  else if(currentQId==='space')    newQ = qmode==='school'?(typeof Q_SPACE_SCHOOL!=='undefined'?Q_SPACE_SCHOOL:Q_SCHOOL):(typeof Q_SPACE_SPO!=='undefined'?Q_SPACE_SPO:Q_SPO);
+  else if(currentQId==='sport')    newQ = qmode==='school'?(typeof Q_SPORT_SCHOOL!=='undefined'?Q_SPORT_SCHOOL:Q_SCHOOL):(typeof Q_SPORT_SPO!=='undefined'?Q_SPORT_SPO:Q_SPO);
+  else                             newQ = qmode==='school'?Q_SCHOOL:Q_SPO;
+  if(newQ!==Q){Q=newQ;}
+  // Обновляем заголовок квиза в топбаре
+  const _qNames={arctic:'🧊 Арктика',ecology:'🌿 Экология',history:'📜 История России',science:'🔬 Наука',patriot:'🏅 Патриотика',geo:'🌍 География',space:'🚀 Космос',sport:'🏆 Спорт'};
+  const _qName = _qNames[currentQId]||'Квиз';
+  const _ttl=document.getElementById("quizNameBadge");
+  if(_ttl) _ttl.textContent="🎙 Ведущий · "+_qName;
+  const _top=document.getElementById("topbarQuizName");
+  if(_top) _top.textContent=_qName;
+  document.title = _qName + " (Ведущий)";
+  const phase=s.phase||"waiting",idx=typeof s.current_index==="number"?s.current_index:null,show=s.show_answer===true;
+  if(phase==="running"){chipPhase.textContent="▶ Идёт";chipPhase.className="chip ok";stPhase.textContent="▶ Идёт";btnStart.classList.remove("pulsing");}
+  else if(phase==="paused"){chipPhase.textContent="⏸ Пауза";chipPhase.className="chip warn";stPhase.textContent="⏸ Пауза";stopPresTimer();tleft.textContent="⏸";}
+  else if(phase==="ended"){chipPhase.textContent="✓ Конец";chipPhase.className="chip";stPhase.textContent="✓ Конец";stopPresTimer();}
+  else{chipPhase.textContent="⏳";chipPhase.className="chip";stPhase.textContent="Ожидание";stopPresTimer();}
+  if(idx!==null){chipQ.textContent="Вопрос: "+(idx+1)+" / "+Q.length;stQ.textContent=(idx+1)+" из "+Q.length;renderQ(idx);}
+  if(phase==="running"&&s.question_started_at)startPresTimer(s.question_started_at);
+  else if(phase!=="running")stopPresTimer();
+  if(phase==="running"||phase==="paused"){
+    if(show){ansState.textContent="✅ Ответ открыт — студенты видят результат";ansState.className="ans-state open show";btnReveal.disabled=true;}
+    else{ansState.textContent="🔒 Студенты НЕ знают правильный ответ";ansState.className="ans-state locked show";btnReveal.disabled=false;}
+  }else{ansState.className="ans-state";btnReveal.disabled=true;}
+  btnPause.textContent=(phase==="paused")?"▶ Продолжить":"⏸ Пауза";
+}
+
+// ── DB ────────────────────────────────────────────────────────
+async function getState(){
+  if(!sb)throw new Error("no sb");
+  const{data,error}=await sb.from("quiz_state").select("*").eq("game_id",GID).maybeSingle();
+  if(error)throw error;
+  return data;
+}
+async function ups(patch){
+  if(!sb)return null;
+  // Мержим с текущим состоянием чтобы не затирать поля которые не обновляем
+  const mode=lastState?.quiz_mode||selectedMode||"spo";
+  const base={
+    game_id:GID,
+    quiz_id:lastState?.quiz_id||QUIZ_ID,
+    quiz_mode:mode,
+    phase:lastState?.phase||"waiting",
+    current_index:lastState?.current_index??0,
+    question_started_at:lastState?.question_started_at||null,
+    show_answer:lastState?.show_answer||false,
+    round_type:lastState?.round_type||null,
+    bet_question_index:lastState?.bet_question_index??null,
+    bet_correct_index:lastState?.bet_correct_index??null,
+    session_code:lastState?.session_code||null,
+    question_visible:lastState?.question_visible!==undefined?lastState.question_visible:true,
+    shuffle_seed:lastState?.shuffle_seed??0,
+    game_timer:lastState?.game_timer??25,
+  };
+  const full={...base,...patch};
+  try{const{data,error}=await sb.from("quiz_state").upsert(full,{onConflict:"game_id"}).select().maybeSingle();if(error)return null;if(data)lastState=data;return data;}catch(e){return null;}
+}
+
+// ── ИГРА ─────────────────────────────────────────────────────
+// Возвращает timestamp в UTC ISO формате без миллисекунд
+function nowUtc(){return new Date().toISOString().replace(/\.\d+Z$/,"Z");}
+
+async function goStart(){
+  const vis = presenterMode==="online" ? false : true;
+  const seed = Math.floor(Math.random()*100000);
+  // Сбрасываем очки всех игроков перед новой игрой
+  if(sb){try{
+    await sb.from("quiz_scores").delete().eq("game_id",GID);
+    console.log("Scores cleared for new game");
+  }catch(e){console.warn("Score reset:",e);}}
+  applyState(await ups({phase:"running",current_index:0,question_started_at:vis?nowUtc():null,show_answer:false,question_visible:vis,shuffle_seed:seed,game_timer:QT,quiz_id:QUIZ_ID_CURRENT}));
+  if(!vis) showRevealQBtn(true);
+}
+async function goPause(){applyState(await ups({phase:"paused"}));}
+async function goResume(){applyState(await ups({phase:"running",question_started_at:nowUtc(),show_answer:false,question_visible:true}));showRevealQBtn(false);}
+async function goNext(){
+  const cur=lastState?.current_index??0,nxt=cur+1;
+  if(nxt>=Q.length){applyState(await ups({phase:"ended",show_answer:false}));return;}
+  const vis = presenterMode==="online" ? false : true;
+  const seed = Math.floor(Math.random()*100000);
+  applyState(await ups({phase:"running",current_index:nxt,question_started_at:vis?nowUtc():null,show_answer:false,question_visible:vis,shuffle_seed:seed,game_timer:QT}));
+  if(!vis) showRevealQBtn(true); else showRevealQBtn(false);
+}
+async function goPrev(){const p=Math.max(0,(lastState?.current_index??0)-1);applyState(await ups({phase:"running",current_index:p,question_started_at:nowUtc(),show_answer:false}));}
+async function goReset(){
+  if(!confirm("Сбросить игру? Чат будет очищен."))return;
+  // Очищаем чат при сбросе
+  if(sb)try{await sb.from("quiz_chat").delete().eq("game_id",GID);}catch(e){}
+  chatMsgs.innerHTML="";lastChatId=0;
+  applyState(await ups({phase:"waiting",current_index:0,question_started_at:null,show_answer:false}));
+}
+async function goReveal(){applyState(await ups({show_answer:true}));}
+
+btnStart.addEventListener("click",goStart);
+btnPause.addEventListener("click",()=>{const p=lastState?.phase||"waiting";if(p==="running")goPause();else if(p==="paused")goResume();});
+btnNext.addEventListener("click",goNext);btnPrev.addEventListener("click",goPrev);btnReset.addEventListener("click",goReset);btnReveal.addEventListener("click",goReveal);
+
+// Показать вопрос (онлайн-режим)
+function showRevealQBtn(show){
+  const b=$("btnShowQ"); if(b) b.style.display=show?"":"none";
+}
+$("btnShowQ")?.addEventListener("click",async()=>{
+  applyState(await ups({question_visible:true,question_started_at:nowUtc()}));
+  showRevealQBtn(false);
+});
+
+// ── СЧЁТЧИК ОТВЕТИВШИХ ────────────────────────────────────────
+async function refreshAnswered(){
+  if(!sb)return;
+  const idx=lastState?.current_index;if(typeof idx!=="number")return;
+  try{
+    const{data:scores}=await sb.from("quiz_scores").select("student_name,team_name,questions_answered").eq("game_id",GID);
+    if(!scores)return;
+    const{data:players}=await sb.from("quiz_players").select("student_name,team_name").eq("game_id",GID);
+    const total=players?.length||0;
+    const answered=scores.filter(s=>s.questions_answered>idx);
+    const notAnswered=(players||[]).filter(p=>!answered.find(a=>a.student_name===p.student_name&&a.team_name===p.team_name));
+    ansBarLbl.textContent=answered.length+" / "+total;
+    ansBarFill.style.width=(total>0?Math.min(100,answered.length/total*100):0)+"%";
+    stAnswered.textContent=answered.length+" / "+total;
+    // Детали кто ответил
+    let det=$("ans-detail");
+    if(!det){det=document.createElement("div");det.id="ans-detail";det.style.cssText="font-size:.72rem;margin-top:5px;display:flex;flex-wrap:wrap;gap:3px;";ansBarWrap.appendChild(det);}
+    det.innerHTML=answered.map(a=>`<span style="padding:1px 6px;border-radius:999px;background:rgba(97,255,178,.15);border:1px solid rgba(97,255,178,.35);color:var(--ok);">✓ ${a.student_name||a.team_name}</span>`).join("")
+      +notAnswered.map(p=>`<span style="padding:1px 6px;border-radius:999px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);color:var(--muted);">⏳ ${p.student_name}</span>`).join("");
+  }catch(e){}
+}
+
+// ── ЕДИНОЕ ТАБЛО ─────────────────────────────────────────────
+let _unifiedReady = new Set(); // кто нажал "Готов"
+let _unifiedAnswered = new Set(); // кто ответил на текущий вопрос
+
+async function refreshUnified(){
+  if(!sb)return;
+  try{
+    const [
+      {data:players},
+      {data:scores},
+      {data:readyData}
+    ] = await Promise.all([
+      sb.from("quiz_players").select("*").eq("game_id",GID),
+      sb.from("quiz_scores").select("student_name,team_name,score,questions_answered").eq("game_id",GID),
+      sb.from("quiz_chat").select("sender_name,team_name").eq("game_id",GID).eq("msg_type","ready")
+    ]);
+
+    const now = Date.now();
+    const ONLINE_MS = 15000;
+    const allPlayers = players||[];
+    const allScores = scores||[];
+    const readySet = new Set((readyData||[]).map(r=>r.sender_name+"_"+r.team_name));
+    const curIdx = lastState?.current_index??-1;
+
+    // Кто ответил на текущий вопрос
+    const answeredSet = new Set(allScores.filter(s=>s.questions_answered>curIdx).map(s=>s.student_name+"_"+s.team_name));
+
+    stAll.textContent = allPlayers.length;
+    const onlCount = allPlayers.filter(p=>p.last_seen&&(now-new Date(p.last_seen).getTime())<ONLINE_MS).length;
+    stOnline.textContent = onlCount; totalOnline = onlCount;
+
+    // Обновляем ansBar
+    const total = allPlayers.length;
+    const answeredCount = answeredSet.size;
+    ansBarLbl.textContent = answeredCount+" / "+total;
+    ansBarFill.style.width = (total>0?Math.min(100,answeredCount/total*100):0)+"%";
+    stAnswered.textContent = answeredCount+" / "+total;
+
+    // Обновляем чат-списки
+    const teams=[...new Set(allPlayers.map(r=>r.team_name).filter(Boolean))];
+    const curCT=chatTarget.value;
+    chatTarget.innerHTML='<option value="">👥 Всем</option>'+teams.map(t=>`<option value="${t}">${t}</option>`).join("");
+    if(teams.includes(curCT))chatTarget.value=curCT;
+    const plNames=allPlayers.map(r=>r.student_name).filter(Boolean);
+    const curCP=chatTargetPlayer.value;
+    chatTargetPlayer.innerHTML='<option value="">👤 Все игроки</option>'+plNames.map(n=>`<option value="${n}">${n}</option>`).join("");
+    if(plNames.includes(curCP))chatTargetPlayer.value=curCP;
+
+    // Новые игроки → уведомления
+    let hasNew=false;
+    allPlayers.forEach(r=>{
+      const key=r.student_name+"_"+r.team_name;
+      if(!knownPlayers.has(key)){
+        knownPlayers.add(key); hasNew=true;
+        const n=document.createElement("div");n.className="reg-notif";
+        const jt=r.joined_at?new Date(r.joined_at).toLocaleTimeString("ru",{hour:"2-digit",minute:"2-digit"}):"";
+        n.innerHTML=`✅ <b>${r.student_name}</b> (${r.team_name||"—"}) <span style="font-size:.65rem;color:var(--muted)">${jt}</span><button class="btn bg btn-sm" onclick="this.parentNode.remove()" style="padding:1px 6px;font-size:.65rem;min-height:20px;">✕</button>`;
+        const ph=regList.querySelector("div:not(.reg-notif)");if(ph)ph.remove();
+        regList.appendChild(n);
+      }
+    });
+
+    // Сортируем по очкам (убывание), потом по имени
+    const merged = allPlayers.map(p=>{
+      const sc = allScores.find(s=>s.student_name===p.student_name&&s.team_name===p.team_name);
+      return {...p, score:sc?.score||0, qAnswered:sc?.questions_answered||0};
+    }).sort((a,b)=>(b.score-a.score)||a.student_name?.localeCompare(b.student_name||"")||0);
+
+    // Лидер
+    if(merged.length>0) stLeader.textContent=(merged[0].team_name||"—")+" · "+merged[0].score;
+    else stLeader.textContent="—";
+
+    const medals=["🥇","🥈","🥉"];
+    const tbody=document.getElementById("unifiedBody");
+    if(!tbody){refreshPlayers();refreshScores();return;}
+
+    if(merged.length===0){
+      tbody.innerHTML='<tr><td colspan="9" style="color:var(--muted);text-align:center;padding:14px">Никто ещё не зарегистрировался</td></tr>';
+      return;
+    }
+
+    tbody.innerHTML = merged.map((r,i)=>{
+      const key=r.student_name+"_"+r.team_name;
+      const isOnline=r.last_seen&&(now-new Date(r.last_seen).getTime())<ONLINE_MS;
+      const isReady=readySet.has(key);
+      const isAnswered=answeredSet.has(key);
+      const score=typeof r.score==="number"?( r.score%1?r.score.toFixed(1):r.score ):0;
+      return `<tr style="opacity:${isOnline?1:.45};transition:opacity .3s;">
+        <td style="color:var(--muted);font-size:.72rem;">${medals[i]||i+1}</td>
+        <td><b style="font-size:.83rem;">${r.student_name||"—"}</b></td>
+        <td style="font-size:.75rem;color:var(--muted);">${r.team_name||"—"}</td>
+        <td style="text-align:center;">${isOnline?'<span style="color:#61ffb2;font-size:.75rem;">🟢</span>':'<span style="color:var(--muted);font-size:.7rem;">⚫</span>'}</td>
+        <td style="text-align:center;">${isReady?'<span style="color:#61ffb2;">✅</span>':'<span style="color:var(--muted);opacity:.3;">○</span>'}</td>
+        <td style="text-align:center;">${isAnswered?'<span style="color:#4fdfff;">💬</span>':'<span style="color:var(--muted);opacity:.3;">—</span>'}</td>
+        <td style="text-align:right;font-weight:800;color:var(--gold);font-family:monospace;">${score}</td>
+        <td style="text-align:center;color:var(--muted);font-size:.75rem;">${r.qAnswered||0}</td>
+        <td style="white-space:nowrap;">
+          <button onclick="kickPlayer('${r.student_name}','${r.team_name}')" style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:.75rem;padding:1px 4px;" title="Удалить игрока">🗑</button>
+          <button onclick="toggleBlockChat('${r.student_name}','${r.team_name}',${!r.chat_blocked})" style="background:none;border:none;cursor:pointer;font-size:.75rem;padding:1px 4px;" title="${r.chat_blocked?'Разблокировать чат':'Заблокировать чат'}">${r.chat_blocked?'🔒':'🔓'}</button>
+        </td>
+      </tr>`;
+    }).join("");
+  }catch(e){console.error("refreshUnified:",e);}
+}
+
+// ── ИГРОКИ ────────────────────────────────────────────────────
+async function refreshPlayers(){
+  if(!sb)return;
+  try{
+    const{data,error}=await sb.from("quiz_players").select("*").eq("game_id",GID).order("joined_at",{ascending:true});
+    if(error){playersBody.innerHTML=`<tr><td colspan="5" style="color:#ffe080;text-align:center;padding:8px">⚠️ Выполни SQL setup</td></tr>`;return;}
+    stAll.textContent=data?.length||0;
+    if(!data||data.length===0){stOnline.textContent=0;totalOnline=0;playersBody.innerHTML=`<tr><td colspan="5" style="color:var(--muted);text-align:center;padding:8px">Никто не зашёл</td></tr>`;return;}
+    const now=Date.now();
+    const onl=data.filter(r=>r.last_seen&&(now-new Date(r.last_seen).getTime())<ONLINE_MS).length;
+    stOnline.textContent=onl;totalOnline=onl;
+
+    // Уведомление о новых регистрациях (только реально новые — не из начальной загрузки)
+    let hasNewPlayers=false;
+    data.forEach(r=>{
+      const key=r.student_name+"_"+r.team_name;
+      if(!knownPlayers.has(key)){
+        knownPlayers.add(key);
+        hasNewPlayers=true;
+        const n=document.createElement("div");n.className="reg-notif";
+        const jt=r.joined_at?new Date(r.joined_at).toLocaleTimeString("ru",{hour:"2-digit",minute:"2-digit"}):"";
+        n.innerHTML=`✅ <b>${r.student_name}</b> (${r.team_name||"—"}) зарегистрировался <span style="font-size:.65rem;color:var(--muted);margin-left:4px">${jt}</span><button class="btn bg btn-sm" onclick="this.parentNode.remove()" style="padding:1px 6px;font-size:.65rem;min-height:20px;">✕</button>`;
+        // Убираем placeholder только когда есть реальные уведомления
+        const placeholder=regList.querySelector("div:not(.reg-notif)");
+        if(placeholder)placeholder.remove();
+        regList.appendChild(n);
+      }
+    });
+
+    // Обновить список команд в чате
+    const teams=[...new Set(data.map(r=>r.team_name).filter(Boolean))];
+    const curVal=chatTarget.value;
+    chatTarget.innerHTML='<option value="">👥 Всем</option>'+teams.map(t=>`<option value="${t}">${t}</option>`).join("");
+    if(teams.includes(curVal))chatTarget.value=curVal;
+
+    // Обновляем список игроков для личных сообщений
+    const players=data.map(r=>r.student_name).filter(Boolean);
+    const curPlayer=chatTargetPlayer?.value||"";
+    if(chatTargetPlayer){
+      chatTargetPlayer.innerHTML='<option value="">👤 Все игроки</option>'+players.map(p=>`<option value="${p}">${p}</option>`).join("");
+      if(players.includes(curPlayer))chatTargetPlayer.value=curPlayer;
+    }
+
+    playersBody.innerHTML=data.map((r,i)=>{
+      const isOnl=r.last_seen&&(now-new Date(r.last_seen).getTime())<ONLINE_MS;
+      const dot=isOnl?'<span class="online-dot"></span>':'<span class="offline-dot"></span>';
+      const st=isOnl?'<span style="color:var(--ok);font-size:.71rem">●</span>':'<span style="color:#555;font-size:.71rem">○</span>';
+      const blocked=r.chat_blocked?'🚫':'';
+      const jt=r.joined_at?new Date(r.joined_at).toLocaleTimeString("ru",{hour:"2-digit",minute:"2-digit"}):"";
+      const sid=`p${i}`;
+      // Сохраняем данные в dataset чтобы избежать проблем с кавычками в именах
+      return`<tr>
+        <td>${i+1}</td>
+        <td>${dot}<b>${r.student_name||"—"}</b></td>
+        <td style="color:var(--muted);font-size:.73rem">${r.team_name||"—"}</td>
+        <td>${st} ${blocked}</td>
+        <td style="display:flex;gap:3px;flex-wrap:wrap;">
+          <button class="btn bg btn-sm del-player-btn" data-name="${(r.student_name||"").replace(/"/g,"&quot;")}" data-team="${(r.team_name||"").replace(/"/g,"&quot;")}" title="Удалить" style="padding:1px 5px;min-height:22px;">🗑</button>
+          <button class="btn bg btn-sm block-player-btn" data-name="${(r.student_name||"").replace(/"/g,"&quot;")}" data-team="${(r.team_name||"").replace(/"/g,"&quot;")}" data-blocked="${r.chat_blocked?1:0}" title="${r.chat_blocked?'Разблокировать':'Заблокировать'} чат" style="padding:1px 5px;min-height:22px;">${r.chat_blocked?'🔓':'🔒'}</button>
+        </td>
+      </tr>`;
+    }).join("");
+  }catch(e){console.error(e);}
+}
+
+// Event delegation для кнопок игроков
+playersBody.addEventListener("click",async e=>{
+  const delBtn=e.target.closest(".del-player-btn");
+  const blockBtn=e.target.closest(".block-player-btn");
+  if(delBtn){
+    const name=delBtn.dataset.name,team=delBtn.dataset.team;
+    if(!sb||!confirm("Удалить "+name+"?"))return;
+    try{await sb.from("quiz_players").delete().eq("game_id",GID).eq("student_name",name).eq("team_name",team);await refreshPlayers();}catch(e){console.error(e);}
+  }
+  if(blockBtn){
+    const name=blockBtn.dataset.name,team=blockBtn.dataset.team,block=blockBtn.dataset.blocked!=="1";
+    if(!sb)return;
+    try{await sb.from("quiz_players").update({chat_blocked:block}).eq("game_id",GID).eq("student_name",name).eq("team_name",team);await refreshUnified();}catch(e){console.error(e);}
+  }
+});
+
+btnClearOffline.addEventListener("click",async()=>{
+  if(!sb||!confirm("Удалить офлайн-игроков?"))return;
+  try{const{data}=await sb.from("quiz_players").select("student_name,team_name,last_seen").eq("game_id",GID);if(!data)return;const now=Date.now();for(const r of data.filter(r=>!r.last_seen||(now-new Date(r.last_seen).getTime())>=ONLINE_MS))await sb.from("quiz_players").delete().eq("game_id",GID).eq("student_name",r.student_name).eq("team_name",r.team_name);await refreshPlayers();}catch(e){}
+});
+btnClearPlayers.addEventListener("click",async()=>{if(!sb||!confirm("Удалить ВСЕХ?"))return;try{await sb.from("quiz_players").delete().eq("game_id",GID);knownPlayers.clear();await refreshUnified();}catch(e){}});
+
+// ── РЕЗУЛЬТАТЫ ────────────────────────────────────────────────
+async function refreshScores(){
+  if(!sb)return;
+  try{
+    const{data,error}=await sb.from("quiz_scores").select("team_name,student_name,score,questions_answered").eq("game_id",GID).order("score",{ascending:false}).limit(100);
+    if(error||!data||data.length===0){
+      scoresBody.innerHTML=`<tr><td colspan="5" style="color:var(--muted);text-align:center;padding:8px">${error?"⚠️ Таблица не найдена — запусти fix_scores.sql":"Ещё нет данных"}</td></tr>`;
+      stLeader.textContent="—";return;
+    }
+    stLeader.textContent=(data[0].team_name||"—")+" · "+data[0].score;
+    const medals=["🥇","🥈","🥉"];
+    scoresBody.innerHTML=data.map((r,i)=>`<tr><td>${medals[i]||i+1}</td><td><b>${r.team_name||"—"}</b></td><td>${r.student_name||"—"}</td><td><b style="color:var(--gold)">${r.score??0}</b></td><td style="color:var(--muted)">${r.questions_answered??0}</td></tr>`).join("");
+  }catch(e){}
+}
+btnClearScores.addEventListener("click",async()=>{if(!sb||!confirm("Сбросить очки?"))return;try{await sb.from("quiz_scores").delete().eq("game_id",GID);scoresBody.innerHTML=`<tr><td colspan="5" style="color:var(--muted);text-align:center">Очищено</td></tr>`;stLeader.textContent="—";}catch(e){}});
+
+// ── ФИЛЬТР МАТА (presenter) ───────────────────────────────────
+function _normChar(c){const M={a:'а',e:'е',o:'о',u:'у',x:'х',c:'с',p:'р',b:'б',k:'к',h:'х',y:'у',i:'и',t:'т',n:'н',m:'м',l:'л',d:'д',z:'з',g:'г',f:'ф',r:'р','@':'а','3':'е','0':'о','4':'а','1':'и','!':'и'};const cl=c.toLowerCase();return M[cl]||cl;}
+function _norm(s){return s.toLowerCase().split('').map(_normChar).join('').replace(/[^а-яё]/g,'');}
+const _BAD=[/пид/,/еб[лнасотиуещ]/,/[нзвпшо]аеб/,/выеб/,/выбл/,/хуй/,/хуе/,/хуя/,/хуи/,/хуес/,/пизд/,/пезд/,/блят/,/бляд/,/мудак/,/мудил/,/ублюд/,/жоп/,/уеб/,/залуп/,/шлюх/,/нахуй/,/похуй/,/гандо/,/[её]бищ/,/ёбан/,/fuck/,/shit/,/bitch/,/cock(?!tail)/,/dick/,/puss[yi]/,/nigg/,/cunt/,/whore/];
+const _BAD_EXACT=[/\bгей\b/i,/\bgay\b/i];
+function filterPresMsg(txt){
+  if(!txt)return txt;
+  const n=_norm(txt);
+  const bad=_BAD.some(r=>{r.lastIndex=0;return r.test(n);})||_BAD_EXACT.some(r=>r.test(txt));
+  if(!bad)return txt;
+  return txt.replace(/\S+/g,w=>(_BAD.some(r=>{r.lastIndex=0;return r.test(_norm(w));})||_BAD_EXACT.some(r=>r.test(w)))?'*'.repeat(w.length):w);
+}
+
+// ── ЧАТ ───────────────────────────────────────────────────────
+function renderChatMsg(m){
+  const isHost=m.sender_name==="ВЕДУЩИЙ";
+  const isAlert=m.msg_type==="alert";
+  const isWarn=m.msg_type==="warning";
+  const isPrivate=!!m.target_team||!!m.target_player;
+  const div=document.createElement("div");
+  div.className="cmsg "+(isWarn?"warn-msg":isAlert?"alert-msg":isPrivate?"private-msg":isHost?"host-msg":"player-msg");
+  div.dataset.id=m.id;
+  const t=new Date(m.created_at).toLocaleTimeString("ru",{hour:"2-digit",minute:"2-digit"});
+  const toTag=m.target_player
+    ?`<span style="background:rgba(255,159,67,.3);border-radius:999px;padding:1px 5px;font-size:.62rem;margin-left:3px">→ ${m.target_player}</span>`
+    :m.target_team
+    ?`<span style="background:rgba(107,122,255,.3);border-radius:999px;padding:1px 5px;font-size:.62rem;margin-left:3px">→ ${m.target_team}</span>`:"";
+  div.innerHTML=`<button class="del-btn" onclick="deleteChatMsg(${m.id},this.parentNode)" title="Удалить">✕</button><div class="cname">${isWarn?"⚠️ ":isAlert?"🚨 ":isHost?"🎙 ":""}<b>${m.sender_name}</b>${m.team_name&&!isHost?" ("+m.team_name+")":""}${toTag}<span class="ctime">${t}</span></div>${filterPresMsg(m.message)}`;
+  return div;
+}
+async function deleteChatMsg(id,el){
+  if(!sb)return;
+  try{await sb.from("quiz_chat").delete().eq("id",id);el?.remove();}catch(e){}
+}
+window.deleteChatMsg=deleteChatMsg;
+
+async function loadChat(){
+  if(!sb)return;
+  try{const{data}=await sb.from("quiz_chat").select("*").eq("game_id",GID).order("created_at",{ascending:true}).limit(80);if(!data)return;chatMsgs.innerHTML="";data.forEach(m=>chatMsgs.appendChild(renderChatMsg(m)));chatMsgs.scrollTop=chatMsgs.scrollHeight;lastChatId=data.reduce((max,m)=>Math.max(max,m.id||0),0);}catch(e){}
+  chatReady=true;
+}
+
+async function sendMsg(msg,targetTeam,targetPlayer,msgType){
+  if(!sb||!msg.trim())return;
+  try{await sb.from("quiz_chat").insert({game_id:GID,sender_name:"ВЕДУЩИЙ",team_name:"",message:msg,msg_type:msgType||"chat",target_team:targetTeam||null,target_player:targetPlayer||null});}catch(e){console.error(e);}
+}
+
+// Предупреждения
+const WARN_TEMPLATES=[
+  "Предупреждение: нарушение правил честной игры. Следующее нарушение — дисквалификация.",
+  "Предупреждение: использование интернета или ИИ запрещено. Снято 2 балла.",
+  "Предупреждение: недопустимое поведение в чате.",
+  "Предупреждение: чрезмерный шум. Просьба соблюдать тишину.",
+];
+
+const chatTargetPlayer=$("chatTargetPlayer");
+
+$("btnWarnPlayer").addEventListener("click",()=>{
+  const player=chatTargetPlayer?.value||"";
+  const team=chatTarget.value||"";
+  const toLabel=player||team||"всем";
+  const menu=document.createElement("div");
+  menu.style.cssText="position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);z-index:400;background:rgba(8,18,40,.98);border:2px solid rgba(255,159,67,.5);border-radius:16px;padding:18px;min-width:320px;max-width:420px;box-shadow:0 20px 60px rgba(0,0,0,.9);";
+  menu.innerHTML=`<div style="font-size:.9rem;font-weight:750;color:#ffb347;margin-bottom:12px;">⚠️ Предупреждение → <b>${toLabel}</b></div>`
+    +WARN_TEMPLATES.map((tmpl,i)=>`<button class="warn-tmpl-btn" data-i="${i}" style="display:block;width:100%;text-align:left;padding:8px 11px;margin-bottom:6px;border-radius:9px;border:1px solid rgba(255,159,67,.35);background:rgba(255,159,67,.07);color:#ffe0b0;cursor:pointer;font-size:.76rem;line-height:1.4;">⚠️ ${tmpl}</button>`).join("")
+    +`<div style="display:flex;gap:6px;margin-top:8px;"><button id="warnCustomBtn" style="flex:1;padding:6px;border-radius:9px;border:1px solid rgba(255,255,255,.15);background:transparent;color:var(--muted);cursor:pointer;font-size:.74rem;">📝 Своё</button><button id="warnCancelBtn" style="flex:1;padding:6px;border-radius:9px;border:1px solid rgba(255,255,255,.15);background:transparent;color:var(--muted);cursor:pointer;font-size:.74rem;">Отмена</button></div>`;
+  document.body.appendChild(menu);
+  menu.querySelectorAll(".warn-tmpl-btn").forEach(btn=>{
+    btn.addEventListener("click",()=>{
+      sendMsg("⚠️ "+WARN_TEMPLATES[+btn.dataset.i],team||null,player||null,"warning");
+      menu.remove();
+    });
+  });
+  menu.querySelector("#warnCustomBtn").addEventListener("click",()=>{
+    const txt=prompt("Введите текст предупреждения:");
+    if(txt&&txt.trim())sendMsg("⚠️ "+txt.trim(),team||null,player||null,"warning");
+    menu.remove();
+  });
+  menu.querySelector("#warnCancelBtn").addEventListener("click",()=>menu.remove());
+});
+
+chatSend.addEventListener("click",()=>{
+  const t=chatInp.value.trim();if(!t)return;
+  sendMsg(t,chatTarget.value||null,chatTargetPlayer?.value||null,"chat");
+  chatInp.value="";
+});
+chatInp.addEventListener("keydown",e=>{
+  if(e.key==="Enter"){const t=chatInp.value.trim();if(!t)return;sendMsg(t,chatTarget.value||null,chatTargetPlayer?.value||null,"chat");chatInp.value="";}
+});
+btnClearAlerts.addEventListener("click",()=>{alertList.innerHTML='<div style="font-size:.75rem;color:var(--muted)">Нет вызовов</div>';});
+btnClearReg.addEventListener("click",()=>{regList.innerHTML='<div style="font-size:.75rem;color:var(--muted)">Пока никто не зарегистрировался</div>';});
+
+// ── ПОЛЛИНГ ───────────────────────────────────────────────────
+// Поллинг запускается внутри init()
+
+// Realtime чат
+function subscribeChatRealtime(){
+  if(!sb)return;
+  sb.channel("quiz_chat_pres_"+GID)
+    .on("postgres_changes",{event:"INSERT",schema:"public",table:"quiz_chat",filter:"game_id=eq."+GID},payload=>{
+      const m=payload.new;if(!m||m.id<=lastChatId)return;
+      chatMsgs.appendChild(renderChatMsg(m));if(m.id>lastChatId)lastChatId=m.id;chatMsgs.scrollTop=chatMsgs.scrollHeight;
+      if(m.msg_type==="alert"){
+        const n=document.createElement("div");n.className="alert-item";
+        n.innerHTML=`<span>🚨 <b>${m.sender_name}</b> (${m.team_name||"—"}) — ${m.message} <span style="font-size:.63rem;color:var(--muted)">${new Date(m.created_at).toLocaleTimeString("ru",{hour:"2-digit",minute:"2-digit"})}</span></span><button class="alert-item-del" onclick="this.parentNode.remove()">✕</button>`;
+        if(alertList.querySelector("div[style]"))alertList.innerHTML="";
+        alertList.appendChild(n);
+      }
+    }).subscribe();
+}
+
+getState().then(applyState).catch(()=>{});
+
+// ── PREP OVERLAY ЛОГИКА ───────────────────────────────────────
+const prepOv=$("prepOv");
+const prepDbStatus=$("prepDbStatus"),prepPhase=$("prepPhase"),prepPlayerCount=$("prepPlayerCount");
+const prepPlayerList=$("prepPlayerList"),prepWarn=$("prepWarn");
+const prepBtnStart=$("prepBtnStart"),prepBtnResume=$("prepBtnResume"),prepBtnReset=$("prepBtnReset");
+
+const modeBtnSpo=$("modeBtnSpo"),modeBtnSchool=$("modeBtnSchool");
+let selectedMode = URL_MODE || "spo";
+function setMode(m){
+  selectedMode=m;
+  modeBtnSpo.style.boxShadow=m==="spo"?"0 0 0 2px rgba(79,223,255,.8)":"none";
+  modeBtnSpo.style.opacity=m==="spo"?"1":"0.6";
+  modeBtnSchool.style.boxShadow=m==="school"?"0 0 0 2px rgba(97,255,178,.8)":"none";
+  modeBtnSchool.style.opacity=m==="school"?"1":"0.6";
+}
+modeBtnSpo.addEventListener("click",()=>setMode("spo"));
+modeBtnSchool.addEventListener("click",()=>setMode("school"));
+setMode("spo");
+
+// Удалить офлайн игроков из prep overlay
+document.getElementById("prepBtnClearOffline").addEventListener("click",async()=>{
+  if(!sb)return;
+  try{
+    const{data}=await sb.from("quiz_players").select("student_name,team_name,last_seen").eq("game_id",GID);
+    if(!data)return;
+    const now=Date.now();
+    const offline=data.filter(r=>!r.last_seen||(now-new Date(r.last_seen).getTime())>=ONLINE_MS);
+    if(offline.length===0){alert("Все игроки онлайн — никого удалять не нужно.");return;}
+    if(!confirm(`Удалить ${offline.length} офлайн-игрока(ов)?\n${offline.map(r=>r.student_name).join(", ")}`))return;
+    for(const r of offline){
+      await sb.from("quiz_players").delete().eq("game_id",GID).eq("student_name",r.student_name).eq("team_name",r.team_name);
+    }
+  }catch(e){}
+});
+
+async function initPrep(){
+  updateQRBlock();
+  setTimeout(updateQRBlock, 100);
+  let tries=0;
+  prepDbStatus.innerHTML='<span style="color:var(--muted)">⏳ Загрузка SDK…</span>';
+  while(!window.supabase?.createClient&&tries<40){
+    await new Promise(r=>setTimeout(r,200));
+    tries++;
+    if(tries%5===0){
+      const sec=Math.round(tries/5);
+      prepDbStatus.innerHTML=`<span style="color:var(--muted)">⏳ Подключение… ${sec}с</span>`;
+    }
+  }
+  const sbReady=!!(window.supabase?.createClient);
+  if(sbReady && !sb){
+    try{ sb=window.supabase.createClient(SURL,SKEY); }catch(e){}
+  }
+
+  if(!sbReady||!sb){
+    prepDbStatus.innerHTML='<span style="color:#ffb347">⚠️ Нет интернета — работаем офлайн</span>';
+    prepPhase.innerHTML=`<span style="color:var(--muted);font-size:.75rem">Очки не сохранятся в базу</span>`;
+    prepBtnStart.disabled=false;
+    return;
+  }
+
+  // Проверяем соединение и текущее состояние
+  try{
+    const s=await getState();
+    // getState() возвращает null и при ошибке и при пустой таблице — различаем по прямому запросу
+    prepDbStatus.innerHTML='<span style="color:var(--ok)">✓ Подключено</span>';
+    prepBtnStart.disabled=false;
+
+    if(s&&s.phase&&s.phase!=="waiting"){
+      // Игра уже идёт — показываем предупреждение
+      const phaseLabel={running:"▶ Идёт",paused:"⏸ Пауза",ended:"✓ Завершена"}[s.phase]||s.phase;
+      prepPhase.innerHTML=`<span style="color:#ffe080">${phaseLabel}</span>`;
+      prepWarn.style.display="block";
+      prepBtnStart.style.display="none";
+      prepBtnResume.style.display="flex";
+      prepBtnReset.style.display="inline-flex";
+    }else{
+      prepPhase.innerHTML='<span style="color:var(--ok)">⏳ Ожидание (готово к старту)</span>';
+    }
+  }catch(e){
+    prepDbStatus.innerHTML='<span style="color:var(--err)">✗ Ошибка подключения к базе</span>';
+    prepBtnStart.disabled=false;
+    prepBtnStart.textContent="🔄 Повторить";
+    prepBtnStart.onclick=()=>{location.reload();};
+  }
+
+  // Загружаем игроков для отображения
+  if(sb){
+    try{
+      const{data}=await sb.from("quiz_players").select("student_name,team_name,last_seen").eq("game_id",GID).order("joined_at",{ascending:true});
+      if(data&&data.length>0){
+        prepPlayerCount.textContent=data.length;
+        const now=Date.now();
+        const onlineCount=data.filter(r=>r.last_seen&&(now-new Date(r.last_seen).getTime())<ONLINE_MS).length;
+        prepPlayerList.innerHTML=data.map(r=>{
+          const onl=r.last_seen&&(now-new Date(r.last_seen).getTime())<ONLINE_MS;
+          const ago=r.last_seen?Math.round((now-new Date(r.last_seen).getTime())/1000):null;
+          const agoStr=ago===null?"никогда":ago<60?ago+"с назад":Math.round(ago/60)+"мин назад";
+          return`<div class="prep-player">
+            <span style="width:8px;height:8px;border-radius:50%;background:${onl?"var(--ok)":"#555"};flex-shrink:0;${onl?"box-shadow:0 0 5px var(--ok)":""}"></span>
+            <b>${r.student_name}</b>
+            <span style="color:var(--muted);font-size:.7rem">${r.team_name||""}</span>
+            <span style="margin-left:auto;font-size:.67rem;color:${onl?"var(--ok)":"#777"}">${onl?"онлайн":agoStr}</span>
+          </div>`;
+        }).join("");
+        // Обновляем счётчик с разбивкой онлайн/всего
+        prepPlayerCount.innerHTML=`<span style="color:var(--ok)">${onlineCount}</span><span style="color:var(--muted);font-size:.75rem"> / ${data.length}</span>`;
+      }
+      // Предзагружаем knownPlayers
+      if(data)data.forEach(r=>knownPlayers.add(r.student_name+"_"+r.team_name));
+    }catch(e){}
+  }
+
+  // Обновляем список игроков каждые 3 сек пока overlay открыт
+  const pollPrep=setInterval(async()=>{
+    if(!prepOv||prepOv.style.display==="none"){clearInterval(pollPrep);return;}
+    if(!sb)return;
+    try{
+      const{data}=await sb.from("quiz_players").select("student_name,team_name,last_seen").eq("game_id",GID).order("joined_at",{ascending:true});
+      if(!data)return;
+      const now=Date.now();
+      const onlineCount=data.filter(r=>r.last_seen&&(now-new Date(r.last_seen).getTime())<ONLINE_MS).length;
+      prepPlayerCount.innerHTML=`<span style="color:var(--ok)">${onlineCount}</span><span style="color:var(--muted);font-size:.75rem"> / ${data.length}</span>`;
+      if(data.length===0){
+        prepPlayerList.innerHTML='<div style="font-size:.75rem;color:var(--muted);padding:6px">Никто ещё не зарегистрировался…</div>';
+      }else{
+        prepPlayerList.innerHTML=data.map(r=>{
+          const onl=r.last_seen&&(now-new Date(r.last_seen).getTime())<ONLINE_MS;
+          const ago=r.last_seen?Math.round((now-new Date(r.last_seen).getTime())/1000):null;
+          const agoStr=ago===null?"никогда":ago<60?ago+"с назад":Math.round(ago/60)+"мин назад";
+          return`<div class="prep-player">
+            <span style="width:8px;height:8px;border-radius:50%;background:${onl?"var(--ok)":"#555"};flex-shrink:0;${onl?"box-shadow:0 0 5px var(--ok)":""}"></span>
+            <b>${r.student_name}</b>
+            <span style="color:var(--muted);font-size:.7rem">${r.team_name||""}</span>
+            <span style="margin-left:auto;font-size:.67rem;color:${onl?"var(--ok)":"#777"}">${onl?"онлайн":agoStr}</span>
+          </div>`;
+        }).join("");
+        data.forEach(r=>knownPlayers.add(r.student_name+"_"+r.team_name));
+      }
+    }catch(e){}
+  },3000);
+}
+
+function enterPresenter(){
+  prepOv.style.display="none";
+  refreshUnified();
+  loadChat().then(subscribeChatRealtime);
+  setInterval(()=>getState().then(applyState).catch(()=>{}),1000);
+  setInterval(()=>{refreshUnified();refreshAnswered();},2000);
+  // Realtime: мгновенное уведомление о новых игроках
+  if(sb){
+    try{
+      sb.channel("pres_players_"+GID)
+        .on("postgres_changes",{event:"INSERT",schema:"public",table:"quiz_players",filter:"game_id=eq."+GID},
+          ()=>{ setTimeout(refreshUnified,300); }) // небольшая задержка для завершения upsert
+        .subscribe();
+    }catch(e){}
+  }
+  // Опрос готовности игроков
+  setInterval(refreshReady, 3000);
+}
+
+async function refreshReady(){
+  if(!sb) return;
+  try{
+    const since = new Date(Date.now()-120000).toISOString(); // последние 2 мин
+    const {data} = await sb.from("quiz_chat")
+      .select("sender_name,team_name,created_at,msg_type")
+      .eq("game_id",GID)
+      .in("msg_type",["ready","pause_request"])
+      .gte("created_at",since)
+      .order("id",{ascending:false});
+    if(!data) return;
+    // Дедупликация по имени для ready
+    const readySeen = new Map();
+    const pauseSeen = new Map();
+    data.forEach(r=>{
+      if(r.msg_type==="ready"&&!readySeen.has(r.sender_name)) readySeen.set(r.sender_name,r);
+      if(r.msg_type==="pause_request"&&!pauseSeen.has(r.sender_name)) pauseSeen.set(r.sender_name,r);
+    });
+    const panel = document.getElementById("readyPanel");
+    const list = document.getElementById("readyList");
+    const cnt = document.getElementById("readyCount");
+    if(!panel||!list||!cnt) return;
+    if(readySeen.size>0||pauseSeen.size>0){
+      panel.style.display="";
+      cnt.textContent = readySeen.size+pauseSeen.size;
+      let html="";
+      if(pauseSeen.size>0) html+=`<div style="font-size:.68rem;color:#ffe080;margin-bottom:4px">⏸ Просят паузу: `+
+        [...pauseSeen.values()].map(r=>`<b>${r.sender_name}</b>`).join(", ")+"</div>";
+      if(readySeen.size>0) html+=`<div style="display:flex;flex-wrap:wrap;gap:4px">`+
+        [...readySeen.values()].map(r=>`<span style="background:rgba(97,255,178,.12);border:1px solid rgba(97,255,178,.3);border-radius:999px;padding:2px 8px;font-size:.74rem">${r.sender_name}</span>`).join("")+"</div>";
+      list.innerHTML=html;
+    } else {
+      panel.style.display="none";
+    }
+  }catch(e){}
+}
+
+prepBtnStart.addEventListener("click",async()=>{
+  if(!sb){alert("Нет соединения с базой данных. Перезагрузите страницу.");return;}
+  prepBtnStart.disabled=true;
+  prepBtnStart.textContent="Запуск…";
+  try{
+    await sb.from("quiz_chat").delete().eq("game_id",GID);
+    await ups({phase:"waiting",current_index:0,question_started_at:null,show_answer:false,quiz_mode:selectedMode,round_type:null,bet_question_index:null,bet_correct_index:null,quiz_id:QUIZ_ID_CURRENT});
+  }catch(e){console.error(e);}
+  enterPresenter();
+});
+
+prepBtnResume.addEventListener("click",()=>{
+  enterPresenter();
+});
+
+prepBtnReset.addEventListener("click",async()=>{
+  if(!confirm("Сбросить игру и чат?"))return;
+  if(sb){
+    try{
+      await sb.from("quiz_chat").delete().eq("game_id",GID);
+      await ups({phase:"waiting",current_index:0,question_started_at:null,show_answer:false});
+    }catch(e){}
+  }
+  prepWarn.style.display="none";
+  prepPhase.innerHTML='<span style="color:var(--ok)">⏳ Ожидание (готово к старту)</span>';
+  prepBtnStart.style.display="flex";
+  prepBtnResume.style.display="none";
+  prepBtnReset.style.display="none";
+});
+
+// ── PDF ПРОТОКОЛ ──────────────────────────────────────────────
+$("btnPdfReport").addEventListener("click", generatePdfReport);
+
+async function generatePdfReport(){
+  if(!sb){alert("Нет соединения");return;}
+  const btn=$("btnPdfReport");
+  btn.textContent="Генерация...";btn.disabled=true;
+  try{
+    const [{data:scores},{data:players}] = await Promise.all([
+      sb.from("quiz_scores").select("*").eq("game_id",GID).order("score",{ascending:false}),
+      sb.from("quiz_players").select("*").eq("game_id",GID).order("joined_at",{ascending:true}),
+    ]);
+    const now=new Date();
+    const dateStr=now.toLocaleDateString("ru-RU",{day:"2-digit",month:"long",year:"numeric"});
+    const timeStr=now.toLocaleTimeString("ru-RU",{hour:"2-digit",minute:"2-digit"});
+    const mode=lastState?.quiz_mode==="school"?"Школьники (базовый уровень)":"СПО / Колледж (средний–сложный)";
+    const total=players?.length||0;
+    const online=(players||[]).filter(p=>p.last_seen&&(Date.now()-new Date(p.last_seen).getTime())<30000).length;
+
+    const rows=(scores||[]).map((r,i)=>{
+      const medal=i===0?"🥇":i===1?"🥈":i===2?"🥉":(i+1)+".";
+      const bg=i<3?"#fffbe6":"#fff";
+      const scoreColor=i===0?"#c47f00":i===1?"#777":i===2?"#a05030":"#2a6e2a";
+      return `<tr style="background:${bg}">
+        <td style="padding:7px 10px;font-weight:700;font-size:1rem">${medal}</td>
+        <td style="padding:7px 10px;font-weight:700">${r.student_name||"—"}${r.team_name?" / "+r.team_name:""}</td>
+        <td style="padding:7px 10px;color:#555">${r.institution_name||"—"}</td>
+        <td style="padding:7px 10px;text-align:right;font-weight:900;color:${scoreColor};font-size:1.05rem">${r.score??0}</td>
+        <td style="padding:7px 10px;text-align:center;color:#777">${r.questions_answered||0}</td>
+        <td style="padding:7px 10px;text-align:center;color:#777">${r.avg_answer_time!=null?r.avg_answer_time.toFixed(1)+" с":"—"}</td>
+      </tr>`;
+    }).join("");
+
+    const playersSummary=(players||[]).map(p=>
+      `${p.student_name} (${p.team_name||"б/г"}) — ${(scores||[]).find(s=>s.student_name===p.student_name)?.score??0} очков`
+    ).join("<br>");
+
+    const html=`<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<title>Арктический квиз — Протокол</title>
+<style>
+  @page{margin:18mm 14mm;}
+  body{font-family:"Arial",sans-serif;color:#1a2a3a;margin:0;padding:0 20px;font-size:12px;max-width:960px;margin:0 auto;}
+  .header{background:linear-gradient(135deg,#05143c 0%,#0a2060 100%);color:#fff;padding:18px 24px 14px;border-radius:8px;margin-bottom:18px;margin-top:12px;}
+  .header h1{margin:0 0 4px;font-size:20px;color:#4fc8f0;letter-spacing:.04em;}
+  .header .meta{font-size:10px;color:#a0b8d8;display:flex;justify-content:space-between;flex-wrap:wrap;gap:4px;}
+  h2{font-size:13px;color:#054a8c;text-transform:uppercase;letter-spacing:.08em;margin:18px 0 8px;padding-bottom:4px;border-bottom:2px solid #c8dff0;}
+  table{width:100%;border-collapse:collapse;margin-bottom:12px;}
+  th{background:#05143c;color:#4fc8f0;font-size:9px;text-transform:uppercase;letter-spacing:.08em;padding:7px 10px;text-align:left;}
+  td{border-bottom:1px solid #e8f0f8;font-size:11px;}
+  tr:last-child td{border-bottom:none;}
+  .stats-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:14px;}
+  .stat-box{background:#f0f6ff;border:1px solid #c8dff0;border-radius:8px;padding:10px;text-align:center;}
+  .stat-num{font-size:20px;font-weight:900;color:#054a8c;}
+  .stat-lbl{font-size:9px;color:#777;text-transform:uppercase;letter-spacing:.07em;}
+  .footer{margin-top:24px;padding-top:8px;border-top:1px solid #ddd;font-size:9px;color:#999;display:flex;justify-content:space-between;font-style:italic;}
+  @media print{body{-webkit-print-color-adjust:exact;print-color-adjust:exact;}}
+</style>
+</head>
+<body>
+<div class="header">
+  <h1>🏔 АРКТИЧЕСКИЙ КВИЗ</h1>
+  <div class="meta">
+    <span>Протокол игры &nbsp;•&nbsp; ${dateStr} &nbsp;•&nbsp; ${timeStr}</span>
+    <span>Режим: ${mode} &nbsp;•&nbsp; Вопросов: ${Q.length}</span>
+    <span>Разработано: Широков А.Д.</span>
+  </div>
+</div>
+
+<div class="stats-grid">
+  <div class="stat-box"><div class="stat-num">${total}</div><div class="stat-lbl">Участников</div></div>
+  <div class="stat-box"><div class="stat-num">${online}</div><div class="stat-lbl">Онлайн</div></div>
+  <div class="stat-box"><div class="stat-num">${(scores||[]).filter(s=>s.questions_answered>0).length}</div><div class="stat-lbl">Ответили</div></div>
+</div>
+
+<h2>Итоговая таблица результатов</h2>
+<table>
+  <thead><tr>
+    <th style="width:40px">#</th>
+    <th>Студент / Команда</th>
+    <th>Учреждение</th>
+    <th style="width:55px;text-align:right">Очки</th>
+    <th style="width:50px;text-align:center">Вопр.</th>
+    <th style="width:70px;text-align:center">Ср.время</th>
+  </tr></thead>
+  <tbody>${rows||"<tr><td colspan=6 style='padding:12px;color:#999;text-align:center'>Нет данных</td></tr>"}</tbody>
+</table>
+
+<h2>Список участников</h2>
+<div style="font-size:11px;line-height:1.9;color:#444">${playersSummary||"Нет данных"}</div>
+
+<div class="footer">
+  <span>Арктический квиз &nbsp;•&nbsp; Разработано: Широков А.Д.</span>
+  <span>Протокол сформирован: ${dateStr} в ${timeStr}</span>
+</div>
+
+</div>
+
+</body></html>`;
+
+    // Показываем в новом окне + предлагаем скачать как HTML→PDF
+    const blob = new Blob([html], {type:"text/html;charset=utf-8"});
+    const blobUrl = URL.createObjectURL(blob);
+    const w = window.open(blobUrl,"_blank","width=960,height=720");
+    if(w){
+      setTimeout(()=>{ w.print(); },800);
+    }
+    // Кнопка скачать HTML-файл (открывается и печатается как PDF)
+    const a = document.createElement("a");
+    a.href = blobUrl;
+    a.download = "arktika_kviz_protokol_"+new Date().toLocaleDateString("ru-RU").replace(/\./g,"-")+".html";
+    a.style.cssText="position:fixed;bottom:80px;right:20px;z-index:9999;padding:10px 18px;background:linear-gradient(120deg,#61ffb2,#00c97a);color:#012010;border-radius:999px;font-weight:800;font-size:.85rem;text-decoration:none;box-shadow:0 4px 20px rgba(97,255,178,.4)";
+    a.textContent="⬇ Скачать HTML-файл протокола";
+    document.body.appendChild(a);
+    setTimeout(()=>a.remove(), 12000);
+  }catch(err){
+    alert("Ошибка генерации: "+err.message);
+  }finally{
+    btn.textContent="📄 PDF протокол";btn.disabled=false;
+  }
+}
+
+let sgTimerInterval = null;
+
+async function openSuperGame(){
+  if(!sb){alert("Нет соединения");return;}
+  const{data:scores}=await sb.from("quiz_scores").select("*").eq("game_id",GID).order("score",{ascending:false});
+  if(!scores||scores.length===0){alert("Нет данных о результатах.");return;}
+
+  const ranked=[...scores].sort((a,b)=>{
+    if(b.score!==a.score) return b.score-a.score;
+    const at=a.avg_answer_time??99, bt=b.avg_answer_time??99;
+    if(at!==bt) return at-bt;
+    return (a.student_name||"").localeCompare(b.student_name||"");
+  });
+
+  const topScore=ranked[0]?.score??0;
+  const tied=scores.filter(s=>s.score===topScore);
+  const hasTie=tied.length>1;
+
+  if(sgTimerInterval){clearInterval(sgTimerInterval);sgTimerInterval=null;}
+  let ov=document.getElementById("sgOverlay");
+  if(ov)ov.remove();
+  ov=document.createElement("div");
+  ov.id="sgOverlay";ov.className="sg-ov";
+
+  const medals=["🥇","🥈","🥉"];
+  const timedNames=hasTie?tied.map(r=>`<span style="font-weight:700;color:#ffe080">${r.student_name||r.team_name||"—"}</span>`).join(", "):"";
+
+  ov.innerHTML=`
+  <div class="sg-card" style="width:min(820px,100%)">
+    <div class="sg-title" style="font-size:1.4rem">⚡ СУПЕРИГРА</div>
+
+    ${hasTie?`
+    <!-- БЛОК ТАЙБРЕЙК-ВОПРОСА -->
+    <div style="background:linear-gradient(135deg,rgba(255,180,0,.12),rgba(255,80,0,.08));border:2px solid rgba(255,200,80,.5);border-radius:16px;padding:18px 22px;">
+      <div style="font-size:.75rem;text-transform:uppercase;letter-spacing:.1em;color:#ffb347;font-weight:800;margin-bottom:10px;">⚡ ТАЙБРЕЙК — ВОПРОС ДЛЯ УЧАСТНИКОВ С НИЧЬЁЙ</div>
+      <div style="font-size:.82rem;color:#ffe080;margin-bottom:12px;">
+        Участники: ${timedNames} — набрали по <b style="color:#ffd36b">${topScore} очков</b>.<br>
+        <span style="color:var(--muted);font-size:.75rem">Задайте им вопрос вслух. Кто ответит первым и правильно — победитель!</span>
+      </div>
+
+      <!-- Таймер -->
+      <div style="display:flex;align-items:center;gap:24px;margin-bottom:16px;">
+        <div class="sg-timer-ring sg-glow" id="sgTimerRing">
+          <svg class="sg-timer-svg" width="90" height="90" viewBox="0 0 90 90">
+            <circle cx="45" cy="45" r="40" fill="none" stroke="rgba(255,255,255,.1)" stroke-width="7"/>
+            <circle id="sgTimerArc" cx="45" cy="45" r="40" fill="none" stroke="#ffd36b" stroke-width="7"
+              stroke-dasharray="251.2" stroke-dashoffset="0" stroke-linecap="round"
+              style="transition:stroke-dashoffset .9s linear,stroke .5s"/>
+          </svg>
+          <div class="sg-timer-num" id="sgTimerNum">60</div>
+        </div>
+        <div style="flex:1">
+          <div class="sg-question-box" id="sgQBox">
+            <div class="sg-q-text" id="sgQText" style="display:none">${SG_QUESTION.q}</div>
+            <div id="sgOptsWrap" class="sg-opts" style="display:none">
+              ${SG_QUESTION.opts.map((o,i)=>`<div class="sg-opt" id="sgOpt${i}">${['А','Б','В','Г'][i]}. ${o}</div>`).join("")}
+            </div>
+            <div id="sgQPlaceholder" style="color:var(--muted);font-size:.85rem;padding:10px">
+              🎯 Нажмите <b>«Показать вопрос»</b> чтобы запустить таймер и открыть вопрос
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Кнопки управления тайбрейком -->
+      <div style="display:flex;gap:8px;flex-wrap:wrap;">
+        <button class="btn" id="sgBtnShowQ" style="background:linear-gradient(120deg,#ffd36b,#ff9f1c);color:#1a0f00;font-weight:800;font-size:.82rem;">▶ Показать вопрос</button>
+        <button class="btn bg" id="sgBtnReveal" disabled>✓ Показать ответ</button>
+        <button class="btn bd btn-sm" id="sgBtnStop">⏹ Стоп таймер</button>
+      </div>
+
+      <!-- Объяснение (скрыто) -->
+      <div id="sgExplanation" style="display:none;margin-top:12px;background:rgba(97,255,178,.07);border:1px solid rgba(97,255,178,.3);border-radius:10px;padding:12px 16px;font-size:.8rem;color:var(--ok);line-height:1.6;">
+        <b>Правильный ответ:</b> ${SG_QUESTION.opts[SG_QUESTION.ci]}<br>
+        <span style="color:var(--muted)">${SG_QUESTION.explanation}</span>
+      </div>
+    </div>`:
+    `<div style="background:rgba(97,255,178,.07);border:1px solid rgba(97,255,178,.35);border-radius:12px;padding:12px 16px;font-size:.82rem;color:var(--ok);">
+      ✅ Ничьи нет — победитель определён однозначно по очкам!
+    </div>`}
+
+    <!-- ИТОГОВАЯ ТАБЛИЦА -->
+    <div>
+      <div style="font-size:.68rem;color:var(--muted);text-transform:uppercase;letter-spacing:.09em;margin-bottom:6px;">Итоговый рейтинг</div>
+      <table class="sg-table">
+        <thead><tr>
+          <th>#</th><th>Участник</th><th>Команда / Группа</th><th style="text-align:right">Очки</th>
+          <th style="text-align:right">Ср. время</th><th style="text-align:center">Статус</th>
+        </tr></thead>
+        <tbody>
+          ${ranked.map((r,i)=>{
+            const isTied=r.score===topScore&&hasTie;
+            const isWinner=i===0&&!hasTie;
+            const rowCls=isWinner?"winner":isTied?"tied":"";
+            const medal=medals[i]||(i+1);
+            const spd=r.avg_answer_time!=null?r.avg_answer_time.toFixed(1)+" с":"—";
+            const badge=isWinner?'<span style="background:rgba(97,255,178,.2);border:1px solid rgba(97,255,178,.6);border-radius:999px;padding:1px 7px;font-size:.65rem;color:var(--ok)">🏆 Победитель</span>'
+              :isTied?'<span style="background:rgba(255,200,80,.15);border:1px solid rgba(255,200,80,.5);border-radius:999px;padding:1px 7px;font-size:.65rem;color:#ffe080">⚡ Тайбрейк</span>':""
+            return`<tr class="${rowCls}">
+              <td style="font-size:1rem">${medal}</td>
+              <td><b>${r.student_name||"—"}</b></td>
+              <td style="color:var(--muted);font-size:.75rem">${r.team_name||"—"}${r.institution_name?" · "+r.institution_name:""}</td>
+              <td style="text-align:right;font-weight:700;color:var(--gold)">${r.score??0}</td>
+              <td style="text-align:right;font-size:.78rem;color:${isTied?"#4fdfff":"var(--muted)"}">${spd}</td>
+              <td style="text-align:center">${badge}</td>
+            </tr>`;
+          }).join("")}
+        </tbody>
+      </table>
+    </div>
+
+    <div style="display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap;">
+      <button class="btn bg btn-sm" id="sgBtnPdf" style="border-color:rgba(97,255,178,.4);color:var(--ok);">📄 PDF протокол</button>
+      <button class="btn bp btn-sm" onclick="if(sgTimerInterval){clearInterval(sgTimerInterval);sgTimerInterval=null;}document.getElementById('sgOverlay').remove()">✓ Закрыть</button>
+    </div>
+  </div>`;
+
+  document.body.appendChild(ov);
+  document.getElementById("sgBtnPdf")?.addEventListener("click",generatePdfReport);
+
+  // Логика тайбрейк-таймера
+  if(hasTie){
+    const btnShow=document.getElementById("sgBtnShowQ");
+    const btnReveal=document.getElementById("sgBtnReveal");
+    const btnStop=document.getElementById("sgBtnStop");
+    const timerNum=document.getElementById("sgTimerNum");
+    const timerArc=document.getElementById("sgTimerArc");
+    const timerRing=document.getElementById("sgTimerRing");
+    const qText=document.getElementById("sgQText");
+    const optsWrap=document.getElementById("sgOptsWrap");
+    const placeholder=document.getElementById("sgQPlaceholder");
+    const explanation=document.getElementById("sgExplanation");
+    let timeLeft=60;
+
+    const stopTimer=()=>{
+      if(sgTimerInterval){clearInterval(sgTimerInterval);sgTimerInterval=null;}
+      timerRing.classList.remove("sg-glow");
+    };
+
+    const startTimer=()=>{
+      timeLeft=60;
+      timerNum.textContent=60;
+      timerArc.style.stroke="#ffd36b";
+      timerArc.style.strokeDashoffset="0";
+      sgTimerInterval=setInterval(()=>{
+        timeLeft--;
+        timerNum.textContent=timeLeft;
+        const progress=(60-timeLeft)/60;
+        timerArc.style.strokeDashoffset=String(251.2*progress);
+        if(timeLeft<=15) timerArc.style.stroke="#ff5f7a";
+        else if(timeLeft<=30) timerArc.style.stroke="#ffb347";
+        if(timeLeft<=0){
+          stopTimer();
+          timerNum.textContent="0";
+          timerNum.style.color="#ff5f7a";
+          btnReveal.disabled=false;
+          btnReveal.style.background="linear-gradient(120deg,#61ffb2,#00c97a)";
+          btnReveal.style.color="#012010";
+        }
+      },1000);
+    };
+
+    btnShow.addEventListener("click",()=>{
+      placeholder.style.display="none";
+      qText.style.display="block";
+      optsWrap.style.display="grid";
+      btnShow.disabled=true;
+      btnReveal.disabled=false;
+      startTimer();
+    });
+
+    btnReveal.addEventListener("click",()=>{
+      stopTimer();
+      document.getElementById("sgOpt"+SG_QUESTION.ci).classList.add("correct");
+      SG_QUESTION.opts.forEach((_,i)=>{if(i!==SG_QUESTION.ci)document.getElementById("sgOpt"+i).classList.add("incorrect");});
+      explanation.style.display="block";
+      btnReveal.disabled=true;
+    });
+
+    btnStop.addEventListener("click",()=>{
+      stopTimer();
+      btnStop.disabled=true;
+    });
+  }
+}
+
+
+// ── БЛИЦ-РАУНД ────────────────────────────────────────────────
+$("btnSuperGame").addEventListener("click", openSuperGame);
+$("btnBlitz").addEventListener("click", openBlitz);
+
+let blitzTimerInt = null;
+let blitzPollInt = null;
+
+function getBlitzQuestions(){
+  const mode = lastState?.quiz_mode || selectedMode || "spo";
+  const qid = lastState?.quiz_id||QUIZ_ID_CURRENT||QUIZ_ID;
+  const blitzMap = {
+    ecology: Q_ECO_BLITZ,
+    history: typeof Q_HISTORY_BLITZ!=='undefined'?Q_HISTORY_BLITZ:null,
+    science: typeof Q_SCIENCE_BLITZ!=='undefined'?Q_SCIENCE_BLITZ:null,
+    patriot: typeof Q_PATRIOT_BLITZ!=='undefined'?Q_PATRIOT_BLITZ:null,
+    geo:     typeof Q_GEO_BLITZ!=='undefined'?Q_GEO_BLITZ:null,
+    space:   typeof Q_SPACE_BLITZ!=='undefined'?Q_SPACE_BLITZ:null,
+    sport:   typeof Q_SPORT_BLITZ!=='undefined'?Q_SPORT_BLITZ:null,
+  };
+  if(blitzMap[qid]) return blitzMap[qid];
+  return mode === "school" ? Q_BLITZ_SCHOOL : Q_BLITZ_SPO;
+}
+function getBetQuestions(){
+  const mode = lastState?.quiz_mode || selectedMode || "spo";
+  const qid2 = lastState?.quiz_id||QUIZ_ID_CURRENT||QUIZ_ID;
+  const betMap = {
+    ecology: Q_ECO_BET,
+    history: typeof Q_HISTORY_BET!=='undefined'?Q_HISTORY_BET:null,
+    science: typeof Q_SCIENCE_BET!=='undefined'?Q_SCIENCE_BET:null,
+    patriot: typeof Q_PATRIOT_BET!=='undefined'?Q_PATRIOT_BET:null,
+    geo:     typeof Q_GEO_BET!=='undefined'?Q_GEO_BET:null,
+    space:   typeof Q_SPACE_BET!=='undefined'?Q_SPACE_BET:null,
+    sport:   typeof Q_SPORT_BET!=='undefined'?Q_SPORT_BET:null,
+  };
+  if(betMap[qid2]) return betMap[qid2];
+  return mode === "school" ? Q_BET_SCHOOL : Q_BET_SPO;
+}
+
+function openBlitz(){
+  if(blitzTimerInt){clearInterval(blitzTimerInt);blitzTimerInt=null;}
+  const Qb = getBlitzQuestions();
+
+  let ov = document.getElementById("blitzOverlay");
+  if(ov) ov.remove();
+  ov = document.createElement("div");
+  ov.id = "blitzOverlay"; ov.className = "round-ov";
+
+  // Отправляем команду игрокам — они сами проходят блиц
+  ups({round_type:"blitz_start",current_index:lastState?.current_index??0});
+
+  blitzPollInt = null;
+  // Данные игроков: {name, score, answered, lastSeen}
+  let playerScores = {};
+
+  const refreshBlitzTable = async () => {
+    if(!sb) return;
+    try {
+      const {data} = await sb.from("quiz_scores")
+        .select("student_name,team_name,score,questions_answered,updated_at")
+        .eq("game_id", GID);
+      if(data){
+        data.forEach(r=>{
+          playerScores[r.student_name] = {
+            name: r.student_name, team: r.team_name||"",
+            score: r.score||0, answered: r.questions_answered||0,
+            updated: r.updated_at
+          };
+        });
+        renderBlitzTable();
+      }
+    }catch(e){}
+  };
+
+  const renderBlitzTable = () => {
+    const tb = document.getElementById("blitzLiveTable");
+    if(!tb) return;
+    const rows = Object.values(playerScores).sort((a,b)=>b.score-a.score);
+    if(rows.length===0){tb.innerHTML="<tr><td colspan=4 style='color:var(--muted);padding:8px;text-align:center'>Ожидаем игроков…</td></tr>";return;}
+    tb.innerHTML = rows.map((r,i)=>{
+      const upd = r.updated ? Math.round((Date.now()-new Date(r.updated).getTime())/1000) : null;
+      const fresh = upd!==null && upd < 5;
+      return `<tr style="${fresh?"background:rgba(97,255,178,.06)":""}">
+        <td style="padding:5px 8px;font-size:.85rem">${i+1}</td>
+        <td style="padding:5px 8px;font-weight:700">${r.name}</td>
+        <td style="padding:5px 8px;font-size:.8rem;color:var(--muted)">${r.team}</td>
+        <td style="padding:5px 8px;text-align:right;font-weight:700;color:var(--gold)">${r.score}</td>
+        <td style="padding:5px 8px;text-align:center;font-size:.75rem;color:${fresh?"var(--ok)":"var(--muted)"}">${fresh?"● отвечает":upd!==null?upd+"с назад":"—"}</td>
+      </tr>`;
+    }).join("");
+  };
+
+  ov.innerHTML = `
+  <div class="round-card blitz" style="max-width:680px;width:min(680px,95vw)">
+    <div class="round-title blitz">⚡ БЛИЦ-РАУНД — АВТО-РЕЖИМ</div>
+    <div style="background:rgba(249,115,22,.08);border:1px solid rgba(249,115,22,.25);border-radius:10px;padding:10px 14px;font-size:.8rem;color:#fed7aa;text-align:center;margin-bottom:4px">
+      🎮 Игроки проходят ${Qb.length} вопросов самостоятельно на своих устройствах (10 сек/вопрос)<br>
+      <span style="font-size:.72rem;opacity:.8">Вы наблюдаете в реальном времени. Завершите раунд когда все ответят.</span>
+    </div>
+    <div style="font-size:.65rem;color:var(--muted);text-transform:uppercase;letter-spacing:.09em;margin-bottom:6px;display:flex;justify-content:space-between">
+      <span>Результаты в реальном времени</span>
+      <span id="blitzLiveCount" style="color:#f97316"></span>
+    </div>
+    <div style="overflow-x:auto">
+      <table style="width:100%;border-collapse:collapse">
+        <thead><tr style="font-size:.65rem;color:var(--muted);text-transform:uppercase;border-bottom:1px solid rgba(255,255,255,.08)">
+          <th style="padding:4px 8px;text-align:left">#</th>
+          <th style="padding:4px 8px;text-align:left">Игрок</th>
+          <th style="padding:4px 8px;text-align:left">Команда</th>
+          <th style="padding:4px 8px;text-align:right">Очки</th>
+          <th style="padding:4px 8px;text-align:center">Статус</th>
+        </tr></thead>
+        <tbody id="blitzLiveTable"><tr><td colspan=5 style="color:var(--muted);padding:10px;text-align:center">Загрузка…</td></tr></tbody>
+      </table>
+    </div>
+    <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:8px">
+      <button class="btn" id="blitzEndBtn" style="background:linear-gradient(120deg,#f97316,#dc2626);color:#fff">✓ Завершить блиц</button>
+      <button class="btn bg btn-sm" onclick="if(blitzPollInt)clearInterval(blitzPollInt);if(blitzTimerInt)clearInterval(blitzTimerInt);ups({round_type:''});document.getElementById('blitzOverlay').remove()">✕ Закрыть</button>
+    </div>
+  </div>`;
+  document.body.appendChild(ov);
+
+  blitzPollInt = setInterval(()=>{
+    refreshBlitzTable();
+    const cnt = document.getElementById("blitzLiveCount");
+    if(cnt) cnt.textContent = Object.keys(playerScores).length + " игроков";
+  }, 2000);
+  refreshBlitzTable();
+
+  document.getElementById("blitzEndBtn")?.addEventListener("click", ()=>{
+    clearInterval(blitzPollInt); blitzPollInt = null;
+    if(blitzTimerInt){clearInterval(blitzTimerInt);blitzTimerInt=null;}
+    ups({round_type:""});
+    ov.remove();
+  });
+
+  // Заглушка для совместимости
+  const render = () => {};
+  const qi = 0;
+  render(); // заглушка вызвана выше
+}
+
+// ── РАУНД СТАВОК ────────────────────────────────────────────────
+$("btnBetting").addEventListener("click", openBetting);
+
+let bettingTimerInt = null;
+
+function openBetting(){
+  if(bettingTimerInt){clearInterval(bettingTimerInt);bettingTimerInt=null;}
+  const Qbet = getBetQuestions();
+  let qi = 0;
+
+  let ov = document.getElementById("bettingOverlay");
+  if(ov) ov.remove();
+  ov = document.createElement("div");
+  ov.id = "bettingOverlay"; ov.className = "round-ov";
+
+  const renderBet = () => {
+    const q = Qbet[qi];
+    // Уведомляем игроков: собираем ставки
+    ups({round_type:"betting_chips",bet_question_index:qi,bet_correct_index:null});
+    ov.innerHTML = `
+    <div class="round-card betting">
+      <div class="round-title betting">🎰 РАУНД СТАВОК</div>
+      <div style="font-size:.72rem;color:var(--muted);text-align:center">Вопрос ${qi+1} из ${Qbet.length}</div>
+
+      <!-- Этап 1: сбор ставок -->
+      <div id="betPhase1">
+        <div style="background:rgba(167,139,250,.08);border:1px solid rgba(167,139,250,.3);border-radius:12px;padding:12px 16px;font-size:.8rem;color:#c4b5fd;text-align:center;">
+          📲 Игроки делают ставки на своих устройствах<br>
+          <span style="font-size:.72rem;opacity:.7">Дайте 30–60 сек. Когда все поставили — нажмите «Открыть вопрос»</span>
+        </div>
+        <div style="margin-top:8px;">
+          <div style="font-size:.65rem;color:var(--muted);text-transform:uppercase;letter-spacing:.09em;margin-bottom:6px;display:flex;justify-content:space-between;align-items:center;">
+            <span>Ставки игроков <span id="betStakeCount" style="color:#a78bfa">0</span></span>
+            <span id="betStakeTotal" style="font-size:.62rem"></span>
+          </div>
+          <div class="bet-live-list" id="betLiveList"><div style="color:var(--muted);font-size:.75rem;padding:4px">Ожидание ставок…</div></div>
+        </div>
+        <div style="display:flex;align-items:center;gap:12px;padding:12px 0;">
+          <div style="font-size:2.5rem;font-weight:900;color:#a78bfa;min-width:50px;text-align:center" id="betTnum">45</div>
+          <div style="flex:1">
+            <div style="height:8px;background:rgba(255,255,255,.07);border-radius:999px;overflow:hidden">
+              <div id="betTbar" style="height:100%;border-radius:inherit;background:linear-gradient(90deg,#a78bfa,#7c3aed);width:100%;transition:width .5s linear"></div>
+            </div>
+            <div style="font-size:.7rem;color:var(--muted);margin-top:4px">Таймер сбора ставок (можно не ждать)</div>
+          </div>
+        </div>
+        <div style="display:flex;gap:8px;">
+          <button class="btn" id="betBtnOpen" style="flex:1;background:linear-gradient(120deg,#a78bfa,#7c3aed);color:#fff;">▶ Открыть вопрос</button>
+          <button class="btn bg btn-sm" id="betBtnSkipTimer">⏩ Пропустить таймер</button>
+        </div>
+      </div>
+
+      <!-- Этап 2: вопрос -->
+      <div id="betPhase2" style="display:none">
+        <div class="bet-q" id="betQtext">${q.q}</div>
+        <div class="bet-answer-grid" id="betAns">
+          ${q.opts.map((o,i)=>`<div class="bet-ans" id="betAns${i}">${["А","Б","В","Г"][i]}. ${o}</div>`).join("")}
+        </div>
+        <div style="display:flex;gap:8px;margin-top:4px;">
+          <button class="btn" id="betBtnReveal" style="flex:1;background:linear-gradient(120deg,#a78bfa,#7c3aed);color:#fff;">✓ Показать ответ</button>
+        </div>
+      </div>
+
+      <!-- Этап 3: ответ раскрыт -->
+      <div id="betPhase3" style="display:none">
+        <div id="betResultInfo" style="text-align:center;padding:10px;"></div>
+        <div style="display:flex;gap:8px;">
+          <button class="btn bp" id="betBtnNextQ" ${qi>=Qbet.length-1?"style='display:none'":""}>Следующий вопрос ▶</button>
+          <button class="btn bg btn-sm" onclick="if(bettingTimerInt)clearInterval(bettingTimerInt);ups({round_type:''});document.getElementById('bettingOverlay').remove()">✕ Закрыть</button>
+        </div>
+      </div>
+
+    </div>`;
+    document.body.appendChild(ov);
+
+    // Запускаем таймер ставок
+    let betTime = 45;
+    let stakesPollInt = null;
+    
+    const refreshStakes = async () => {
+      if(!sb) return;
+      try {
+        const since = new Date(Date.now()-120000).toISOString();
+        const {data} = await sb.from("quiz_chat")
+          .select("sender_name,team_name,message")
+          .eq("game_id",GID).eq("msg_type","bet")
+          .gte("created_at",since)
+          .order("id",{ascending:false});
+        const listEl = document.getElementById("betLiveList");
+        const cntEl = document.getElementById("betStakeCount");
+        if(!listEl||!data) return;
+        // Дедупликация по имени (берём последнюю ставку)
+        const seen = new Map();
+        data.forEach(r=>{ if(!seen.has(r.sender_name)) seen.set(r.sender_name,r); });
+        const rows = [...seen.values()];
+        cntEl.textContent = rows.length;
+        if(rows.length===0){listEl.innerHTML="<div style='color:var(--muted);font-size:.75rem;padding:4px'>Ожидание ставок…</div>";return;}
+        const stakes={0:0,1:0,2:0,3:0};
+        rows.forEach(r=>{const v=Number(r.message)||0;stakes[v]=(stakes[v]||0)+1;});
+        const totalEl=document.getElementById("betStakeTotal");
+        if(totalEl) totalEl.textContent=`0:${stakes[0]} | +1:${stakes[1]} | +2:${stakes[2]} | +3:${stakes[3]}`;
+        listEl.innerHTML = rows.map(r=>{
+          const v=Number(r.message)||0;
+          const cls="bet-stake-"+Math.min(v,3);
+          const lbl=["0 (без риска)","1 очко","2 очка","3 очка"][v]||v;
+          const nm=r.sender_name||(r.team_name||"—");
+          return `<div class="bet-live-row"><span>${nm}</span><span class="bet-stake-badge ${cls}">${lbl}</span></div>`;
+        }).join("");
+      } catch(e){}
+    };
+    
+    refreshStakes();
+    stakesPollInt = setInterval(refreshStakes, 2000);
+    
+    bettingTimerInt = setInterval(()=>{
+      betTime--;
+      const tn = document.getElementById("betTnum");
+      const tb = document.getElementById("betTbar");
+      if(tn) tn.textContent = betTime;
+      if(tb) tb.style.width = (betTime/45*100)+"%";
+      if(betTime <= 0){clearInterval(bettingTimerInt);bettingTimerInt=null;}
+    },1000);
+
+    document.getElementById("betBtnSkipTimer")?.addEventListener("click",()=>{
+      clearInterval(bettingTimerInt);bettingTimerInt=null;
+    });
+
+    document.getElementById("betBtnOpen")?.addEventListener("click",()=>{
+      clearInterval(bettingTimerInt);bettingTimerInt=null;
+      if(stakesPollInt){clearInterval(stakesPollInt);stakesPollInt=null;}
+      document.getElementById("betPhase1").style.display="none";
+      document.getElementById("betPhase2").style.display="";
+      // Уведомляем игроков через Supabase что ставки закрыты
+      ups({round_type:"betting_open",bet_question_index:qi});
+    });
+
+    document.getElementById("betBtnReveal")?.addEventListener("click",()=>{
+      const qnow = Qbet[qi];
+      qnow.opts.forEach((_,i)=>{
+        const el = document.getElementById("betAns"+i);
+        if(!el) return;
+        if(i===qnow.ci) el.classList.add("correct");
+        else el.classList.add("wrong");
+      });
+      document.getElementById("betPhase2").style.display="none";
+      document.getElementById("betPhase3").style.display="";
+      const ri = document.getElementById("betResultInfo");
+      if(ri) ri.innerHTML = `
+        <div style="font-size:1.1rem;font-weight:800;color:var(--ok);margin-bottom:8px">
+          Правильный ответ: ${["А","Б","В","Г"][qnow.ci]}. ${qnow.opts[qnow.ci]}
+        </div>
+        <div style="font-size:.8rem;color:var(--muted)">
+          Игроки, поставившие и угадавшие — получают очки × ставка.<br>
+          Проигравшие — теряют ставку.
+        </div>`;
+      // Уведомляем игроков
+      ups({round_type:"betting_reveal",bet_question_index:qi,bet_correct_index:qnow.ci});
+    });
+
+    document.getElementById("betBtnNextQ")?.addEventListener("click",()=>{
+      qi++;
+      if(qi >= Qbet.length){
+        ups({round_type:""});
+        ov.innerHTML=`<div class="round-card betting"><div class="round-title betting">🎰 СТАВКИ — ЗАВЕРШЕНЫ</div><div style="text-align:center;padding:20px;color:var(--muted)">Все вопросы раунда ставок показаны!</div><button class="btn bp" onclick="ups({round_type:''});document.getElementById('bettingOverlay').remove()">✓ Закрыть</button></div>`;
+        document.body.appendChild(ov);
+        return;
+      }
+      renderBet();
+    });
+  };
+
+  renderBet();
+}
+
+
+// ══ РЕЖИМ ПРОВЕДЕНИЯ ══
+let presenterMode = localStorage.getItem("presenterMode") || "offline"; // offline=очно, online=онлайн
+
+function togglePresenterMode(){
+  presenterMode = presenterMode==="offline" ? "online" : "offline";
+  localStorage.setItem("presenterMode", presenterMode);
+  applyPresenterMode();
+}
+
+function applyPresenterMode(){
+  // Обновляем название квиза из URL
+  const qNames={arctic:"🧊 Арктический квиз",ecology:"🌿 Экология и природа"};
+  const qName = qNames[QUIZ_ID] || "Квиз";
+  document.title = qName + " (Ведущий)";
+  // Показываем бейдж квиза в топбаре
+  const qBadge=document.getElementById("topbarQuizName");
+  if(qBadge) qBadge.textContent=qName;
+  const ttlBadge=document.getElementById("quizNameBadge");
+  if(ttlBadge) ttlBadge.textContent="🎙 Ведущий · "+qName;
+  // Показываем бейдж в prep overlay
+  const hubBadge=document.getElementById("hubQuizBadge");
+  if(hubBadge&&QUIZ_ID!=="arctic"){
+    hubBadge.style.display="";
+    hubBadge.textContent="📌 Квиз из хаба: "+qName;
+  }
+  // Если mode задан из URL — автоматически применяем
+  // Обновляем subtitle с названием квиза
+  const subEl=document.getElementById("presenterSub");
+  if(subEl) subEl.textContent="Управляйте игрой. Студенты видят вопросы в реальном времени.";
+  // Если mode задан из хаба — автоматически применяем
+  if(URL_MODE){
+    selectedMode=URL_MODE;
+    setTimeout(()=>{
+      const btn=document.getElementById(URL_MODE==="school"?"btnModeSchool":"btnModeSpo");
+      if(btn) btn.click();
+    },200);
+  }
+  const btn = document.getElementById("btnMode");
+  const disp = document.getElementById("modeDisplay");
+  const desc = document.getElementById("modeDesc");
+  const offB = document.getElementById("offlineCodeBlock");
+  const onlB = document.getElementById("onlineCodeBlock");
+  if(presenterMode==="online"){
+    if(offB) offB.style.display="none";
+    if(onlB) onlB.style.display="";
+    if(btn){btn.textContent="🌐 ОНЛАЙН";btn.style.color="#a78bfa";btn.style.borderColor="rgba(167,139,250,.5)";btn.style.background="rgba(167,139,250,.08)";}
+    if(disp){disp.textContent="🌐 Онлайн-мероприятие";disp.style.color="#a78bfa";}
+    if(desc)desc.textContent="Участники подключаются из разных городов";
+    QT=35;
+    showModeHint("🌐 Онлайн-режим","Таймер 35 сек. Вопрос скрыт до нажатия «Показать вопрос». Участники подключаются по ссылке.");
+  } else {
+    if(offB) offB.style.display="";
+    if(onlB) onlB.style.display="none";
+    if(btn){btn.textContent="🖥 ОЧНО";btn.style.color="var(--accent)";btn.style.borderColor="rgba(79,223,255,.4)";btn.style.background="rgba(79,223,255,.08)";}
+    if(disp){disp.textContent="🖥 Очное мероприятие";disp.style.color="var(--accent)";}
+    if(desc)desc.textContent="Все участники в одном зале";
+    QT=20;
+    showModeHint("🖥 Очный режим","Таймер 20 сек. Варианты ответа перемешаны у каждого игрока. Откройте projector.html на проекторе.");
+  }
+}
+
+function showModeHint(title, text){
+  const old = document.getElementById("modeHint"); if(old) old.remove();
+  const d = document.createElement("div");
+  d.id="modeHint";
+  d.style.cssText="position:fixed;bottom:20px;left:50%;transform:translateX(-50%);z-index:999;background:rgba(8,18,40,.97);border:1px solid rgba(79,223,255,.4);border-radius:12px;padding:12px 18px;max-width:420px;font-size:.8rem;color:#eee;box-shadow:0 8px 32px rgba(0,0,0,.8);text-align:center";
+  d.innerHTML=`<div style="font-weight:800;margin-bottom:4px;color:var(--accent)">${title}</div><div style="color:rgba(255,255,255,.7)">${text}</div>`;
+  document.body.appendChild(d);
+  setTimeout(()=>d.remove(), 5000);
+}
+
+applyPresenterMode();
+
+// ── ВЫБОР КВИЗА В ПРЕЗЕНТЕРЕ ─────────────────────────────────
+function presSetQuiz(quizId){
+  QUIZ_ID_CURRENT = quizId;
+  // Сбрасываем все кнопки
+  const _btnMap={
+    arctic:  {id:'quizBtnArctic', bg:'rgba(79,223,255,.25)', bc:'rgba(79,223,255,.8)'},
+    ecology: {id:'quizBtnEco',    bg:'rgba(97,255,178,.22)', bc:'rgba(97,255,178,.7)'},
+    history: {id:'quizBtnHistory',bg:'rgba(255,211,107,.22)',bc:'rgba(255,211,107,.7)'},
+    science: {id:'quizBtnScience',bg:'rgba(167,139,250,.22)',bc:'rgba(167,139,250,.7)'},
+    patriot: {id:'quizBtnPatriot',bg:'rgba(255,95,90,.22)',  bc:'rgba(255,95,90,.7)'},
+    geo:     {id:'quizBtnGeo',    bg:'rgba(52,211,153,.22)', bc:'rgba(52,211,153,.7)'},
+    space:   {id:'quizBtnSpace',  bg:'rgba(139,92,246,.22)', bc:'rgba(139,92,246,.7)'},
+    sport:   {id:'quizBtnSport',  bg:'rgba(251,146,60,.22)', bc:'rgba(251,146,60,.7)'},
+  };
+  Object.entries(_btnMap).forEach(([id,cfg])=>{
+    const b=document.getElementById(cfg.id);
+    if(!b)return;
+    const active=id===quizId;
+    b.style.background=active?cfg.bg:'rgba(255,255,255,.03)';
+    b.style.borderColor=active?cfg.bc:'rgba(255,255,255,.1)';
+    b.style.fontWeight=active?'800':'600';
+  });
+  // Обновляем quiz_id в БД сразу при выборе квиза
+  if(sb && GID){
+    sb.from('quiz_state').update({quiz_id:quizId}).eq('game_id',GID).then(()=>{});
+  }
+  // Обновляем заголовок в топбаре
+  const _pqn={arctic:'🧊 Арктика',ecology:'🌿 Экология',history:'📜 История',science:'🔬 Наука',patriot:'🏅 Патриотика',geo:'🌍 География',space:'🚀 Космос',sport:'🏆 Спорт'};
+  const ttlEl=document.getElementById('presQuizTitle')||document.querySelector('.ttl');
+  if(ttlEl) ttlEl.textContent=_pqn[quizId]||quizId;
+  // Обновляем заголовок
+  const fullNames={arctic:"🧊 Арктический квиз",ecology:"🌿 Экология и природа"};
+  const ttl=document.getElementById("quizNameBadge");
+  if(ttl) ttl.textContent="🎙 Ведущий · "+fullNames[quizId];
+  const top=document.getElementById("topbarQuizName");
+  if(top) top.textContent=fullNames[quizId];
+  // Сохраняем для goStart
+  try{localStorage.setItem("hub_quiz_id",quizId);}catch(e){}
+}
+// QUIZ_ID_CURRENT объявлен выше (рядом с QUIZ_ID)
+presSetQuiz(QUIZ_ID);
+
+// ── СПРАВКА ───────────────────────────────────────────────────
+document.getElementById("btnHelp")?.addEventListener("click",()=>{
+  document.getElementById("helpOverlay").style.display="flex";
+  // Открываем первую секцию по умолчанию
+  document.getElementById("h1").style.display="flex";
+});
+
+function toggleHelp(id){
+  const el=document.getElementById(id);
+  if(!el)return;
+  el.style.display=el.style.display==="none"?"flex":"none";
+}
+// По умолчанию все секции открыты
+["h1","h2","h3","h4","h45","h5","h6"].forEach(id=>{
+  const el=document.getElementById(id);
+  if(el) el.style.display="flex";
+});
+// Закрыть по Escape
+document.addEventListener("keydown",e=>{
+  if(e.key==="Escape"){
+    const ov=document.getElementById("helpOverlay");
+    if(ov&&ov.style.display!=="none") ov.style.display="none";
+  }
+});
+
+// ── КОД СЕССИИ + QR ──────────────────────────────────────────
+function generateSessionCode(){
+  // Очный режим: только цифры, 4 знака — легко диктовать
+  const digits="23456789";
+  let code="";
+  for(let i=0;i<4;i++) code+=digits[Math.floor(Math.random()*digits.length)];
+  return code;
+}
+
+let currentSessionCode = localStorage.getItem("sessionCode") || generateSessionCode();
+
+function saveSessionCode(code){
+  currentSessionCode = code;
+  localStorage.setItem("sessionCode", code);
+}
+
+// ── Обновление кода (QR убран — только текстовый код) ──
+function renderQR(url){ /* QR не используется */ }
+
+function updateQRBlock(){
+  const base = location.href.replace(/[^/\\]*$/, "");
+  const hubUrl  = base + "hub.html";
+  const hubUrlC = base + "hub.html?code=" + currentSessionCode;
+
+  // Обновляем оба дисплея кода
+  const d1 = document.getElementById("sessionCodeDisplay");
+  const d2 = document.getElementById("sessionCodeDisplayOnline");
+  if(d1) d1.textContent = currentSessionCode;
+  if(d2) d2.textContent = currentSessionCode;
+
+  // Кнопки "Открыть hub"
+  const op1 = document.getElementById("btnOpenPlayer");
+  if(op1){ op1.href = hubUrl; op1.target="_blank"; }
+  const op2 = document.getElementById("btnOpenPlayerOnline");
+  if(op2){ op2.href = hubUrlC; op2.target="_blank"; }
+
+  // Кнопка копировать ссылку
+  const copyBtn = document.getElementById("btnCopyLink");
+  if(copyBtn){
+    copyBtn.onclick=()=>{
+      navigator.clipboard?.writeText(hubUrlC).then(()=>{
+        const old=copyBtn.textContent; copyBtn.textContent="✓ Скопировано!";
+        setTimeout(()=>copyBtn.textContent=old,2000);
+      }).catch(()=>{ prompt("Ссылка для игроков:", hubUrlC); });
+    };
+  }
+
+  // Обновляем live code badge в топбаре
+  const _lcb = document.getElementById("liveCodeBadge");
+  if(_lcb){_lcb.textContent="🔑 "+currentSessionCode;_lcb.style.display="";}
+  // Кнопка проектора
+  const projBtn = document.getElementById("btnProjector");
+  if(projBtn){
+    const projUrl = base+"projector.html?gid=default&code="+currentSessionCode;
+    projBtn.onclick=()=>{
+      const w=window.open(projUrl,"_blank","width=1280,height=800");
+      if(!w||w.closed||typeof w.closed==="undefined"){
+        // Popup заблокирован или файл не найден - показываем путь
+        alert("Убедитесь что файл projector.html лежит в той же папке что и presenter.html\n\nПуть должен быть:\n"+projUrl);
+      }
+    };
+  }
+}
+
+function _doNewCode(){
+  const code = generateSessionCode();
+  saveSessionCode(code);
+  updateQRBlock();
+  ups({session_code:code});
+}
+document.getElementById("btnNewCode")?.addEventListener("click", _doNewCode);
+document.getElementById("btnNewCode2")?.addEventListener("click", _doNewCode);
+
+// Инициализируем при загрузке
+saveSessionCode(currentSessionCode);
+updateQRBlock();
+// Сохраняем код в базу при старте
+setTimeout(()=>{ if(sb) ups({session_code:currentSessionCode}); }, 2000);
+
+// initPrep вызывается только после авторизации (см. ниже)
+
+// ── ЗАЩИТА ПАРОЛЕМ ───────────────────────────────────────────
+const PRESENTER_PWD = "arctic2025";
+
+function _presCheckAuth(){
+  // Пароль требуется всегда при каждом открытии
+  try{ sessionStorage.removeItem("pres_authed"); }catch(e){}
+  try{ localStorage.removeItem("hub_auth_ts"); }catch(e){}
+  return false;
+}
+
+function _presShowLock(){
+  const lock = document.getElementById("presLock");
+  if(lock) lock.style.display = "flex";
+  setTimeout(()=>{
+    const inp = document.getElementById("presLockInp");
+    if(inp) inp.focus();
+  }, 150);
+}
+
+function _presLogin(){
+  const inp = document.getElementById("presLockInp");
+  const err = document.getElementById("presLockErr");
+  const lock = document.getElementById("presLock");
+  if(!inp||!err||!lock) return;
+  if(inp.value.trim() === PRESENTER_PWD){
+    try{ sessionStorage.setItem("pres_authed","1"); }catch(e){}
+    lock.style.display = "none";
+    initPrep(); // <-- запускаем после входа
+  } else {
+    err.textContent = "❌ Неверный пароль";
+    inp.value = "";
+    inp.focus();
+    setTimeout(()=>{ if(err) err.textContent = ""; }, 2500);
+  }
+}
+
+// Инициализация: проверяем авторизацию
+if(_presCheckAuth()){
+  // Открыт из хаба (свежий auth) — сразу запускаем
+  initPrep();
+} else {
+  _presShowLock();
+  // initPrep будет вызван из _presLogin после успешного входа
+}
+
+document.getElementById("presLockBtn").addEventListener("click", _presLogin);
+document.getElementById("presLockInp").addEventListener("keydown", function(e){
+  if(e.key === "Enter") _presLogin();
+});
+
+
+// Предупреждение о смене вкладки отключено
+
+// ── ПЛЕЙЛИСТ ВЕДУЩЕГО ──────────────────────────────────────
+let _presPlaylist = [];   // [{name, url}]
+let _presTrackIdx = 0;
+let _presAudio = null;
+let _presMusicVol = 0.35;
+let _presPlaying = false;
+let _presShuffle = false;
+
+function toggleMusicPanel(){
+  const el = document.getElementById('musicPanel');
+  if(el) el.style.display = el.style.display==='none'?'':'none';
+}
+
+function presAddTracks(input){
+  const files = Array.from(input.files||[]);
+  files.forEach(f=>{
+    _presPlaylist.push({name:f.name.replace(/\.[^.]+$/,''), url:URL.createObjectURL(f)});
+  });
+  renderPresPlaylist();
+  if(!_presPlaying && _presPlaylist.length>0){
+    _presTrackIdx=Math.max(0,_presPlaylist.length-files.length);
+    presPlayTrack(_presTrackIdx);
+  }
+  input.value='';
+}
+
+function renderPresPlaylist(){
+  const el=document.getElementById('presPlaylist');
+  if(!el)return;
+  if(_presPlaylist.length===0){
+    el.innerHTML='<div style="font-size:.72rem;color:var(--muted);text-align:center;padding:10px;">Треки не загружены</div>';
+    return;
+  }
+  el.innerHTML=_presPlaylist.map((t,i)=>`
+    <div onclick="presPlayTrack(${i})" style="display:flex;align-items:center;gap:8px;padding:5px 8px;border-radius:7px;cursor:pointer;background:${i===_presTrackIdx?'rgba(97,255,178,.1)':'transparent'};border:1px solid ${i===_presTrackIdx?'rgba(97,255,178,.3)':'transparent'};transition:background .2s;" onmouseover="this.style.background='rgba(97,255,178,.06)'" onmouseout="this.style.background='${i===_presTrackIdx?'rgba(97,255,178,.1)':'transparent'}'">
+      <span style="font-size:.8rem;">${i===_presTrackIdx&&_presPlaying?'▶':'♪'}</span>
+      <span style="flex:1;font-size:.71rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:${i===_presTrackIdx?'#61ffb2':'var(--text)'};">${t.name}</span>
+      <button onclick="event.stopPropagation();presRemoveTrack(${i})" style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:.7rem;padding:0 2px;" title="Удалить">✕</button>
+    </div>`).join('');
+}
+
+function presPlayTrack(idx){
+  if(idx<0||idx>=_presPlaylist.length)return;
+  _presTrackIdx=idx;
+  if(_presAudio){_presAudio.pause();_presAudio.onended=null;}
+  _presAudio=new Audio(_presPlaylist[idx].url);
+  _presAudio.volume=_presMusicVol;
+  _presAudio.onended=()=>presNextTrack();
+  _presAudio.play().catch(e=>console.warn('play:',e));
+  _presPlaying=true;
+  if(_presBroadcasting && sb){
+    sb.from('quiz_state').update({music_broadcast:_presPlaylist[idx].name,music_playing:true}).eq('game_id',GID).then(()=>{});
+  }
+  updatePresPlayerUI();
+}
+
+function presTogglePlay(){
+  if(!_presAudio||_presPlaylist.length===0){
+    if(_presPlaylist.length>0)presPlayTrack(_presTrackIdx);
+    return;
+  }
+  if(_presPlaying){_presAudio.pause();_presPlaying=false;if(_presBroadcasting&&sb)sb.from('quiz_state').update({music_playing:false}).eq('game_id',GID).then(()=>{});}
+  else{_presAudio.play().catch(()=>{});_presPlaying=true;if(_presBroadcasting&&sb)sb.from('quiz_state').update({music_playing:true}).eq('game_id',GID).then(()=>{});}
+  updatePresPlayerUI();
+}
+
+function presNextTrack(){
+  if(_presPlaylist.length===0)return;
+  let next=_presShuffle
+    ?Math.floor(Math.random()*_presPlaylist.length)
+    :(_presTrackIdx+1)%_presPlaylist.length;
+  presPlayTrack(next);
+}
+
+function presPrevTrack(){
+  if(_presPlaylist.length===0)return;
+  let prev=(_presTrackIdx-1+_presPlaylist.length)%_presPlaylist.length;
+  presPlayTrack(prev);
+}
+
+function presShufflePlaylist(){
+  _presShuffle=!_presShuffle;
+  const btn=document.getElementById('presShuffleBtn');
+  if(btn){btn.style.background=_presShuffle?'rgba(97,255,178,.15)':'rgba(255,255,255,.04)';btn.style.color=_presShuffle?'#61ffb2':'var(--muted)';}
+}
+
+function presRemoveTrack(idx){
+  if(_presPlaylist[idx]){URL.revokeObjectURL(_presPlaylist[idx].url);}
+  _presPlaylist.splice(idx,1);
+  if(_presTrackIdx>=_presPlaylist.length)_presTrackIdx=Math.max(0,_presPlaylist.length-1);
+  renderPresPlaylist();
+}
+
+function presSetVolume(val){
+  _presMusicVol=parseInt(val)/100;
+  if(_presAudio)_presAudio.volume=_presMusicVol;
+  const num=document.getElementById('presMusicVolNum');
+  if(num)num.textContent=val+'%';
+}
+
+function presStopTrack(){
+  if(!_presAudio)return;
+  _presAudio.pause();
+  _presAudio.currentTime=0;
+  _presPlaying=false;
+  // Clear broadcast
+  if(_presBroadcasting) presBroadcastToggle();
+  updatePresPlayerUI();
+}
+
+let _presBroadcasting=false;
+function presBroadcastToggle(){
+  _presBroadcasting=!_presBroadcasting;
+  const tog=document.getElementById('presBroadcastToggle');
+  const thumb=document.getElementById('presBroadcastThumb');
+  if(tog) tog.style.background=_presBroadcasting?'#61ffb2':'rgba(255,255,255,.1)';
+  if(thumb) thumb.style.left=_presBroadcasting?'18px':'2px';
+  if(_presBroadcasting && _presPlaying && _presPlaylist[_presTrackIdx]){
+    // Signal to hub via DB: music_broadcast field
+    if(sb) sb.from('quiz_state').update({
+      music_broadcast: _presPlaylist[_presTrackIdx].name,
+      music_playing: true
+    }).eq('game_id', GID).then(()=>{});
+  } else {
+    if(sb) sb.from('quiz_state').update({music_broadcast: null, music_playing: false}).eq('game_id', GID).then(()=>{});
+  }
+}
+
+function updatePresPlayerUI(){
+  const btn=document.getElementById('presPlayPauseBtn');
+  if(btn)btn.textContent=_presPlaying?'⏸ Пауза':'▶ Играть';
+  const np=document.getElementById('presNowPlaying');
+  if(np)np.textContent=_presPlaylist[_presTrackIdx]?'♪ '+_presPlaylist[_presTrackIdx].name:'';
+  const panelBtn=document.getElementById('btnMusicPanel');
+  if(panelBtn)panelBtn.style.color=_presPlaying?'#61ffb2':'';
+  renderPresPlaylist();
+}
+</script>
+<!-- ПАНЕЛЬ МУЗЫКИ / ПЛЕЙЛИСТ -->
+<div id="musicPanel" style="display:none;position:fixed;top:60px;right:16px;z-index:9999;width:300px;background:rgba(5,14,34,.98);border:1px solid rgba(97,255,178,.25);border-radius:14px;padding:14px;box-shadow:0 8px 32px rgba(0,0,0,.6);backdrop-filter:blur(12px);">
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+    <span style="font-size:.75rem;font-weight:800;color:#61ffb2;letter-spacing:.06em;">🎵 ПЛЕЙЛИСТ</span>
+    <button onclick="toggleMusicPanel()" style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:1rem;line-height:1;">✕</button>
+  </div>
+  <!-- Добавить треки -->
+  <label style="display:flex;align-items:center;gap:7px;padding:7px 10px;border-radius:8px;border:1px dashed rgba(97,255,178,.25);color:#61ffb2;cursor:pointer;font-size:.72rem;margin-bottom:8px;transition:background .2s;" onmouseover="this.style.background='rgba(97,255,178,.06)'" onmouseout="this.style.background=''">
+    ➕ Добавить треки (mp3, ogg, wav)
+    <input type="file" accept="audio/*" multiple style="display:none" onchange="presAddTracks(this)">
+  </label>
+  <!-- Громкость -->
+  <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;">
+    <span style="font-size:.68rem;color:var(--muted);min-width:28px;">🔊</span>
+    <input type="range" id="presMusicVol" min="0" max="100" value="35" style="flex:1;accent-color:#61ffb2;cursor:pointer;" oninput="presSetVolume(this.value)">
+    <span id="presMusicVolNum" style="font-size:.68rem;color:var(--muted);min-width:28px;text-align:right;">35%</span>
+  </div>
+  <!-- Трансляция игрокам -->
+  <div style="display:flex;align-items:center;justify-content:space-between;padding:7px 10px;border-radius:9px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.07);margin-bottom:8px;">
+    <div>
+      <div style="font-size:.7rem;font-weight:800;color:var(--text);">📡 Транслировать игрокам</div>
+      <div style="font-size:.6rem;color:var(--muted);">Игроки услышат музыку у себя</div>
+    </div>
+    <div id="presBroadcastToggle" onclick="presBroadcastToggle()" style="width:36px;height:20px;border-radius:99px;background:rgba(255,255,255,.1);cursor:pointer;position:relative;transition:background .2s;flex-shrink:0;">
+      <div id="presBroadcastThumb" style="width:16px;height:16px;border-radius:50%;background:#fff;position:absolute;top:2px;left:2px;transition:left .2s;"></div>
+    </div>
+  </div>
+  <!-- Список треков -->
+  <div id="presPlaylist" style="max-height:180px;overflow-y:auto;display:flex;flex-direction:column;gap:4px;">
+    <div style="font-size:.72rem;color:var(--muted);text-align:center;padding:10px;">Треки не загружены</div>
+  </div>
+  <!-- Управление -->
+  <div style="display:flex;gap:5px;margin-top:10px;">
+    <button onclick="presPrevTrack()" style="flex:1;padding:5px;border-radius:7px;border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.04);color:var(--text);cursor:pointer;font-size:.8rem;" title="Предыдущий">⏮</button>
+    <button onclick="presStopTrack()" style="flex:1;padding:5px;border-radius:7px;border:1px solid rgba(255,95,122,.3);background:rgba(255,95,122,.06);color:#ff5f7a;cursor:pointer;font-size:.8rem;" title="Стоп">⏹</button>
+    <button id="presPlayPauseBtn" onclick="presTogglePlay()" style="flex:2;padding:5px;border-radius:7px;border:1px solid rgba(97,255,178,.35);background:rgba(97,255,178,.08);color:#61ffb2;cursor:pointer;font-size:.8rem;font-weight:700;">▶ Играть</button>
+    <button id="presShuffleBtn" onclick="presShufflePlaylist()" style="flex:1;padding:5px;border-radius:7px;border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.04);color:var(--muted);cursor:pointer;font-size:.8rem;" title="Перемешать">🔀</button>
+    <button onclick="presNextTrack()" style="flex:1;padding:5px;border-radius:7px;border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.04);color:var(--text);cursor:pointer;font-size:.8rem;" title="Следующий">⏭</button>
+  </div>
+  <!-- Сейчас играет -->
+  <div id="presNowPlaying" style="font-size:.65rem;color:rgba(97,255,178,.6);text-align:center;margin-top:6px;min-height:16px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;"></div>
+</div>
+
+</body>
+</html>
