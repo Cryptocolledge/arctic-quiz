@@ -2222,135 +2222,217 @@ async function generatePdfReport(){
       sb.from("quiz_scores").select("*").eq("game_id",GID).order("score",{ascending:false}),
       sb.from("quiz_players").select("*").eq("game_id",GID).order("joined_at",{ascending:true}),
     ]);
+
+    // Название и оформление квиза
+    const qid = lastState?.quiz_id || QUIZ_ID_CURRENT || "arctic";
+    const QUIZ_META = {
+      arctic:  {name:"Арктический квиз",     icon:"🧊", accent:"#1a8fc4", grad:"135deg,#05143c 0%,#0a3060 60%,#0a4a80 100%", chip:"#1a8fc4"},
+      ecology: {name:"Экология и природа",   icon:"🌿", accent:"#2a9e5a", grad:"135deg,#052a14 0%,#0a4020 60%,#0a5c2a 100%", chip:"#2a9e5a"},
+      history: {name:"История России",       icon:"📜", accent:"#b56a10", grad:"135deg,#2a1a04 0%,#4a2a08 60%,#6a3c10 100%", chip:"#b56a10"},
+      science: {name:"Наука и технологии",   icon:"🔬", accent:"#6a3aac", grad:"135deg,#14063c 0%,#260a60 60%,#360e80 100%", chip:"#6a3aac"},
+      patriot: {name:"Патриотический квиз",  icon:"🏅", accent:"#c0392b", grad:"135deg,#2a0606 0%,#4a0e0e 60%,#6a1414 100%", chip:"#c0392b"},
+      geo:     {name:"География России",     icon:"🌍", accent:"#1a7a9a", grad:"135deg,#041a2a 0%,#08304a 60%,#0c4060 100%", chip:"#1a7a9a"},
+      space:   {name:"Космос и авиация",     icon:"🚀", accent:"#5a3aac", grad:"135deg,#0a0620 0%,#180a40 60%,#240e5c 100%", chip:"#5a3aac"},
+      sport:   {name:"Спорт и ЗОЖ",         icon:"🏆", accent:"#b58a10", grad:"135deg,#1a1004 0%,#2a1a08 60%,#3c2a0c 100%", chip:"#b58a10"},
+    };
+    const qm = QUIZ_META[qid] || QUIZ_META.arctic;
+
     const now=new Date();
     const dateStr=now.toLocaleDateString("ru-RU",{day:"2-digit",month:"long",year:"numeric"});
     const timeStr=now.toLocaleTimeString("ru-RU",{hour:"2-digit",minute:"2-digit"});
-    const mode=lastState?.quiz_mode==="school"?"Школьники (базовый уровень)":"СПО / Колледж (средний–сложный)";
-    const total=players?.length||0;
-    const online=(players||[]).filter(p=>p.last_seen&&(Date.now()-new Date(p.last_seen).getTime())<30000).length;
+    const modeKey = lastState?.quiz_mode||"spo";
+    const modeName = modeKey==="school"?"Школьники (базовый уровень)":"СПО / Колледж (средний–сложный)";
+    const total = players?.length||0;
+    const answered = (scores||[]).filter(s=>s.questions_answered>0).length;
+    const avgScore = answered>0 ? Math.round((scores||[]).reduce((a,r)=>a+(r.score||0),0)/answered) : 0;
+    const maxScore = scores?.[0]?.score||0;
+    const winner = scores?.[0];
+    const completionPct = total>0 ? Math.round(answered/total*100) : 0;
 
     const rows=(scores||[]).map((r,i)=>{
-      const medal=i===0?"🥇":i===1?"🥈":i===2?"🥉":(i+1)+".";
-      const bg=i<3?"#fffbe6":"#fff";
-      const scoreColor=i===0?"#c47f00":i===1?"#777":i===2?"#a05030":"#2a6e2a";
-      return `<tr style="background:${bg}">
-        <td style="padding:7px 10px;font-weight:700;font-size:1rem">${medal}</td>
-        <td style="padding:7px 10px;font-weight:700">${r.student_name||"—"}${r.team_name?" / "+r.team_name:""}</td>
-        <td style="padding:7px 10px;color:#555">${r.institution_name||"—"}</td>
-        <td style="padding:7px 10px;text-align:right;font-weight:900;color:${scoreColor};font-size:1.05rem">${r.score??0}</td>
-        <td style="padding:7px 10px;text-align:center;color:#777">${r.questions_answered||0}</td>
-        <td style="padding:7px 10px;text-align:center;color:#777">${r.avg_answer_time!=null?r.avg_answer_time.toFixed(1)+" с":"—"}</td>
+      const medal = i===0?"🥇":i===1?"🥈":i===2?"🥉":`${i+1}.`;
+      const isTop3 = i<3;
+      const pct = r.questions_answered>0 ? Math.round((r.correct_answers||0)/(r.questions_answered||1)*100) : 0;
+      const barW = Math.round((r.score||0)/(maxScore||1)*100);
+      return `<tr class="${isTop3?"top3":""}">
+        <td class="td-rank">${medal}</td>
+        <td class="td-name">
+          <div class="pname">${r.student_name||"—"}</div>
+          ${r.team_name?`<div class="pteam">${r.team_name}</div>`:""}
+        </td>
+        <td class="td-inst">${r.institution_name||"—"}</td>
+        <td class="td-score">
+          <div class="score-val">${r.score??0}</div>
+          <div class="score-bar-wrap"><div class="score-bar" style="width:${barW}%;background:${qm.accent}"></div></div>
+        </td>
+        <td class="td-center">${r.questions_answered||0} / ${Q.length}</td>
+        <td class="td-center">${pct}%</td>
+        <td class="td-center">${r.avg_answer_time!=null?r.avg_answer_time.toFixed(1)+" с":"—"}</td>
       </tr>`;
     }).join("");
 
-    const playersSummary=(players||[]).map(p=>
-      `${p.student_name} (${p.team_name||"б/г"}) — ${(scores||[]).find(s=>s.student_name===p.student_name)?.score??0} очков`
-    ).join("<br>");
+    const topBlock = winner ? `
+    <div class="winner-block">
+      <div class="winner-crown">👑</div>
+      <div class="winner-info">
+        <div class="winner-name">${winner.student_name||"—"}${winner.team_name?" · "+winner.team_name:""}</div>
+        <div class="winner-sub">${winner.institution_name||""} &nbsp;·&nbsp; ${winner.score??0} очков &nbsp;·&nbsp; ${winner.questions_answered||0} вопросов</div>
+      </div>
+      <div class="winner-score">${winner.score??0}</div>
+    </div>` : "";
 
     const html=`<!DOCTYPE html>
 <html lang="ru">
 <head>
 <meta charset="UTF-8">
-<title>Арктический квиз — Протокол</title>
+<title>${qm.name} — Протокол игры</title>
 <style>
-  @page{margin:18mm 14mm;}
-  body{font-family:"Arial",sans-serif;color:#1a2a3a;margin:0;padding:0 20px;font-size:12px;max-width:960px;margin:0 auto;}
-  .header{background:linear-gradient(135deg,#05143c 0%,#0a2060 100%);color:#fff;padding:18px 24px 14px;border-radius:8px;margin-bottom:18px;margin-top:12px;}
-  .header h1{margin:0 0 4px;font-size:20px;color:#4fc8f0;letter-spacing:.04em;}
-  .header .meta{font-size:10px;color:#a0b8d8;display:flex;justify-content:space-between;flex-wrap:wrap;gap:4px;}
-  h2{font-size:13px;color:#054a8c;text-transform:uppercase;letter-spacing:.08em;margin:18px 0 8px;padding-bottom:4px;border-bottom:2px solid #c8dff0;}
-  table{width:100%;border-collapse:collapse;margin-bottom:12px;}
-  th{background:#05143c;color:#4fc8f0;font-size:9px;text-transform:uppercase;letter-spacing:.08em;padding:7px 10px;text-align:left;}
-  td{border-bottom:1px solid #e8f0f8;font-size:11px;}
+  @page{margin:15mm 12mm;}
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{font-family:"Segoe UI","Arial",sans-serif;color:#1a2a3a;background:#f4f7fc;font-size:12px;}
+  .page{max-width:960px;margin:0 auto;padding:16px;}
+
+  /* ШАПКА */
+  .header{background:linear-gradient(${qm.grad});color:#fff;padding:20px 26px 16px;border-radius:12px;margin-bottom:16px;position:relative;overflow:hidden;}
+  .header::after{content:"${qm.icon}";position:absolute;right:20px;top:50%;transform:translateY(-50%);font-size:72px;opacity:.12;line-height:1;}
+  .header-top{display:flex;align-items:center;gap:10px;margin-bottom:6px;}
+  .header-icon{font-size:28px;line-height:1;}
+  .header-title{font-size:22px;font-weight:900;letter-spacing:.04em;color:#fff;}
+  .header-badge{font-size:9px;text-transform:uppercase;letter-spacing:.12em;color:rgba(255,255,255,.55);background:rgba(255,255,255,.1);padding:3px 9px;border-radius:999px;border:1px solid rgba(255,255,255,.2);}
+  .header-meta{display:flex;gap:18px;flex-wrap:wrap;font-size:10px;color:rgba(255,255,255,.65);margin-top:4px;}
+  .header-meta span{display:flex;align-items:center;gap:4px;}
+
+  /* СТАТИСТИКА */
+  .stats-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:16px;}
+  .stat-box{background:#fff;border-radius:10px;padding:12px 8px;text-align:center;border:1px solid #e0e8f4;box-shadow:0 1px 4px rgba(0,0,0,.04);}
+  .stat-num{font-size:22px;font-weight:900;color:${qm.accent};line-height:1.1;}
+  .stat-lbl{font-size:8px;color:#888;text-transform:uppercase;letter-spacing:.08em;margin-top:2px;}
+
+  /* ПОБЕДИТЕЛЬ */
+  .winner-block{display:flex;align-items:center;gap:12px;background:linear-gradient(120deg,#fffbe6,#fff8d0);border:2px solid #f0c030;border-radius:10px;padding:12px 16px;margin-bottom:16px;}
+  .winner-crown{font-size:28px;}
+  .winner-info{flex:1;}
+  .winner-name{font-size:14px;font-weight:900;color:#7a4f00;}
+  .winner-sub{font-size:10px;color:#a07030;margin-top:2px;}
+  .winner-score{font-size:32px;font-weight:900;color:#c47f00;min-width:60px;text-align:right;}
+
+  /* СЕКЦИИ */
+  .section{background:#fff;border-radius:10px;padding:14px 16px;margin-bottom:14px;border:1px solid #e0e8f4;box-shadow:0 1px 4px rgba(0,0,0,.04);}
+  .section-title{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.1em;color:${qm.accent};margin-bottom:10px;display:flex;align-items:center;gap:6px;}
+  .section-title::before{content:"";display:block;width:3px;height:14px;background:${qm.accent};border-radius:2px;}
+
+  /* ТАБЛИЦА */
+  table{width:100%;border-collapse:collapse;}
+  th{font-size:8px;text-transform:uppercase;letter-spacing:.1em;color:#888;padding:6px 8px;border-bottom:2px solid #e8f0f8;font-weight:700;text-align:left;white-space:nowrap;}
+  td{padding:8px 8px;border-bottom:1px solid #f0f4fa;vertical-align:middle;}
+  tr.top3 td{background:#fffdf0;}
   tr:last-child td{border-bottom:none;}
-  .stats-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:14px;}
-  .stat-box{background:#f0f6ff;border:1px solid #c8dff0;border-radius:8px;padding:10px;text-align:center;}
-  .stat-num{font-size:20px;font-weight:900;color:#054a8c;}
-  .stat-lbl{font-size:9px;color:#777;text-transform:uppercase;letter-spacing:.07em;}
-  .footer{margin-top:24px;padding-top:8px;border-top:1px solid #ddd;font-size:9px;color:#999;display:flex;justify-content:space-between;font-style:italic;}
-  @media print{body{-webkit-print-color-adjust:exact;print-color-adjust:exact;}}
-</style>
-<link rel="manifest" href="manifest-presenter.json">
-<meta name="mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="КвизЦентр — Ведущий">
-<meta name="theme-color" content="#1a2f4a">
-<link rel="apple-touch-icon" href="icon-presenter-192.png">
-<scr` + `ipt>
-  if('serviceWorker' in navigator){
-    window.addEventListener('load', function(){
-      navigator.serviceWorker.register('sw-presenter.js').then(function(reg){
-        reg.update();
-        reg.addEventListener('updatefound', function(){
-          const newSW = reg.installing;
-          if(!newSW) return;
-          newSW.addEventListener('statechange', function(){
-            if(newSW.state === 'installed' && navigator.serviceWorker.controller){
-              newSW.postMessage('skipWaiting');
-            }
-          });
-        });
-      }).catch(function(){});
-      // controllerchange без авто-reload
-    });
+  tr:hover td{background:#f8fbff;}
+  .td-rank{width:36px;font-size:16px;text-align:center;}
+  .td-name{min-width:140px;}
+  .pname{font-weight:700;font-size:11px;}
+  .pteam{font-size:9px;color:#888;margin-top:1px;}
+  .td-inst{font-size:10px;color:#666;max-width:160px;}
+  .td-score{width:100px;}
+  .score-val{font-size:14px;font-weight:900;color:${qm.accent};}
+  .score-bar-wrap{height:3px;background:#eee;border-radius:2px;margin-top:3px;}
+  .score-bar{height:100%;border-radius:2px;}
+  .td-center{text-align:center;font-size:10px;color:#555;white-space:nowrap;}
+
+  /* СПИСОК */
+  .players-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;}
+  .player-chip{background:#f4f7fc;border:1px solid #e0e8f4;border-radius:7px;padding:6px 10px;font-size:10px;}
+  .player-chip .pcname{font-weight:700;color:#1a2a3a;}
+  .player-chip .pcteam{color:#888;font-size:9px;}
+  .player-chip .pcscore{color:${qm.accent};font-weight:800;font-size:11px;float:right;}
+
+  /* ПОДВАЛ */
+  .footer{margin-top:12px;padding-top:10px;border-top:1px solid #e0e8f4;display:flex;justify-content:space-between;align-items:center;font-size:9px;color:#aaa;}
+  .footer-logo{display:flex;align-items:center;gap:6px;}
+  .footer-icon{font-size:14px;}
+
+  @media print{
+    body{background:#fff;}
+    .page{padding:0;}
+    @page{margin:12mm 10mm;}
+    body{-webkit-print-color-adjust:exact;print-color-adjust:exact;}
   }
-<\/script>
+</style>
 </head>
 <body>
+<div class="page">
+
 <div class="header">
-  <h1>🏔 АРКТИЧЕСКИЙ КВИЗ</h1>
-  <div class="meta">
-    <span>Протокол игры &nbsp;•&nbsp; ${dateStr} &nbsp;•&nbsp; ${timeStr}</span>
-    <span>Режим: ${mode} &nbsp;•&nbsp; Вопросов: ${Q.length}</span>
-    <span>КвизЦентр · АНО «Поколение Побед»</span>
+  <div class="header-top">
+    <div class="header-icon">${qm.icon}</div>
+    <div class="header-title">${qm.name.toUpperCase()}</div>
+    <div class="header-badge">ПРОТОКОЛ ИГРЫ</div>
+  </div>
+  <div class="header-meta">
+    <span>📅 ${dateStr}</span>
+    <span>🕐 ${timeStr}</span>
+    <span>🎓 ${modeName}</span>
+    <span>❓ ${Q.length} вопросов</span>
+    <span>🏢 КвизЦентр · АНО «Поколение Побед»</span>
   </div>
 </div>
 
 <div class="stats-grid">
   <div class="stat-box"><div class="stat-num">${total}</div><div class="stat-lbl">Участников</div></div>
-  <div class="stat-box"><div class="stat-num">${online}</div><div class="stat-lbl">Онлайн</div></div>
-  <div class="stat-box"><div class="stat-num">${(scores||[]).filter(s=>s.questions_answered>0).length}</div><div class="stat-lbl">Ответили</div></div>
+  <div class="stat-box"><div class="stat-num">${answered}</div><div class="stat-lbl">Сыграли</div></div>
+  <div class="stat-box"><div class="stat-num">${completionPct}%</div><div class="stat-lbl">Завершили</div></div>
+  <div class="stat-box"><div class="stat-num">${avgScore}</div><div class="stat-lbl">Средний балл</div></div>
+  <div class="stat-box"><div class="stat-num">${maxScore}</div><div class="stat-lbl">Лучший результат</div></div>
 </div>
 
-<h2>Итоговая таблица результатов</h2>
-<table>
-  <thead><tr>
-    <th style="width:40px">#</th>
-    <th>Студент / Команда</th>
-    <th>Учреждение</th>
-    <th style="width:55px;text-align:right">Очки</th>
-    <th style="width:50px;text-align:center">Вопр.</th>
-    <th style="width:70px;text-align:center">Ср.время</th>
-  </tr></thead>
-  <tbody>${rows||"<tr><td colspan=6 style='padding:12px;color:#999;text-align:center'>Нет данных</td></tr>"}</tbody>
-</table>
+${topBlock}
 
-<h2>Список участников</h2>
-<div style="font-size:11px;line-height:1.9;color:#444">${playersSummary||"Нет данных"}</div>
+<div class="section">
+  <div class="section-title">Итоговая таблица результатов</div>
+  <table>
+    <thead><tr>
+      <th>#</th>
+      <th>Участник</th>
+      <th>Учреждение</th>
+      <th>Очки</th>
+      <th style="text-align:center">Вопросов</th>
+      <th style="text-align:center">Точность</th>
+      <th style="text-align:center">Ср. время</th>
+    </tr></thead>
+    <tbody>${rows||"<tr><td colspan='7' style='padding:16px;color:#bbb;text-align:center'>Нет данных</td></tr>"}</tbody>
+  </table>
+</div>
+
+<div class="section">
+  <div class="section-title">Все участники</div>
+  <div class="players-grid">${(players||[]).map(p=>{
+    const sc=(scores||[]).find(s=>s.student_name===p.student_name);
+    return `<div class="player-chip">
+      <span class="pcscore">${sc?.score??0}</span>
+      <div class="pcname">${p.student_name||"—"}</div>
+      <div class="pcteam">${p.team_name||p.institution_name||"—"}</div>
+    </div>`;
+  }).join("")||"<div style='color:#bbb;font-size:11px'>Нет данных</div>"}</div>
+</div>
 
 <div class="footer">
-  <span>Арктический квиз &nbsp;•&nbsp; КвизЦентр · АНО «Поколение Побед»</span>
-  <span>Протокол сформирован: ${dateStr} в ${timeStr}</span>
+  <div class="footer-logo"><span class="footer-icon">🎯</span> КвизЦентр · АНО «Поколение Побед»</div>
+  <div>${qm.icon} ${qm.name} &nbsp;·&nbsp; Протокол сформирован: ${dateStr} в ${timeStr}</div>
 </div>
 
 </div>
-
 </body></html>`;
 
-    // Показываем в новом окне + предлагаем скачать как HTML→PDF
     const blob = new Blob([html], {type:"text/html;charset=utf-8"});
     const blobUrl = URL.createObjectURL(blob);
-    const w = window.open(blobUrl,"_blank","width=960,height=720");
-    if(w){
-      setTimeout(()=>{ w.print(); },800);
-    }
-    // Кнопка скачать HTML-файл (открывается и печатается как PDF)
+    const w = window.open(blobUrl,"_blank","width=980,height=760");
+    if(w){ setTimeout(()=>{ w.print(); }, 900); }
     const a = document.createElement("a");
     a.href = blobUrl;
-    a.download = "arktika_kviz_protokol_"+new Date().toLocaleDateString("ru-RU").replace(/\./g,"-")+".html";
+    const safeQid = qid.replace(/[^a-z0-9]/gi,"_");
+    a.download = `kviz_${safeQid}_protokol_`+now.toLocaleDateString("ru-RU").replace(/\./g,"-")+".html";
     a.style.cssText="position:fixed;bottom:80px;right:20px;z-index:9999;padding:10px 18px;background:linear-gradient(120deg,#61ffb2,#00c97a);color:#012010;border-radius:999px;font-weight:800;font-size:.85rem;text-decoration:none;box-shadow:0 4px 20px rgba(97,255,178,.4)";
-    a.textContent="⬇ Скачать HTML-файл протокола";
+    a.textContent="⬇ Скачать HTML протокол";
     document.body.appendChild(a);
     setTimeout(()=>a.remove(), 12000);
   }catch(err){
