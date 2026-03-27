@@ -257,9 +257,7 @@ tr:hover td{background:rgba(79,223,255,.03);}
           });
         });
       }).catch(function(){});
-      navigator.serviceWorker.addEventListener('controllerchange', function(){
-        window.location.reload();
-      });
+      // controllerchange без авто-reload — иначе hub и presenter зацикливаются
     });
   }
 </script>
@@ -2293,9 +2291,7 @@ async function generatePdfReport(){
           });
         });
       }).catch(function(){});
-      navigator.serviceWorker.addEventListener('controllerchange', function(){
-        window.location.reload();
-      });
+      // controllerchange без авто-reload
     });
   }
 <\/script>
