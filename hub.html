@@ -4413,7 +4413,9 @@ function openSoloQuiz(quizId){
   const icos={arctic:'🧊',ecology:'🌿',history:'📜',science:'🔬',patriot:'🏅',geo:'🌍',space:'🚀',sport:'🏆'};
   document.getElementById('soloStartTitle').textContent=titles[quizId]||quizId;
   document.getElementById('soloStartIco').textContent=icos[quizId]||'❓';
-  document.getElementById('soloOv').style.display='flex';
+  const _ov=document.getElementById('soloOv');
+  _ov.style.display='flex';
+  _ov.style.justifyContent='center';
   document.getElementById('soloStart').style.display='block';
   document.getElementById('soloQuizScreen').style.display='none';
   document.getElementById('soloResult').style.display='none';
@@ -4563,6 +4565,9 @@ function soloNext(){_soloIdx++;soloShowQ();}
 function soloShowResult(){
   clearInterval(_soloTimerInt);
   document.getElementById('soloQuizScreen').style.display='none';
+  const ov=document.getElementById('soloOv');
+  ov.style.justifyContent='flex-start';
+  ov.scrollTop=0;
   const res=document.getElementById('soloResult'); res.style.display='block';
   const pct=Math.round(_soloCorrect/_soloQs.length*100);
   const name=(document.getElementById('soloName')?.value||'').trim()||'Игрок';
