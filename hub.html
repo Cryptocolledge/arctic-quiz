@@ -2345,14 +2345,20 @@ document.getElementById("btnCheckCode")?.addEventListener("click", async()=>{
   const errEl = document.getElementById("codeError");
   const okEl = document.getElementById("codeOk");
   const formWrap = document.getElementById("regFormWrap");
-  if(ok){
+  if(ok === true){
     sessionCodeVerified=true; sessionCodeValue=code;
     if(errEl) errEl.style.display="none";
-    if(okEl) okEl.style.display="";
+    if(okEl){okEl.style.display="";okEl.textContent="✅ Код подтверждён! Заполните данные ниже.";}
     if(formWrap) formWrap.style.display="";
-    // Обновляем GID если нужно — остаётся default
+  } else if(ok === "wrong_quiz"){
+    if(errEl){errEl.style.display="";errEl.textContent="⚠️ Ведущий выбрал другой квиз. Выберите нужный квиз и попробуйте снова.";}
+    if(okEl) okEl.style.display="none";
+    if(formWrap) formWrap.style.display="none";
+  } else if(ok === "game_started"){
+    if(errEl){errEl.style.display="";errEl.textContent="⏰ Игра уже началась. Обратитесь к ведущему.";}
+    if(okEl) okEl.style.display="none";
   } else {
-    if(errEl) errEl.style.display="";
+    if(errEl){errEl.style.display="";errEl.textContent="❌ Неверный код. Уточните у ведущего.";}
     if(okEl) okEl.style.display="none";
   }
 });

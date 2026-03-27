@@ -11,7 +11,7 @@ html,body{width:100%;height:100%;background:var(--bg);overflow:hidden;}
 body{font-family:"Segoe UI",system-ui,sans-serif;color:var(--text);display:flex;flex-direction:column;height:100vh;}
 
 /* ТОП-BAR */
-.topbar{display:flex;align-items:center;justify-content:space-between;padding:12px 28px;background:rgba(5,14,34,.95);border-bottom:1px solid rgba(79,223,255,.15);flex-shrink:0;cursor:grab;user-select:none;}
+.topbar{display:flex;align-items:center;justify-content:space-between;padding:12px 28px;background:rgba(5,14,34,.95);border-bottom:1px solid rgba(79,223,255,.15);flex-shrink:0;cursor:grab;user-select:none;position:relative;z-index:51;}
 .topbar:active{cursor:grabbing;}
 .topbar-drag-hint{font-size:.55rem;color:rgba(79,223,255,.3);letter-spacing:.08em;margin-left:8px;pointer-events:none;}
 .topbar-left{display:flex;align-items:center;gap:12px;}
@@ -133,6 +133,11 @@ body{font-family:"Segoe UI",system-ui,sans-serif;color:var(--text);display:flex;
   <div class="status-title" id="statusTitle">Арктический квиз</div>
   <div class="status-sub" id="statusSub">Ожидаем начала игры…</div>
   <div id="statusOnline" style="font-size:.85rem;color:var(--ok);margin-top:4px"></div>
+  <div id="statusCodeBlock" style="display:none;margin-top:28px;text-align:center;">
+    <div style="font-size:.7rem;color:rgba(79,223,255,.6);text-transform:uppercase;letter-spacing:.15em;margin-bottom:8px;">Код игры для участников</div>
+    <div id="statusCodeNum" style="font-size:4rem;font-weight:900;color:#4fdfff;letter-spacing:.2em;font-variant-numeric:tabular-nums;text-shadow:0 0 30px rgba(79,223,255,.5);">—</div>
+    <div style="font-size:.75rem;color:var(--muted);margin-top:8px;">Введите на hub.html</div>
+  </div>
 </div>
 
 <!-- MAIN CONTENT -->
@@ -770,11 +775,14 @@ function applyState(s){
   if(_pcEl) _pcEl.textContent=_projChips[projQid]||'АРКТИКА';
   if(s.game_timer) QT=s.game_timer;
 
-  // Показываем код игры
+  // Показываем код игры — в topbar и в статус-оверлее
   if(s.session_code){
     const cb=document.getElementById('projCodeBlock');
     const cn=document.getElementById('projCodeNum');
     if(cb&&cn){cb.style.display='flex';cn.textContent=s.session_code;}
+    const scb=document.getElementById('statusCodeBlock');
+    const scn=document.getElementById('statusCodeNum');
+    if(scb&&scn){scb.style.display='block';scn.textContent=s.session_code;}
   }
   const phase=s.phase||"waiting";
   const idx=s.current_index??0;

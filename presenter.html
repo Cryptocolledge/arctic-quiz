@@ -429,6 +429,7 @@ tr:hover td{background:rgba(79,223,255,.03);}
     <button class="btn bg" id="btnMusicPanel" onclick="toggleMusicPanel()" style="border-color:rgba(97,255,178,.3);color:#61ffb2;font-size:.7rem;padding:5px 10px;" title="Плейлист и управление музыкой">🎵 Музыка</button>
     <button class="btn bg" id="btnHelp" style="border-color:rgba(255,211,107,.4);color:var(--gold);" title="Справка ведущего">❓ Справка</button>
     <button class="btn" id="btnProjector" style="background:rgba(255,211,107,.08);border-color:rgba(255,211,107,.5);color:var(--gold);" title="Открыть проектор на втором экране">🖥 Проектор</button>
+    <button class="btn bg" id="btnCopyProjUrl" style="border-color:rgba(255,211,107,.4);color:var(--gold);font-size:.7rem;padding:5px 10px;" title="Скопировать ссылку проектора для другого устройства">📋 Ссылка проектора</button>
     <button id="btnMode" onclick="togglePresenterMode()" title="Режим проведения" style="font-size:.72rem;padding:5px 10px;border-radius:8px;border:1px solid rgba(79,223,255,.5);background:rgba(79,223,255,.1);color:var(--accent);cursor:pointer;font-weight:800;white-space:nowrap">🖥 ОЧНО</button>
   </div>
 </div>
@@ -3079,6 +3080,24 @@ function updateQRBlock(){
       if(!w||w.closed||typeof w.closed==="undefined"){
         // Popup заблокирован или файл не найден - показываем путь
         alert("Убедитесь что файл projector.html лежит в той же папке что и presenter.html\n\nПуть должен быть:\n"+projUrl);
+      }
+    };
+  }
+
+  // Кнопка копирования ссылки проектора
+  const copyProjBtn = document.getElementById("btnCopyProjUrl");
+  if(copyProjBtn){
+    copyProjBtn.onclick=()=>{
+      const projUrl = base+"projector.html?gid=default&code="+currentSessionCode;
+      if(navigator.clipboard && navigator.clipboard.writeText){
+        navigator.clipboard.writeText(projUrl).then(()=>{
+          copyProjBtn.textContent="✅ Скопировано!";
+          setTimeout(()=>{ copyProjBtn.textContent="📋 Ссылка проектора"; }, 2500);
+        }).catch(()=>{
+          prompt("Скопируйте ссылку проектора:", projUrl);
+        });
+      } else {
+        prompt("Скопируйте ссылку проектора:", projUrl);
       }
     };
   }
