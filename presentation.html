@@ -1,0 +1,646 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>КвизЦентр — Презентация проекта</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;900&display=swap');
+
+  *{margin:0;padding:0;box-sizing:border-box;}
+
+  :root{
+    --blue:#4fdfff;
+    --gold:#ffd36b;
+    --green:#61ffb2;
+    --purple:#c084fc;
+    --red:#ff6b6b;
+    --bg:#020818;
+    --card:rgba(255,255,255,.05);
+    --border:rgba(255,255,255,.1);
+  }
+
+  body{
+    font-family:'Inter',sans-serif;
+    background:var(--bg);
+    color:#fff;
+    overflow:hidden;
+    height:100vh;
+    width:100vw;
+  }
+
+  /* ── STARS ── */
+  .stars{position:fixed;inset:0;pointer-events:none;z-index:0;}
+  .star{position:absolute;border-radius:50%;background:#fff;animation:twinkle var(--d,3s) ease-in-out infinite;}
+  @keyframes twinkle{0%,100%{opacity:.15;transform:scale(1)}50%{opacity:.9;transform:scale(1.4)}}
+
+  /* ── SLIDES ── */
+  .deck{position:relative;width:100vw;height:100vh;z-index:1;}
+  .slide{
+    position:absolute;inset:0;
+    display:flex;flex-direction:column;
+    justify-content:center;align-items:center;
+    padding:48px 80px;
+    opacity:0;pointer-events:none;
+    transition:opacity .5s ease,transform .5s ease;
+    transform:translateY(30px);
+  }
+  .slide.active{opacity:1;pointer-events:all;transform:translateY(0);}
+  .slide.exit{opacity:0;transform:translateY(-30px);}
+
+  /* ── PROGRESS ── */
+  #progress{
+    position:fixed;top:0;left:0;height:3px;
+    background:linear-gradient(90deg,var(--blue),var(--purple));
+    transition:width .4s ease;z-index:100;
+    box-shadow:0 0 12px rgba(79,223,255,.6);
+  }
+  #counter{
+    position:fixed;bottom:24px;right:32px;
+    font-size:.75rem;color:rgba(255,255,255,.35);
+    z-index:100;letter-spacing:.08em;
+  }
+  #nav{
+    position:fixed;bottom:20px;left:50%;transform:translateX(-50%);
+    display:flex;gap:8px;z-index:100;
+  }
+  .dot{
+    width:7px;height:7px;border-radius:50%;
+    background:rgba(255,255,255,.2);cursor:pointer;
+    transition:all .3s ease;
+  }
+  .dot.on{background:var(--blue);box-shadow:0 0 8px var(--blue);transform:scale(1.3);}
+
+  /* ── TYPOGRAPHY ── */
+  .tag{
+    display:inline-block;padding:5px 14px;border-radius:20px;
+    font-size:.72rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;
+    margin-bottom:16px;
+  }
+  .tag-blue{background:rgba(79,223,255,.15);border:1px solid rgba(79,223,255,.4);color:var(--blue);}
+  .tag-gold{background:rgba(255,211,107,.15);border:1px solid rgba(255,211,107,.4);color:var(--gold);}
+  .tag-green{background:rgba(97,255,178,.15);border:1px solid rgba(97,255,178,.4);color:var(--green);}
+  .tag-purple{background:rgba(192,132,252,.15);border:1px solid rgba(192,132,252,.4);color:var(--purple);}
+
+  h1{font-size:clamp(2.2rem,5vw,4rem);font-weight:900;line-height:1.1;text-align:center;}
+  h2{font-size:clamp(1.6rem,3.5vw,2.6rem);font-weight:800;line-height:1.2;text-align:center;}
+  h3{font-size:1.1rem;font-weight:700;}
+  .sub{font-size:clamp(.9rem,2vw,1.15rem);color:rgba(255,255,255,.6);text-align:center;line-height:1.7;max-width:720px;margin-top:16px;}
+  .accent{color:var(--blue);}
+  .gold{color:var(--gold);}
+  .green{color:var(--green);}
+  .purple{color:var(--purple);}
+
+  /* ── CARDS ── */
+  .grid{display:grid;gap:16px;width:100%;max-width:1100px;margin-top:32px;}
+  .g2{grid-template-columns:repeat(2,1fr);}
+  .g3{grid-template-columns:repeat(3,1fr);}
+  .g4{grid-template-columns:repeat(4,1fr);}
+
+  .card{
+    background:var(--card);
+    border:1px solid var(--border);
+    border-radius:16px;
+    padding:20px 22px;
+    backdrop-filter:blur(10px);
+    transition:transform .25s ease,border-color .25s ease;
+  }
+  .card:hover{transform:translateY(-3px);border-color:rgba(79,223,255,.3);}
+  .card .icon{font-size:2rem;margin-bottom:10px;}
+  .card h3{margin-bottom:6px;font-size:.95rem;}
+  .card p{font-size:.8rem;color:rgba(255,255,255,.55);line-height:1.6;}
+
+  .card-accent{border-color:rgba(79,223,255,.3);background:rgba(79,223,255,.05);}
+  .card-gold{border-color:rgba(255,211,107,.3);background:rgba(255,211,107,.05);}
+  .card-green{border-color:rgba(97,255,178,.3);background:rgba(97,255,178,.05);}
+  .card-purple{border-color:rgba(192,132,252,.3);background:rgba(192,132,252,.05);}
+
+  /* ── BIG STAT ── */
+  .stats{display:flex;gap:40px;margin-top:36px;flex-wrap:wrap;justify-content:center;}
+  .stat{text-align:center;}
+  .stat-num{font-size:3.5rem;font-weight:900;line-height:1;}
+  .stat-label{font-size:.78rem;color:rgba(255,255,255,.45);margin-top:6px;letter-spacing:.06em;text-transform:uppercase;}
+
+  /* ── TIMELINE ── */
+  .timeline{width:100%;max-width:900px;margin-top:28px;display:flex;flex-direction:column;gap:0;}
+  .titem{
+    display:grid;grid-template-columns:90px 1fr;
+    gap:0 24px;position:relative;padding-bottom:24px;
+  }
+  .titem:last-child{padding-bottom:0;}
+  .titem::before{
+    content:'';position:absolute;left:89px;top:12px;bottom:0;
+    width:1px;background:rgba(255,255,255,.1);
+  }
+  .titem:last-child::before{display:none;}
+  .tdate{
+    text-align:right;padding-top:2px;
+    font-size:.8rem;font-weight:700;color:var(--blue);
+    white-space:nowrap;
+  }
+  .tdot{
+    position:absolute;left:83px;top:5px;
+    width:13px;height:13px;border-radius:50%;
+    background:var(--blue);box-shadow:0 0 10px var(--blue);
+    border:2px solid var(--bg);
+  }
+  .tdot.gold{background:var(--gold);box-shadow:0 0 10px var(--gold);}
+  .tdot.green{background:var(--green);box-shadow:0 0 10px var(--green);}
+  .tdot.purple{background:var(--purple);box-shadow:0 0 10px var(--purple);}
+  .tcontent{padding-left:28px;}
+  .tcontent h3{font-size:.95rem;margin-bottom:4px;}
+  .tcontent p{font-size:.8rem;color:rgba(255,255,255,.5);line-height:1.5;}
+
+  /* ── PROBLEM BLOCK ── */
+  .prob-row{
+    display:grid;grid-template-columns:1fr 40px 1fr;
+    align-items:center;gap:16px;max-width:900px;width:100%;margin-top:28px;
+  }
+  .prob-box{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:22px 24px;}
+  .prob-box h3{font-size:1rem;margin-bottom:10px;}
+  .prob-box ul{list-style:none;display:flex;flex-direction:column;gap:8px;}
+  .prob-box li{font-size:.82rem;color:rgba(255,255,255,.6);display:flex;gap:10px;align-items:flex-start;line-height:1.5;}
+  .prob-box li span{flex-shrink:0;}
+  .arrow-mid{font-size:2rem;color:var(--blue);text-align:center;}
+
+  /* ── FEATURE ROW ── */
+  .frow-list{width:100%;max-width:1100px;display:flex;flex-direction:column;gap:12px;margin-top:24px;}
+  .frow-item{
+    display:grid;grid-template-columns:52px 1fr;
+    gap:16px;align-items:center;
+    background:var(--card);border:1px solid var(--border);border-radius:12px;
+    padding:14px 20px;
+  }
+  .frow-icon{font-size:1.8rem;text-align:center;}
+  .frow-text h3{font-size:.92rem;margin-bottom:3px;}
+  .frow-text p{font-size:.78rem;color:rgba(255,255,255,.5);line-height:1.5;}
+
+  /* ── TECH STACK ── */
+  .tech-row{display:flex;flex-wrap:wrap;gap:12px;justify-content:center;margin-top:28px;max-width:900px;}
+  .tech-pill{
+    padding:10px 20px;border-radius:30px;font-size:.82rem;font-weight:600;
+    border:1px solid var(--border);background:var(--card);
+    display:flex;align-items:center;gap:8px;
+  }
+
+  /* ── QUOTE ── */
+  .quote{
+    max-width:700px;text-align:center;
+    font-size:clamp(1rem,2.5vw,1.4rem);font-weight:600;
+    line-height:1.8;color:rgba(255,255,255,.85);
+    margin-top:20px;padding:32px;
+    background:var(--card);border:1px solid var(--border);border-radius:20px;
+    position:relative;
+  }
+  .quote::before{content:'"';position:absolute;top:-20px;left:28px;font-size:5rem;color:var(--blue);opacity:.3;font-family:Georgia,serif;line-height:1;}
+
+  /* ── GLOW TITLE ── */
+  .glow{text-shadow:0 0 40px rgba(79,223,255,.5),0 0 80px rgba(79,223,255,.2);}
+  .glow-gold{text-shadow:0 0 40px rgba(255,211,107,.5);}
+
+  /* ── SLIDE-SPECIFIC BACKGROUNDS ── */
+  .slide-1{background:radial-gradient(ellipse 80% 60% at 50% 0%,rgba(79,223,255,.08) 0%,transparent 70%);}
+  .slide-2{background:radial-gradient(ellipse 60% 50% at 80% 50%,rgba(255,100,100,.06) 0%,transparent 70%);}
+  .slide-3{background:radial-gradient(ellipse 60% 50% at 20% 50%,rgba(97,255,178,.06) 0%,transparent 70%);}
+  .slide-4{background:radial-gradient(ellipse 60% 50% at 50% 100%,rgba(192,132,252,.07) 0%,transparent 70%);}
+  .slide-5{background:radial-gradient(ellipse 70% 50% at 50% 50%,rgba(255,211,107,.06) 0%,transparent 70%);}
+  .slide-6{background:radial-gradient(ellipse 60% 50% at 80% 20%,rgba(79,223,255,.07) 0%,transparent 70%);}
+  .slide-7{background:radial-gradient(ellipse 60% 50% at 20% 80%,rgba(97,255,178,.07) 0%,transparent 70%);}
+  .slide-8{background:radial-gradient(ellipse 80% 60% at 50% 100%,rgba(192,132,252,.08) 0%,transparent 70%);}
+  .slide-9{background:radial-gradient(ellipse 80% 60% at 50% 0%,rgba(255,211,107,.08) 0%,transparent 70%);}
+  .slide-10{background:radial-gradient(ellipse 80% 60% at 50% 50%,rgba(79,223,255,.1) 0%,transparent 70%);}
+
+  /* ── LOGO ── */
+  .logo-big{
+    font-size:5rem;margin-bottom:8px;
+    filter:drop-shadow(0 0 30px rgba(79,223,255,.5));
+    animation:float 4s ease-in-out infinite;
+  }
+  @keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-12px)}}
+
+  /* ── BADGE ── */
+  .badge-row{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin-top:20px;}
+  .badge{
+    padding:7px 16px;border-radius:8px;font-size:.75rem;font-weight:700;
+    background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);
+    letter-spacing:.04em;
+  }
+
+  /* ── ROADMAP CARDS ── */
+  .road-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;width:100%;max-width:1100px;margin-top:28px;}
+  .road-card{
+    background:var(--card);border:1px solid var(--border);border-radius:16px;padding:22px;
+    position:relative;overflow:hidden;
+  }
+  .road-card::before{
+    content:'';position:absolute;top:0;left:0;right:0;height:3px;
+  }
+  .road-card.q1::before{background:linear-gradient(90deg,var(--blue),var(--purple));}
+  .road-card.q2::before{background:linear-gradient(90deg,var(--gold),#ff9800);}
+  .road-card.q3::before{background:linear-gradient(90deg,var(--green),#00c97a);}
+  .road-card .qnum{font-size:.7rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;margin-bottom:12px;opacity:.5;}
+  .road-card h3{font-size:1rem;margin-bottom:10px;}
+  .road-card ul{list-style:none;display:flex;flex-direction:column;gap:7px;}
+  .road-card li{font-size:.78rem;color:rgba(255,255,255,.6);display:flex;gap:8px;align-items:flex-start;line-height:1.5;}
+
+  /* ── FINAL SLIDE ── */
+  .cta-btn{
+    margin-top:32px;padding:16px 40px;border-radius:14px;
+    font-size:1rem;font-weight:700;letter-spacing:.04em;
+    background:linear-gradient(120deg,var(--blue),#3b8ef0);
+    border:none;color:#020818;cursor:pointer;
+    box-shadow:0 8px 30px rgba(79,223,255,.35);
+    transition:transform .2s,box-shadow .2s;
+  }
+  .cta-btn:hover{transform:translateY(-2px);box-shadow:0 12px 40px rgba(79,223,255,.5);}
+
+  /* ── ARROWS ── */
+  #arrowL,#arrowR{
+    position:fixed;top:50%;transform:translateY(-50%);
+    background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);
+    border-radius:50%;width:44px;height:44px;
+    display:flex;align-items:center;justify-content:center;
+    cursor:pointer;z-index:100;font-size:1.1rem;
+    transition:background .2s,border-color .2s;
+  }
+  #arrowL:hover,#arrowR:hover{background:rgba(79,223,255,.15);border-color:rgba(79,223,255,.4);}
+  #arrowL{left:16px;}
+  #arrowR{right:16px;}
+
+  @media(max-width:768px){
+    .slide{padding:28px 24px;}
+    .g3,.g4{grid-template-columns:repeat(2,1fr);}
+    .road-grid{grid-template-columns:1fr;}
+    .prob-row{grid-template-columns:1fr;}
+    .arrow-mid{display:none;}
+    .stats{gap:24px;}
+    .stat-num{font-size:2.4rem;}
+    #arrowL,#arrowR{display:none;}
+  }
+</style>
+</head>
+<body>
+
+<!-- Stars -->
+<div class="stars" id="stars"></div>
+
+<!-- Progress -->
+<div id="progress"></div>
+<div id="counter"></div>
+<div id="nav"></div>
+<div id="arrowL">‹</div>
+<div id="arrowR">›</div>
+
+<div class="deck" id="deck">
+
+  <!-- ══ SLIDE 1: TITLE ══ -->
+  <div class="slide slide-1 active">
+    <div class="logo-big">🧊</div>
+    <div class="tag tag-blue">Образовательный проект · 2026</div>
+    <h1 class="glow">КвизЦентр</h1>
+    <p class="sub">Интерактивная платформа для проведения образовательных квизов в режиме реального времени.<br>Для школьников, студентов СПО и педагогов.</p>
+    <div class="badge-row">
+      <div class="badge">🌐 Работает в браузере</div>
+      <div class="badge">📱 PWA · Любое устройство</div>
+      <div class="badge">⚡ Без установки</div>
+      <div class="badge">🆓 Открытый код</div>
+    </div>
+  </div>
+
+  <!-- ══ SLIDE 2: PROBLEM ══ -->
+  <div class="slide slide-2">
+    <div class="tag tag-blue">Проблема</div>
+    <h2>Традиционное тестирование<br>не вовлекает учеников</h2>
+    <div class="prob-row">
+      <div class="prob-box">
+        <h3 style="color:rgba(255,100,100,.9)">❌ Как есть сейчас</h3>
+        <ul>
+          <li><span>📄</span>Бумажные тесты и Google-формы — нет живой реакции</li>
+          <li><span>😴</span>Низкая вовлечённость: ученики «проходят» тест механически</li>
+          <li><span>⏱</span>Результаты видны только преподавателю — нет соревновательности</li>
+          <li><span>🔌</span>Требуются дорогие специализированные системы (Kahoot, Mentimeter)</li>
+          <li><span>🌐</span>Нет адаптации под российские образовательные стандарты и темы</li>
+        </ul>
+      </div>
+      <div class="arrow-mid">→</div>
+      <div class="prob-box" style="border-color:rgba(97,255,178,.3);background:rgba(97,255,178,.04)">
+        <h3 style="color:var(--green)">✅ Что нужно</h3>
+        <ul>
+          <li><span>🎮</span>Геймификация: соревнование, таймер, очки — интерес к знаниям</li>
+          <li><span>📡</span>Синхронизация в реальном времени для всего класса</li>
+          <li><span>🖥</span>Проекция на экран — вся аудитория видит вопрос</li>
+          <li><span>🏔</span>Контент по арктической, экологической и патриотической тематике</li>
+          <li><span>💰</span>Доступно бесплатно любому учебному заведению</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ SLIDE 3: SOLUTION ══ -->
+  <div class="slide slide-3">
+    <div class="tag tag-green">Решение</div>
+    <h2>Мультиплеерная квиз-платформа<br>для аудитории и онлайн</h2>
+    <div class="stats">
+      <div class="stat">
+        <div class="stat-num accent">8</div>
+        <div class="stat-label">тематических квизов</div>
+      </div>
+      <div class="stat">
+        <div class="stat-num gold">2</div>
+        <div class="stat-label">уровня сложности</div>
+      </div>
+      <div class="stat">
+        <div class="stat-num green">4</div>
+        <div class="stat-label">типа вопросов</div>
+      </div>
+      <div class="stat">
+        <div class="stat-num purple">∞</div>
+        <div class="stat-label">участников онлайн</div>
+      </div>
+    </div>
+    <p class="sub" style="margin-top:24px;">Ведущий запускает игру с ноутбука или телефона. Участники заходят с любого устройства по коду. Вопросы отображаются на проекторе — весь класс включён в процесс.</p>
+  </div>
+
+  <!-- ══ SLIDE 4: HOW IT WORKS ══ -->
+  <div class="slide slide-4">
+    <div class="tag tag-purple">Как это работает</div>
+    <h2>Три экрана — одна игра</h2>
+    <div class="grid g3" style="max-width:900px;margin-top:28px;">
+      <div class="card card-purple">
+        <div class="icon">📱</div>
+        <h3>Игрок</h3>
+        <p>Открывает <b>hub.html</b> на телефоне. Вводит код игры, имя или команду. Отвечает на вопросы, делает ставки, видит свои очки и таблицу лидеров.</p>
+      </div>
+      <div class="card card-accent">
+        <div class="icon">🎙</div>
+        <h3>Ведущий</h3>
+        <p>Устанавливает <b>presenter.html</b> как PWA-приложение. Запускает вопросы, управляет паузой, показывает ответ, переходит к следующему вопросу.</p>
+      </div>
+      <div class="card card-green">
+        <div class="icon">🖥</div>
+        <h3>Проектор</h3>
+        <p>На большом экране открыт <b>projector.html</b>. Показывает вопрос, варианты ответа и таймер — всё обновляется автоматически без перезагрузки.</p>
+      </div>
+    </div>
+    <p class="sub" style="margin-top:20px;font-size:.85rem;">Синхронизация через <b style="color:var(--blue)">Supabase Realtime</b> — изменения распространяются менее чем за секунду</p>
+  </div>
+
+  <!-- ══ SLIDE 5: FEATURES ══ -->
+  <div class="slide slide-5">
+    <div class="tag tag-gold">Механики</div>
+    <h2>Игровые возможности</h2>
+    <div class="grid g4" style="margin-top:24px;">
+      <div class="card">
+        <div class="icon">⏱</div>
+        <h3>Таймер</h3>
+        <p>Обратный отсчёт на каждый вопрос. Очки зависят от скорости ответа.</p>
+      </div>
+      <div class="card">
+        <div class="icon">💰</div>
+        <h3>Ставки</h3>
+        <p>Bet-раунд: поставь очки на ответ. Угадал — удваиваются. Ошибся — вычитаются.</p>
+      </div>
+      <div class="card">
+        <div class="icon">⚡</div>
+        <h3>Блиц</h3>
+        <p>Быстрые вопросы без вариантов ответа — свободный ввод на время.</p>
+      </div>
+      <div class="card">
+        <div class="icon">🔥</div>
+        <h3>Серии</h3>
+        <p>Бонус +0.5 очка каждые 3 правильных ответа подряд.</p>
+      </div>
+      <div class="card card-purple">
+        <div class="icon">🔮</div>
+        <h3>Кража очков</h3>
+        <p>Серия из 5 правильных — автоматически похищается 1 очко у лидера таблицы.</p>
+      </div>
+      <div class="card card-gold">
+        <div class="icon">🎲</div>
+        <h3>100 к 1</h3>
+        <p>Раунд «Family Feud»: игроки пишут ответ и ставку, ведущий раскрывает популярные ответы по очереди.</p>
+      </div>
+      <div class="card">
+        <div class="icon">🏆</div>
+        <h3>Лидерборд</h3>
+        <p>Таблица очков в реальном времени. Видна всем участникам.</p>
+      </div>
+      <div class="card">
+        <div class="icon">🧩</div>
+        <h3>Ребусы и SVG</h3>
+        <p>Вопросы с иллюстрациями и зашифрованными словами для разнообразия формата.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ SLIDE 6: CONTENT ══ -->
+  <div class="slide slide-6">
+    <div class="tag tag-blue">Контент</div>
+    <h2>8 тематических квизов<br><span style="font-size:.6em;font-weight:600;color:rgba(255,255,255,.5)">каждый в двух уровнях — Школа и СПО</span></h2>
+    <div class="grid g4" style="margin-top:24px;">
+      <div class="card"><div class="icon">🧊</div><h3>Арктика</h3><p>Климат, животный мир, ресурсы, международное значение</p></div>
+      <div class="card"><div class="icon">🌿</div><h3>Экология</h3><p>Экосистемы, загрязнение, возобновляемая энергия</p></div>
+      <div class="card"><div class="icon">📜</div><h3>История</h3><p>Ключевые события, правители, войны, революции России</p></div>
+      <div class="card"><div class="icon">🏅</div><h3>Патриотика</h3><p>Символы, богатыри, достижения СССР, города-герои</p></div>
+      <div class="card"><div class="icon">🔬</div><h3>Наука</h3><p>Физика, химия, биология, технологии, IT</p></div>
+      <div class="card"><div class="icon">🗺</div><h3>География</h3><p>Реки, горы, природные зоны, часовые пояса России</p></div>
+      <div class="card"><div class="icon">🛸</div><h3>Космос</h3><p>Солнечная система, освоение космоса, небесные тела</p></div>
+      <div class="card"><div class="icon">💪</div><h3>Спорт и ЗОЖ</h3><p>Олимпиада, виды спорта, здоровый образ жизни</p></div>
+    </div>
+  </div>
+
+  <!-- ══ SLIDE 7: TECH ══ -->
+  <div class="slide slide-7">
+    <div class="tag tag-green">Технологии</div>
+    <h2>Современный стек,<br>нулевые расходы на хостинг</h2>
+    <div class="tech-row">
+      <div class="tech-pill" style="border-color:rgba(79,223,255,.3)">🌐 Vanilla JS + CSS</div>
+      <div class="tech-pill" style="border-color:rgba(97,255,178,.3)">⚡ Supabase Realtime</div>
+      <div class="tech-pill" style="border-color:rgba(255,211,107,.3)">🗄 PostgreSQL</div>
+      <div class="tech-pill" style="border-color:rgba(192,132,252,.3)">📱 PWA / Service Worker</div>
+      <div class="tech-pill" style="border-color:rgba(79,223,255,.3)">🚀 GitHub Pages</div>
+      <div class="tech-pill" style="border-color:rgba(97,255,178,.3)">🎨 SVG-анимации</div>
+    </div>
+    <div class="grid g3" style="max-width:900px;margin-top:24px;">
+      <div class="card card-accent">
+        <h3>🔒 Безопасность</h3>
+        <p style="margin-top:8px;">Anon-ключ Supabase. RLS-политики на уровне БД. Без серверного кода — нет уязвимостей на бэкенде.</p>
+      </div>
+      <div class="card card-green">
+        <h3>📴 Офлайн-режим</h3>
+        <p style="margin-top:8px;">Ведущий использует PWA — вопросы закешированы Service Worker. Работает при слабом интернете.</p>
+      </div>
+      <div class="card card-gold">
+        <h3>♾ Масштабируемость</h3>
+        <p style="margin-top:8px;">Supabase Realtime выдерживает сотни одновременных соединений. Бесплатный тариф — до 500 пользователей.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ SLIDE 8: IMPACT ══ -->
+  <div class="slide slide-8">
+    <div class="tag tag-purple">Применение</div>
+    <h2>Где используется платформа</h2>
+    <div class="frow-list">
+      <div class="frow-item">
+        <div class="frow-icon">🏫</div>
+        <div class="frow-text">
+          <h3>Уроки и лекции</h3>
+          <p>Проверка знаний в конце занятия. Ведущий управляет темпом, проектор показывает вопрос всему классу — 100% вовлечённость аудитории.</p>
+        </div>
+      </div>
+      <div class="frow-item">
+        <div class="frow-icon">🏆</div>
+        <div class="frow-text">
+          <h3>Олимпиады и интеллектуальные игры</h3>
+          <p>Командные соревнования между группами или учебными заведениями. Живая таблица лидеров создаёт атмосферу турнира.</p>
+        </div>
+      </div>
+      <div class="frow-item">
+        <div class="frow-icon">🌍</div>
+        <div class="frow-text">
+          <h3>Тематические мероприятия</h3>
+          <p>День Арктики, экологические акции, патриотические мероприятия — специализированный контент под каждую тему уже встроен.</p>
+        </div>
+      </div>
+      <div class="frow-item">
+        <div class="frow-icon">🏠</div>
+        <div class="frow-text">
+          <h3>Дистанционное обучение</h3>
+          <p>Работает через любой браузер — участники могут быть в разных городах. Режим наблюдателя для родителей и администрации.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ SLIDE 9: ROADMAP ══ -->
+  <div class="slide slide-9">
+    <div class="tag tag-gold">Развитие</div>
+    <h2>Roadmap — что планируется</h2>
+    <div class="road-grid">
+      <div class="road-card q1">
+        <div class="qnum">2026 · Этап I</div>
+        <h3>🚀 Расширение контента</h3>
+        <ul>
+          <li><span>→</span>Новые тематические квизы: ОБЖ, русский язык, математика</li>
+          <li><span>→</span>Медиавопросы с аудио и видеофрагментами</li>
+          <li><span>→</span>Редактор квизов для педагогов — без программирования</li>
+          <li><span>→</span>Экспорт результатов в PDF / Excel</li>
+        </ul>
+      </div>
+      <div class="road-card q2">
+        <div class="qnum">2026–2027 · Этап II</div>
+        <h3>🏛 Институциональная версия</h3>
+        <ul>
+          <li><span>→</span>Личные кабинеты педагогов и студентов</li>
+          <li><span>→</span>Журнал успеваемости с историей игр</li>
+          <li><span>→</span>Рейтинг между учебными заведениями</li>
+          <li><span>→</span>Интеграция с LMS (Moodle, 1C:Образование)</li>
+        </ul>
+      </div>
+      <div class="road-card q3">
+        <div class="qnum">2028 · Этап III</div>
+        <h3>🤖 ИИ и адаптивность</h3>
+        <ul>
+          <li><span>→</span>ИИ-генерация вопросов по загруженному материалу</li>
+          <li><span>→</span>Адаптивная сложность под уровень игрока</li>
+          <li><span>→</span>Аналитика пробелов в знаниях по классу</li>
+          <li><span>→</span>Мобильное приложение (iOS / Android)</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ SLIDE 10: FINAL ══ -->
+  <div class="slide slide-10">
+    <div class="logo-big" style="font-size:3.5rem;animation-delay:.5s">🧊</div>
+    <div class="tag tag-blue">QuizHub · 2026–2027</div>
+    <h2 class="glow">Знания — это игра,<br>которую хочется выиграть</h2>
+    <div class="quote">
+      Платформа уже работает и используется. Грантовая поддержка позволит масштабировать проект на все учебные заведения региона, добавить редактор контента для педагогов и создать аналитику успеваемости.
+    </div>
+    <div class="stats" style="margin-top:28px;">
+      <div class="stat">
+        <div class="stat-num accent">8</div>
+        <div class="stat-label">квизов уже готово</div>
+      </div>
+      <div class="stat">
+        <div class="stat-num gold">300+</div>
+        <div class="stat-label">вопросов в базе</div>
+      </div>
+      <div class="stat">
+        <div class="stat-num green">0₽</div>
+        <div class="stat-label">стоимость для школы</div>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /deck -->
+
+<script>
+// ── Stars
+const sf=document.getElementById('stars');
+for(let i=0;i<120;i++){
+  const s=document.createElement('div');
+  s.className='star';
+  const sz=Math.random()*2.5+.5;
+  s.style.cssText=`width:${sz}px;height:${sz}px;left:${Math.random()*100}%;top:${Math.random()*100}%;--d:${(Math.random()*4+2).toFixed(1)}s;animation-delay:${(Math.random()*5).toFixed(1)}s`;
+  sf.appendChild(s);
+}
+
+// ── Slides
+const slides=document.querySelectorAll('.slide');
+const total=slides.length;
+let cur=0;
+
+const prog=document.getElementById('progress');
+const ctr=document.getElementById('counter');
+const nav=document.getElementById('nav');
+
+// Build dots
+for(let i=0;i<total;i++){
+  const d=document.createElement('div');
+  d.className='dot'+(i===0?' on':'');
+  d.onclick=()=>go(i);
+  nav.appendChild(d);
+}
+
+function go(n){
+  if(n<0||n>=total||n===cur)return;
+  slides[cur].classList.remove('active');
+  slides[cur].classList.add('exit');
+  const prev=cur;
+  cur=n;
+  setTimeout(()=>slides[prev].classList.remove('exit'),500);
+  slides[cur].classList.add('active');
+  document.querySelectorAll('.dot').forEach((d,i)=>d.classList.toggle('on',i===cur));
+  prog.style.width=((cur+1)/total*100)+'%';
+  ctr.textContent=(cur+1)+' / '+total;
+}
+
+go(0);
+
+// Keys
+document.addEventListener('keydown',e=>{
+  if(e.key==='ArrowRight'||e.key==='ArrowDown'||e.key===' ')go(cur+1);
+  if(e.key==='ArrowLeft'||e.key==='ArrowUp')go(cur-1);
+});
+
+// Arrows
+document.getElementById('arrowR').onclick=()=>go(cur+1);
+document.getElementById('arrowL').onclick=()=>go(cur-1);
+
+// Touch swipe
+let tx=0;
+document.addEventListener('touchstart',e=>tx=e.touches[0].clientX,{passive:true});
+document.addEventListener('touchend',e=>{
+  const dx=tx-e.changedTouches[0].clientX;
+  if(Math.abs(dx)>50){dx>0?go(cur+1):go(cur-1);}
+},{passive:true});
+
+// Initial
+prog.style.width=(1/total*100)+'%';
+ctr.textContent='1 / '+total;
+</script>
+</body>
+</html>
