@@ -53,11 +53,13 @@ body{font-family:system-ui,-apple-system,"Segoe UI",sans-serif;color:var(--text)
 .qillus{border-radius:12px;overflow:hidden;border:1px solid rgba(79,223,255,.25);background:linear-gradient(135deg,#0a1a30,#061020);display:flex;flex-direction:column;align-items:center;min-height:140px;}
 .qillus svg{width:100%;max-height:190px;}
 .qillus-cap{font-size:.71rem;color:var(--muted);padding:5px 9px;text-align:center;background:rgba(2,8,24,.7);width:100%;}
-.rebusbox{padding:9px;border-radius:11px;background:rgba(2,8,24,.9);border:1px dashed rgba(79,223,255,.6);display:flex;flex-direction:column;gap:5px;align-items:center;}
-.rfig{display:flex;align-items:center;gap:8px;font-weight:750;font-size:.92rem;}
-.rpart{padding:4px 8px;border-radius:999px;background:rgba(7,23,54,.9);border:1px solid rgba(79,223,255,.7);}
-.rop{color:var(--accent);}
-.rnote{font-size:.68rem;color:var(--muted);}
+.rebusbox{padding:12px 10px 10px;border-radius:13px;background:linear-gradient(135deg,rgba(2,8,28,.97),rgba(4,12,36,.97));border:1.5px solid rgba(79,223,255,.4);display:flex;flex-direction:column;gap:7px;align-items:center;box-shadow:0 0 20px rgba(79,223,255,.07);}
+.rfig{display:flex;align-items:center;gap:6px;font-weight:800;font-size:1rem;flex-wrap:wrap;justify-content:center;}
+.rpart{padding:6px 12px;border-radius:8px;background:rgba(7,23,60,.95);border:1.5px solid rgba(79,223,255,.6);color:#cff6ff;letter-spacing:.04em;text-shadow:0 0 8px rgba(79,223,255,.4);box-shadow:0 2px 8px rgba(0,0,0,.4);}
+.rpart-q{background:rgba(255,150,50,.12);border-color:rgba(255,180,80,.55);color:#ffda80;font-size:1.15em;text-shadow:0 0 8px rgba(255,200,80,.5);}
+.rop{color:#4fdfff;font-weight:900;font-size:.95em;}
+.ropeq{color:rgba(255,200,80,.8);font-weight:900;font-size:.95em;}
+.rnote{font-size:.7rem;color:rgba(100,200,240,.55);font-style:italic;text-align:center;}
 .qwait{display:flex;flex-direction:column;align-items:center;gap:9px;padding:22px 10px;text-align:center;}
 .qwait-icon{font-size:2rem;animation:pulse 2s ease-in-out infinite;}
 @keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.1)}}
@@ -673,7 +675,7 @@ document.addEventListener('DOMContentLoaded',function(){
         <a href="profiles.html" class="hub-mob-item">👤 Профили</a>
         <a href="observer.html" class="hub-mob-item">👁 Наблюдатель</a>
         <span class="hub-mob-item hub-mob-host" onclick="try{localStorage.setItem('hub_auth_ts',Date.now().toString())}catch(e){}var w=window.open('presenter.html','_blank');if(!w||w.closed||typeof w.closed=='undefined'){location.href='presenter.html';}document.getElementById('hubBurgerMenu').style.display='none'">⚙ Ведущий</span>
-        <a href="admin.html" class="hub-mob-item" style="color:rgba(255,95,122,.85)">🛡 Администратор</a>
+        <a href="admin.html" class="hub-mob-item" style="color:#ffaa4d" onclick="document.getElementById('hubBurgerMenu').style.display='none'">🛡️ Админ</a>
         <div style="border-top:1px solid rgba(255,255,255,.08);margin:4px 0"></div>
         <span class="hub-mob-item" style="color:rgba(79,223,255,.8)" onclick="document.getElementById('helpModal').style.display='flex';document.getElementById('hubBurgerMenu').style.display='none'">❓ Помощь</span>
         <div style="border-top:1px solid rgba(255,255,255,.08);margin:4px 0"></div>
@@ -713,7 +715,7 @@ document.addEventListener('DOMContentLoaded',function(){
         <a href="profiles.html" class="hub-mob-item">👤 Профили</a>
         <a href="observer.html" class="hub-mob-item">👁 Наблюдатель</a>
         <span class="hub-mob-item hub-mob-host" onclick="try{localStorage.setItem('hub_auth_ts',Date.now().toString())}catch(e){}var w=window.open('presenter.html','_blank');if(!w||w.closed||typeof w.closed=='undefined'){location.href='presenter.html';}document.getElementById('hubMobileMenu').style.display='none'">⚙ Ведущий</span>
-        <a href="admin.html" class="hub-mob-item" style="color:rgba(255,95,122,.85)">🛡 Администратор</a>
+        <a href="admin.html" class="hub-mob-item" style="color:#ffaa4d" onclick="document.getElementById('hubMobileMenu').style.display='none'">🛡️ Админ</a>
         <span class="hub-mob-item" style="color:rgba(79,223,255,.8)" onclick="document.getElementById('helpModal').style.display='flex';document.getElementById('hubMobileMenu').style.display='none'">❓ Помощь</span>
         <div style="border-top:1px solid rgba(255,255,255,.08);margin:4px 0"></div>
         <div class="hub-mob-item" onclick="toggleBurgerPanel('mbRating')" style="justify-content:space-between">
@@ -1131,6 +1133,7 @@ document.addEventListener('DOMContentLoaded',function(){
   </div>
   <!-- Phase 3: result -->
   <div id="betResultPhase" style="display:none;text-align:center;padding:10px"></div>
+  <button onclick="document.getElementById('ov-betting').classList.remove('active')" style="margin-top:8px;width:100%;padding:7px;border-radius:999px;border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.04);color:rgba(255,255,255,.35);cursor:pointer;font-size:.7rem">✕ Закрыть</button>
 </div>
 </div>
 
@@ -1176,7 +1179,7 @@ document.addEventListener('DOMContentLoaded',function(){
         <div class="chip">30 вопросов · 25 сек</div>
         <div style="display:flex;align-items:center;gap:5px;">
           <button class="btn btn-g" id="music-btn" style="min-height:28px;padding:3px 9px;font-size:.71rem;">🎵 Музыка</button>
-          <a href="admin.html" style="text-decoration:none;"><button class="btn btn-g" style="min-height:28px;padding:3px 9px;font-size:.71rem;border-color:rgba(255,170,77,.4);color:#ffaa4d;" title="Панель администратора">🛡️ Админ</button></a>
+
           <input id="bgVolSlider" type="range" min="0" max="100" value="30" style="width:60px;accent-color:#4fdfff;cursor:pointer;display:none;" title="Громкость" oninput="setBgVolume(this.value)">
           <label title="Загрузить свою музыку (mp3, ogg)" style="cursor:pointer;min-height:28px;padding:3px 9px;border-radius:999px;border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.04);color:var(--muted);font-size:.68rem;white-space:nowrap;display:inline-flex;align-items:center;gap:4px;" id="customMusicLbl">
             📂<input type="file" accept="audio/*" style="display:none" onchange="loadCustomMusic(this)"/>
@@ -1366,6 +1369,9 @@ const Q_ECO_SPO=[
   {tp:"text",dif:3,q:"Биом — это…",opts:["Один вид животного","Крупная экосистема с характерными климатом, почвой, флорой и фауной","Сеть охраняемых территорий","Единица измерения загрязнения"],ci:1},
   {tp:"text",dif:3,q:"Концепция «планетарных границ» включает 9 систем. Какая из них НЕ входит в список?",opts:["Изменение климата","Утрата биоразнообразия","Рост численности населения","Закисление океана"],ci:2},
   {tp:"text",dif:2,q:"Что такое «зелёная экономика»?",opts:["Экономика стран с зелёным флагом","Экономика, снижающая экологические риски и улучшающая благополучие людей","Экономика сельского хозяйства","Экономия на всём"],ci:1},
+  {tp:"svg",dif:2,q:"Возобновляемый источник энергии, преобразующий свет в электричество:",svg:"eco_solar",cap:"Без выбросов CO₂ в процессе работы",opts:["Угольная электростанция","Солнечная панель","Ядерный реактор","Газовая турбина"],ci:1},
+  {tp:"rebus",dif:2,q:"Процесс питания растений — солнце + CO₂ + вода → сахар + кислород:",rp:["ФОТО","СИНТЕЗ"],rh:"Хлорофилл придаёт листьям зелёный цвет и улавливает свет",opts:["Дыхание","Фотосинтез","Испарение","Осмос"],ci:1},
+  {tp:"rebus",dif:3,q:"Наука о взаимосвязях живых организмов и среды их обитания:",rp:["ЭКО","ЛОГИЯ"],rh:"Термин ввёл Эрнст Геккель в 1866 году",opts:["Биология","Экология","Геология","Зоология"],ci:1},
 ];
 const Q_ECO_SCHOOL=[
   {tp:"text",dif:1,q:"Что такое экология?",opts:["Наука о строении Земли","Наука о взаимодействии живых существ и окружающей среды","Наука о космосе","Наука о химических реакциях"],ci:1},
@@ -1398,6 +1404,8 @@ const Q_ECO_SCHOOL=[
   {tp:"text",dif:2,q:"Сколько видов животных ежегодно исчезает по оценкам учёных?",opts:["1–5 видов","10–50 видов","Сотни и тысячи видов","Только 1–2 вида"],ci:2},
   {tp:"text",dif:2,q:"Что такое «экологический след»?",opts:["Следы животных в лесу","Количество природных ресурсов, которые потребляет человек","Загрязнение почвы","Вырубленные деревья"],ci:1},
   {tp:"text",dif:2,q:"Какой вид транспорта наиболее экологичен?",opts:["Самолёт","Личный автомобиль","Велосипед или электросамокат","Дизельный автобус"],ci:2},
+  {tp:"svg",dif:1,q:"Символ экологии и жизни на планете — что изображено?",svg:"eco_leaf",cap:"Растения поглощают CO₂ и выделяют кислород",opts:["Цветок","Лист дерева","Водоросль","Перо птицы"],ci:1},
+  {tp:"rebus",dif:1,q:"Вид транспорта, не загрязняющий воздух и полезный для здоровья:",rp:["ВЕЛ","ОСИПЕД"],rh:"Изобретён в XIX веке; в Нидерландах велосипедов больше, чем людей",opts:["Самокат","Велосипед","Мопед","Автобус"],ci:1},
 ];
 const Q_ECO_BLITZ=[
   {q:"Как называется газ, вызывающий парниковый эффект?",opts:["Кислород","CO₂","Азот","Аргон"],ci:1},
@@ -1524,6 +1532,8 @@ const Q_HISTORY_SCHOOL=[
   {tp:"text",dif:1,q:"Как называется главный закон России?",opts:["Кодекс законов","Конституция","Устав государства","Манифест"],ci:1},
   {tp:"text",dif:2,q:"Когда была принята действующая Конституция России?",opts:["1991","1992","1993","1995"],ci:2},
   {tp:"text",dif:1,q:"Как называлась первая русская революция?",opts:["Октябрьская","Февральская","Революция 1905 года","Декабрьская"],ci:2},
+  {tp:"svg",dif:1,q:"Главная башня Московского Кремля с рубиновой звездой:",svg:"history_kremlin",cap:"Построена в 1491 году архитектором Пьетро Антонио Солари",opts:["Останкинская башня","Спасская башня Кремля","Башня Шухова","Колокольня Ивана Великого"],ci:1},
+  {tp:"rebus",dif:2,q:"Участник тайного общества, поднявший восстание на Сенатской площади в 1825 году:",rp:["ДЕ","КАБРИСТ"],rh:"Дата выступления — 14 декабря 1825 года",opts:["Большевик","Декабрист","Народник","Монархист"],ci:1},
 ];
 const Q_HISTORY_SPO=[
   {tp:"text",dif:2,q:"Что такое «Повесть временных лет»?",opts:["Летопись монгольского нашествия","Древнерусская летопись, предположительно монаха Нестора","Свод законов Ярослава Мудрого","Описание крещения Руси"],ci:1},
@@ -1556,6 +1566,9 @@ const Q_HISTORY_SPO=[
   {tp:"text",dif:3,q:"Каковы причины Первой русской революции 1905 года?",opts:["Только война с Японией","Поражение в войне с Японией + социальное неравенство + «Кровавое воскресенье»","Заговор дворян","Иностранное вмешательство"],ci:1},
   {tp:"text",dif:2,q:"Что такое «Декрет о земле» 1917 года?",opts:["Реформа землеустройства","Первый декрет советской власти, отменивший частную собственность на землю","Закон о коллективизации","Закон о налогах с крестьян"],ci:1},
   {tp:"text",dif:3,q:"Что такое «Холодная война»?",opts:["Война в Арктике","Геополитическое противостояние СССР и США (1947–1991) без прямого военного столкновения","Экономическая блокада","Гонка вооружений только"],ci:1},
+  {tp:"svg",dif:2,q:"Символ государственной власти России — башня с часами на Красной площади:",svg:"history_kremlin",cap:"Куранты Спасской башни отбивают каждый час",opts:["Новодевичий монастырь","Ростовский кремль","Спасская башня Московского Кремля","Петропавловская крепость"],ci:2},
+  {tp:"rebus",dif:3,q:"Первый свод законов Древней Руси при Ярославе Мудром (XI век):",rp:["РУС","ПРАВДА"],rh:"Заменила устный обычай письменным правом",opts:["Жалованная грамота","Русская Правда","Судебник","Соборное уложение"],ci:1},
+  {tp:"rebus",dif:2,q:"Укреплённое военное сооружение со стенами и башнями:",rp:["КРЕ","ПОСТЬ"],rh:"Московский Кремль — самая известная в России",opts:["Замок","Крепость","Острог","Бастион"],ci:1},
 ];
 const Q_HISTORY_BLITZ=[
   {q:"В каком году основана Москва?",opts:["1097","1147","1223","1380"],ci:1},
@@ -1611,6 +1624,8 @@ const Q_SCIENCE_SCHOOL=[
   {tp:"text",dif:2,q:"Символ воды в химической формуле?",opts:["HO","H₂O","H₃O","O₂H"],ci:1},
   {tp:"text",dif:1,q:"Что такое электрон?",opts:["Тяжёлая частица ядра","Лёгкая отрицательно заряженная частица атома","Нейтральная частица","Фотон"],ci:1},
   {tp:"text",dif:2,q:"Что такое оптика в физике?",opts:["Наука о звуке","Раздел физики о свете и его взаимодействии с веществом","Наука о тепле","Электродинамика"],ci:1},
+  {tp:"svg",dif:1,q:"Модель строения атома — ядро в центре и что вокруг него?",svg:"sci_atom",cap:"Модель Бора: электроны движутся по орбитам",opts:["Молекулы","Электроны","Нейтроны","Протоны"],ci:1},
+  {tp:"rebus",dif:1,q:"Наименьшая частица вещества, сохраняющая его химические свойства:",rp:["МО","ЛЕКУЛА"],rh:"Состоит из атомов, связанных химическими связями",opts:["Атом","Молекула","Электрон","Ион"],ci:1},
 ];
 const Q_SCIENCE_SPO=[
   {tp:"text",dif:2,q:"Что такое закон сохранения энергии?",opts:["Энергия всегда убывает","Энергия не создаётся и не исчезает, а переходит из одного вида в другой","Энергия пропорциональна массе","Энергия сохраняется только при горении"],ci:1},
@@ -1643,6 +1658,9 @@ const Q_SCIENCE_SPO=[
   {tp:"text",dif:2,q:"Что такое число Авогадро?",opts:["Число электронов в атоме","Количество частиц в одном моле вещества (~6×10²³)","Скорость реакции","Масса атома водорода"],ci:1},
   {tp:"text",dif:3,q:"Что такое полупроводниковый транзистор?",opts:["Тип батареи","Элемент, управляющий электрическим током — основа всей современной электроники","Тип резистора","Катализатор"],ci:1},
   {tp:"text",dif:2,q:"Что такое искусственный нейрон в машинном обучении?",opts:["Клетка мозга","Математическая функция, принимающая входные данные и выдающая выходной сигнал","Тип процессора","Алгоритм сортировки"],ci:1},
+  {tp:"svg",dif:2,q:"Носитель генетической информации во всех живых клетках — двойная спираль:",svg:"sci_dna",cap:"Расшифровка генома открыла эпоху персонализированной медицины",opts:["РНК","ДНК","АТФ","Белок"],ci:1},
+  {tp:"rebus",dif:2,q:"Единица измерения силы — названа в честь великого физика:",rp:["НЬЮ","ТОН"],rh:"Первые три закона механики сформулировал он же",opts:["Паскаль","Ньютон","Джоуль","Ватт"],ci:1},
+  {tp:"rebus",dif:3,q:"Ядерная реакция с выделением огромной энергии — основа термоядерного синтеза:",rp:["СИНТЕЗ","ТЕРМО"],rh:"«Термо» — тепло; управляемый синтез — будущее энергетики",opts:["Синтез","Термосинтез","Термоядерный синтез","Ядерный распад"],ci:2},
 ];
 const Q_SCIENCE_BLITZ=[
   {q:"Символ воды в химии?",opts:["HO","H₂O","H₃O","OH"],ci:1},
@@ -1698,6 +1716,8 @@ const Q_PATRIOT_SCHOOL=[
   {tp:"text",dif:2,q:"Кто такая Зоя Космодемьянская?",opts:["Лётчица","Героиня ВОВ, первая женщина — Герой Советского Союза в годы войны","Учёная","Поэтесса"],ci:1},
   {tp:"text",dif:1,q:"Что означают цвета российского флага: белый, синий, красный?",opts:["Снег, небо, кровь","Мир, небо, мужество; свобода, вера, держава (трактовок несколько)","Три региона","Три ветви власти"],ci:1},
   {tp:"text",dif:2,q:"Что такое Совет Федерации?",opts:["Нижняя палата парламента","Верхняя палата парламента, представляющая регионы России","Суд","Правительство"],ci:1},
+  {tp:"svg",dif:1,q:"Государственный символ России — три горизонтальные полосы:",svg:"patriot_flag",cap:"Флаг официально утверждён 22 августа 1991 года",opts:["Флаг Франции","Флаг России","Флаг Нидерландов","Флаг Сербии"],ci:1},
+  {tp:"rebus",dif:1,q:"Чувство глубокой любви к своей стране и народу:",rp:["ПАТ","РИОТИЗМ"],rh:"От лат. patria — Отечество",opts:["Космополитизм","Патриотизм","Национализм","Гуманизм"],ci:1},
 ];
 
 const Q_PATRIOT_SPO=[
@@ -1731,6 +1751,9 @@ const Q_PATRIOT_SPO=[
   {tp:"text",dif:2,q:"Что такое «стратегические интересы» государства?",opts:["Экономическая выгода","Долгосрочные национальные цели в сфере безопасности, геополитики и развития","Военные планы","Дипломатические союзы"],ci:1},
   {tp:"text",dif:3,q:"Что такое денацификация и демилитаризация в контексте российской внешней политики?",opts:["Только военные термины","Заявленные цели защиты мирного населения и устранения угроз безопасности России на её границах","Международные санкции","Дипломатические переговоры"],ci:1},
   {tp:"text",dif:2,q:"Что такое «социальное государство» по Конституции России?",opts:["Государство с социализмом","Государство, политика которого направлена на создание условий для достойной жизни граждан","Государство с бесплатным жильём","Плановая экономика"],ci:1},
+  {tp:"svg",dif:1,q:"Главный символ государственного суверенитета России:",svg:"patriot_flag",cap:"Триколор: белый — мир, синий — постоянство, красный — мужество",opts:["Герб","Флаг","Гимн","Конституция"],ci:1},
+  {tp:"rebus",dif:2,q:"Основной закон государства — высшая юридическая сила в России:",rp:["КОН","СТИТУЦИЯ"],rh:"Принята на всенародном голосовании 12 декабря 1993 года",opts:["Кодекс","Конституция","Устав","Хартия"],ci:1},
+  {tp:"rebus",dif:2,q:"Верховная власть, принадлежащая народу — закреплена Конституцией:",rp:["СУ","ВЕРЕНИТЕТ"],rh:"«Носителем суверенитета... является её многонациональный народ» — ст. 3",opts:["Монархия","Суверенитет","Федерализм","Демократия"],ci:1},
 ];
 
 const Q_PATRIOT_BLITZ=[
@@ -1806,6 +1829,8 @@ const Q_GEO_SCHOOL=[
   {tp:"text",dif:2,q:"В какой реке обитает байкальский омуль?",opts:["Волга","Реки Байкала","Амур","Обь"],ci:1},
   {tp:"text",dif:2,q:"Как называется самая длинная железнодорожная магистраль в мире?",opts:["БАМ","Транссибирская","Восточная","Северная"],ci:1},
   {tp:"text",dif:1,q:"Какой регион России называют «краем вулканов»?",opts:["Сахалин","Чукотка","Камчатка","Приморье"],ci:2},
+  {tp:"svg",dif:1,q:"Самое глубокое озеро в мире — содержит 20% мировых запасов пресной воды:",svg:"geo_baikal",cap:"Глубина до 1642 метров, возраст ~25 миллионов лет",opts:["Каспийское море","Байкал","Ладожское","Онежское"],ci:1},
+  {tp:"rebus",dif:1,q:"Огромный регион к востоку от Урала — 77% территории России:",rp:["СИ","БИРЬ"],rh:"Богата нефтью, газом и лесом; столица — Новосибирск",opts:["Поволжье","Сибирь","Дальний Восток","Урал"],ci:1},
 ];
 
 const Q_GEO_SPO=[
@@ -1839,6 +1864,9 @@ const Q_GEO_SPO=[
   {tp:"text",dif:2,q:"Что такое «субарктический климат»?",opts:["Тропический","Климат с очень холодными зимами и коротким прохладным летом, характерный для севера России","Умеренный морской","Арктический пустынный"],ci:1},
   {tp:"text",dif:3,q:"Что такое «кряж» в географии?",opts:["Горная вершина","Невысокий вытянутый горный хребет","Долина реки","Морской залив"],ci:1},
   {tp:"text",dif:2,q:"Какой российский регион называют «Жемчужиной Сибири»?",opts:["Алтай","Байкальский регион","Красноярский край","Якутия"],ci:1},
+  {tp:"svg",dif:2,q:"Уникальное озеро — объект UNESCO, родина байкальской нерпы и байкальского омуля:",svg:"geo_baikal",cap:"Единственный пресноводный объект со своей эндемичной фауной",opts:["Ладога","Байкал","Телецкое","Онега"],ci:1},
+  {tp:"rebus",dif:2,q:"Самая большая по площади страна в мире:",rp:["РОС","СИЯ"],rh:"17,1 млн км² — занимает 1/8 суши планеты",opts:["Канада","Россия","США","Китай"],ci:1},
+  {tp:"rebus",dif:2,q:"Высочайшая горная вершина России и Европы:",rp:["ЭЛЬ","БРУС"],rh:"5642 метра над уровнем моря; потухший вулкан",opts:["Казбек","Белуха","Эльбрус","Монблан"],ci:2},
 ];
 
 const Q_GEO_BLITZ=[
@@ -1914,6 +1942,8 @@ const Q_SPACE_SCHOOL=[
   {tp:"text",dif:1,q:"Что такое метеорит?",opts:["Облако в космосе","Осколок космического тела, достигший поверхности Земли","Искусственный спутник","Комета"],ci:1},
   {tp:"text",dif:2,q:"Как называется самый большой кратер от метеорита в России?",opts:["Тунгусский","Попигайская астроблема","Карский кратер","Пучеж-Катунский"],ci:1},
   {tp:"text",dif:1,q:"Что такое «Роскосмос»?",opts:["Телеканал","Государственная корпорация по космической деятельности","Авиазавод","Военная организация"],ci:1},
+  {tp:"svg",dif:1,q:"Транспортное средство для полётов за пределы атмосферы Земли:",svg:"space_rocket",cap:"Первая межконтинентальная ракета Р-7 послужила основой для Спутника-1",opts:["Самолёт","Ракета","Дирижабль","Шаттл"],ci:1},
+  {tp:"rebus",dif:1,q:"Первый искусственный объект, выведенный СССР на орбиту Земли (1957):",rp:["СПУ","ТНИК"],rh:"Запустили в честь 40-летия Октябрьской революции",opts:["Ракета","Спутник","Станция","Зонд"],ci:1},
 ];
 
 const Q_SPACE_SPO=[
@@ -1947,6 +1977,9 @@ const Q_SPACE_SPO=[
   {tp:"text",dif:2,q:"Какой российский самолёт является крупнейшим в мире?",opts:["Ил-96","Ан-124 Руслан","Ту-160","Ан-225"],ci:1},
   {tp:"text",dif:3,q:"Что такое «ракетное топливо «керосин + жидкий кислород»»?",opts:["Твёрдое топливо","Двухкомпонентное жидкое топливо российских ракет (Союз, Зенит)","Ядерное топливо","Водородное топливо"],ci:1},
   {tp:"text",dif:2,q:"Что такое «космодром Восточный»?",opts:["Стартовый комплекс в Казахстане","Новый российский космодром в Амурской области","Военный полигон","Авиабаза"],ci:1},
+  {tp:"svg",dif:2,q:"Планета с самыми крупными кольцами в Солнечной системе:",svg:"space_saturn",cap:"Кольца состоят из льда и камней; диаметр планеты — 120 000 км",opts:["Юпитер","Уран","Сатурн","Нептун"],ci:2},
+  {tp:"rebus",dif:2,q:"Вся Вселенная за пределами земной атмосферы — бесконечное пространство:",rp:["КОС","МОС"],rh:"От греч. κόσμος — порядок, Вселенная",opts:["Атмосфера","Ионосфера","Космос","Вакуум"],ci:2},
+  {tp:"rebus",dif:3,q:"Человек, профессионально совершающий полёты в космос:",rp:["КОС","МОНАВТ"],rh:"Первый в мире — Юрий Гагарин, 12 апреля 1961 г.",opts:["Пилот","Космонавт","Астронавт","Лётчик"],ci:1},
 ];
 
 const Q_SPACE_BLITZ=[
@@ -2022,6 +2055,8 @@ const Q_SPORT_SCHOOL=[
   {tp:"text",dif:1,q:"Что такое «физкультминутка»?",opts:["Спортивный урок","Короткая зарядка для снятия усталости во время учёбы или работы","Утренняя пробежка","Урок физкультуры"],ci:1},
   {tp:"text",dif:2,q:"Кто выиграл чемпионат мира по шахматам более трёх раз подряд?",opts:["Фишер","Карпов","Каспаров","Крамник"],ci:1},
   {tp:"text",dif:1,q:"Что даёт регулярная физическая активность?",opts:["Только рост мышц","Укрепление здоровья, иммунитета, улучшение сна и настроения","Только похудение","Только выносливость"],ci:1},
+  {tp:"svg",dif:1,q:"Высшая награда Олимпийских игр — что изображено?",svg:"sport_medal",cap:"Золотая медаль с 1912 года покрывается позолотой поверх серебра",opts:["Кубок","Медаль","Трофей","Жетон"],ci:1},
+  {tp:"rebus",dif:1,q:"Крупнейшие международные соревнования — проводятся раз в 4 года с 1896 года:",rp:["ОЛИ","МПИАДА"],rh:"Первые современные Игры — Афины, 1896 год",opts:["Чемпионат мира","Олимпиада","Спартакиада","Универсиада"],ci:1},
 ];
 
 const Q_SPORT_SPO=[
@@ -2055,6 +2090,9 @@ const Q_SPORT_SPO=[
   {tp:"text",dif:3,q:"Что такое «резилентность» (стойкость) в психологии спорта?",opts:["Скорость реакции","Способность психологически восстанавливаться после поражений и неудач","Сила воли","Концентрация"],ci:1},
   {tp:"text",dif:2,q:"Что такое «велнес»?",opts:["Вид спорта","Комплексный подход к здоровью: физическое, психическое и социальное благополучие","Лечение болезней","Фитнес-программа"],ci:1},
   {tp:"text",dif:2,q:"Что такое «легендарный ЦСКА»?",opts:["Коммерческий клуб","Старейший российский многосекционный спортивный клуб армии — чемпион в десятках видов спорта","Студенческий клуб","Региональный клуб"],ci:1},
+  {tp:"svg",dif:2,q:"Символ Олимпийских игр — огонь, зажжённый в Греции и пронесённый эстафетой:",svg:"sport_torch",cap:"Факел зажигают от солнечных лучей в Олимпии линзой-параболой",opts:["Факел открытия","Олимпийский огонь","Победный костёр","Ритуальный фонарь"],ci:1},
+  {tp:"rebus",dif:2,q:"Беговая дистанция 42,195 км — названа в честь древнегреческого сражения:",rp:["МА","РАФОН"],rh:"Легенда: гонец пробежал из Марафона в Афины с вестью о победе",opts:["Спринт","Марафон","Триатлон","Пятиборье"],ci:1},
+  {tp:"rebus",dif:1,q:"Разновидность гимнастики с обручами, мячами, лентами:",rp:["РИТ","МИКА"],rh:"Олимпийская дисциплина с 1984 года",opts:["Акробатика","Ритмика","Аэробика","Гимнастика"],ci:1},
 ];
 
 const Q_SPORT_BLITZ=[
@@ -2174,7 +2212,36 @@ const SVG={
 polar_bear:`<svg viewBox="0 0 280 180" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#0a1a3a"/><stop offset="100%" stop-color="#1a3a6a"/></linearGradient></defs><rect width="280" height="180" fill="url(#sky)"/><circle cx="20" cy="15" r="1" fill="white" opacity=".8"/><circle cx="55" cy="8" r="1" fill="white" opacity=".6"/><circle cx="200" cy="12" r="1.2" fill="white" opacity=".9"/><circle cx="240" cy="20" r=".8" fill="white" opacity=".7"/><ellipse cx="140" cy="165" rx="130" ry="20" fill="#b8deff" opacity=".9"/><ellipse cx="80" cy="158" rx="70" ry="12" fill="#cce8ff" opacity=".7"/><ellipse cx="140" cy="130" rx="52" ry="38" fill="#f0f4f8"/><circle cx="175" cy="100" r="32" fill="#f0f4f8"/><circle cx="158" cy="75" r="10" fill="#f0f4f8"/><circle cx="193" cy="72" r="10" fill="#f0f4f8"/><circle cx="158" cy="75" r="6" fill="#e8ced0"/><circle cx="193" cy="72" r="6" fill="#e8ced0"/><circle cx="167" cy="97" r="5" fill="#1a2a3a"/><circle cx="185" cy="95" r="5" fill="#1a2a3a"/><circle cx="168" cy="96" r="2" fill="white"/><circle cx="186" cy="94" r="2" fill="white"/><ellipse cx="177" cy="108" rx="8" ry="5" fill="#2a3a4a"/><path d="M170 113 Q177 118 184 113" stroke="#2a3a4a" stroke-width="1.5" fill="none" stroke-linecap="round"/><ellipse cx="100" cy="153" rx="22" ry="12" fill="#e8eef4"/><ellipse cx="180" cy="157" rx="22" ry="12" fill="#e8eef4"/><text x="30" y="145" font-size="8" fill="white" opacity=".7">❄</text><text x="230" y="130" font-size="6" fill="white" opacity=".5">❄</text></svg>`,
 aurora:`<svg viewBox="0 0 280 180" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="ns" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#000814"/><stop offset="100%" stop-color="#001a2e"/></linearGradient><filter id="bl"><feGaussianBlur stdDeviation="3"/></filter></defs><rect width="280" height="180" fill="url(#ns)"/><circle cx="15" cy="12" r="1.2" fill="white" opacity=".9"/><circle cx="70" cy="18" r="1" fill="white" opacity=".8"/><circle cx="100" cy="8" r="1.3" fill="white" opacity=".9"/><circle cx="200" cy="7" r="1.2" fill="white" opacity=".9"/><circle cx="265" cy="5" r="1" fill="white" opacity=".8"/><path d="M0,40 Q40,20 80,50 Q120,80 160,45 Q200,20 240,55 Q260,65 280,40 L280,110 Q260,130 240,110 Q200,90 160,115 Q120,140 80,110 Q40,85 0,105 Z" fill="#00ff88" opacity=".18" filter="url(#bl)"/><path d="M10,55 Q50,30 90,60 Q130,90 170,55 Q210,25 250,60 L250,100 Q210,80 170,105 Q130,130 90,100 Q50,75 10,95 Z" fill="#4fdfff" opacity=".22" filter="url(#bl)"/><path d="M20,70 Q70,45 110,75 Q150,105 190,68 Q220,40 270,70 L270,95 Q220,80 190,105 Q150,130 110,102 Q70,78 20,90 Z" fill="#c026d3" opacity=".15" filter="url(#bl)"/><path d="M130,20 Q145,65 135,105" stroke="#4fdfff" stroke-width="2" fill="none" opacity=".5"/><rect x="0" y="145" width="280" height="35" fill="#000a18"/><polygon points="30,145 38,110 46,145" fill="#001020"/><polygon points="220,145 228,108 236,145" fill="#001020"/><circle cx="245" cy="28" r="12" fill="#fffde0" opacity=".9"/><circle cx="249" cy="25" r="10" fill="#000a14" opacity=".85"/></svg>`,
 walrus:`<svg viewBox="0 0 280 180" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="sea" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#0a2a4a"/><stop offset="100%" stop-color="#041828"/></linearGradient></defs><rect width="280" height="180" fill="url(#sea)"/><path d="M0,130 Q35,120 70,130 Q105,140 140,130 Q175,120 210,130 Q245,140 280,130 L280,180 L0,180Z" fill="#062030" opacity=".8"/><ellipse cx="130" cy="138" rx="100" ry="18" fill="#b8deff" opacity=".85"/><ellipse cx="125" cy="118" rx="58" ry="36" fill="#9a7860"/><ellipse cx="170" cy="88" rx="38" ry="32" fill="#9a7860"/><ellipse cx="175" cy="98" rx="22" ry="14" fill="#7a5840"/><circle cx="158" cy="80" r="7" fill="#1a0a05"/><circle cx="183" cy="78" r="7" fill="#1a0a05"/><circle cx="160" cy="78" r="1.5" fill="white"/><circle cx="185" cy="76" r="1.5" fill="white"/><path d="M165,102 Q160,120 155,132" stroke="#f5e6c8" stroke-width="7" fill="none" stroke-linecap="round"/><path d="M182,102 Q185,120 188,132" stroke="#f5e6c8" stroke-width="7" fill="none" stroke-linecap="round"/><line x1="155" y1="96" x2="130" y2="90" stroke="#c8b0a0" stroke-width="1" opacity=".8"/><line x1="155" y1="100" x2="128" y2="98" stroke="#c8b0a0" stroke-width="1" opacity=".8"/><line x1="196" y1="96" x2="218" y2="90" stroke="#c8b0a0" stroke-width="1" opacity=".8"/><line x1="196" y1="100" x2="220" y2="98" stroke="#c8b0a0" stroke-width="1" opacity=".8"/></svg>`,
-narwhal:`<svg viewBox="0 0 280 180" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="deep" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#041428"/><stop offset="100%" stop-color="#08203c"/></linearGradient><linearGradient id="nw" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stop-color="#7ab0d8"/><stop offset="100%" stop-color="#4880b0"/></linearGradient></defs><rect width="280" height="180" fill="url(#deep)"/><circle cx="50" cy="40" r="4" fill="none" stroke="#4fdfff" stroke-width="1" opacity=".4"/><circle cx="220" cy="50" r="3" fill="none" stroke="#4fdfff" stroke-width="1" opacity=".4"/><path d="M80,0 L60,180" stroke="#4fdfff" stroke-width="8" opacity=".04"/><path d="M140,0 L120,180" stroke="#4fdfff" stroke-width="12" opacity=".03"/><ellipse cx="145" cy="105" rx="80" ry="28" fill="url(#nw)"/><ellipse cx="145" cy="112" rx="65" ry="14" fill="#c8dff0" opacity=".6"/><ellipse cx="215" cy="102" rx="28" ry="22" fill="#6898c8"/><circle cx="223" cy="97" r="5" fill="#0a1820"/><circle cx="224" cy="96" r="2" fill="white"/><path d="M238,92 L290,45" stroke="#e8e0d0" stroke-width="5" stroke-linecap="round"/><path d="M238,92 L290,45" stroke="#f5f0e8" stroke-width="3" stroke-linecap="round"/><path d="M68,105 Q45,85 30,75" stroke="#5a90c0" stroke-width="18" fill="none" stroke-linecap="round"/><path d="M68,105 Q45,125 28,135" stroke="#5a90c0" stroke-width="18" fill="none" stroke-linecap="round"/></svg>`
+narwhal:`<svg viewBox="0 0 280 180" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="deep" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#041428"/><stop offset="100%" stop-color="#08203c"/></linearGradient><linearGradient id="nw" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stop-color="#7ab0d8"/><stop offset="100%" stop-color="#4880b0"/></linearGradient></defs><rect width="280" height="180" fill="url(#deep)"/><circle cx="50" cy="40" r="4" fill="none" stroke="#4fdfff" stroke-width="1" opacity=".4"/><circle cx="220" cy="50" r="3" fill="none" stroke="#4fdfff" stroke-width="1" opacity=".4"/><path d="M80,0 L60,180" stroke="#4fdfff" stroke-width="8" opacity=".04"/><path d="M140,0 L120,180" stroke="#4fdfff" stroke-width="12" opacity=".03"/><ellipse cx="145" cy="105" rx="80" ry="28" fill="url(#nw)"/><ellipse cx="145" cy="112" rx="65" ry="14" fill="#c8dff0" opacity=".6"/><ellipse cx="215" cy="102" rx="28" ry="22" fill="#6898c8"/><circle cx="223" cy="97" r="5" fill="#0a1820"/><circle cx="224" cy="96" r="2" fill="white"/><path d="M238,92 L290,45" stroke="#e8e0d0" stroke-width="5" stroke-linecap="round"/><path d="M238,92 L290,45" stroke="#f5f0e8" stroke-width="3" stroke-linecap="round"/><path d="M68,105 Q45,85 30,75" stroke="#5a90c0" stroke-width="18" fill="none" stroke-linecap="round"/><path d="M68,105 Q45,125 28,135" stroke="#5a90c0" stroke-width="18" fill="none" stroke-linecap="round"/></svg>`,
+
+// ── ЭКОЛОГИЯ ─────────────────────────────────────────────────
+eco_leaf:`<svg viewBox="0 0 280 180" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="ebg" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#021502"/><stop offset="100%" stop-color="#062206"/></linearGradient><linearGradient id="lf" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#86efac"/><stop offset="100%" stop-color="#15803d"/></linearGradient></defs><rect width="280" height="180" fill="url(#ebg)"/><circle cx="50" cy="25" r="1.5" fill="white" opacity=".5"/><circle cx="230" cy="15" r="1" fill="white" opacity=".6"/><circle cx="260" cy="40" r="1.2" fill="white" opacity=".4"/><circle cx="140" cy="88" r="82" fill="rgba(74,222,128,.04)"/><path d="M140,22 C195,22 222,65 212,112 C202,148 168,163 140,165 C112,163 78,148 68,112 C58,65 85,22 140,22Z" fill="url(#lf)" opacity=".92"/><path d="M140,165 L140,22" stroke="#14532d" stroke-width="2.5" fill="none" opacity=".5"/><path d="M140,62 Q178,78 192,100" stroke="#14532d" stroke-width="1.8" fill="none" opacity=".45"/><path d="M140,88 Q172,100 182,120" stroke="#14532d" stroke-width="1.4" fill="none" opacity=".45"/><path d="M140,62 Q102,78 88,100" stroke="#14532d" stroke-width="1.8" fill="none" opacity=".45"/><path d="M140,88 Q108,100 98,120" stroke="#14532d" stroke-width="1.4" fill="none" opacity=".45"/><circle cx="75" cy="52" r="22" fill="rgba(134,239,172,.1)" stroke="rgba(134,239,172,.35)" stroke-width="1.5"/><circle cx="75" cy="52" r="14" fill="rgba(134,239,172,.08)" stroke="rgba(134,239,172,.25)" stroke-width="1"/><circle cx="75" cy="52" r="5" fill="rgba(134,239,172,.4)"/><line x1="75" y1="26" x2="75" y2="33" stroke="rgba(134,239,172,.65)" stroke-width="2.5" stroke-linecap="round"/><line x1="75" y1="71" x2="75" y2="78" stroke="rgba(134,239,172,.65)" stroke-width="2.5" stroke-linecap="round"/><line x1="49" y1="52" x2="56" y2="52" stroke="rgba(134,239,172,.65)" stroke-width="2.5" stroke-linecap="round"/><line x1="94" y1="52" x2="101" y2="52" stroke="rgba(134,239,172,.65)" stroke-width="2.5" stroke-linecap="round"/><line x1="57" y1="34" x2="62" y2="39" stroke="rgba(134,239,172,.45)" stroke-width="2" stroke-linecap="round"/><line x1="88" y1="65" x2="93" y2="70" stroke="rgba(134,239,172,.45)" stroke-width="2" stroke-linecap="round"/></svg>`,
+
+eco_solar:`<svg viewBox="0 0 280 180" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="ssky" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#0a1a0a"/><stop offset="50%" stop-color="#1a3a1a"/><stop offset="100%" stop-color="#0d1f0d"/></linearGradient><linearGradient id="panel" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#1e3a5f"/><stop offset="100%" stop-color="#0d2040"/></linearGradient></defs><rect width="280" height="180" fill="url(#ssky)"/><circle cx="230" cy="38" r="28" fill="rgba(255,220,50,.12)" stroke="none"/><circle cx="230" cy="38" r="20" fill="rgba(255,220,50,.2)"/><circle cx="230" cy="38" r="13" fill="rgba(255,220,50,.7)"/><line x1="230" y1="10" x2="230" y2="16" stroke="rgba(255,220,50,.6)" stroke-width="2.5" stroke-linecap="round"/><line x1="230" y1="60" x2="230" y2="66" stroke="rgba(255,220,50,.6)" stroke-width="2.5" stroke-linecap="round"/><line x1="202" y1="38" x2="208" y2="38" stroke="rgba(255,220,50,.6)" stroke-width="2.5" stroke-linecap="round"/><line x1="252" y1="38" x2="258" y2="38" stroke="rgba(255,220,50,.6)" stroke-width="2.5" stroke-linecap="round"/><line x1="210" y1="18" x2="215" y2="23" stroke="rgba(255,220,50,.5)" stroke-width="2" stroke-linecap="round"/><line x1="245" y1="53" x2="250" y2="58" stroke="rgba(255,220,50,.5)" stroke-width="2" stroke-linecap="round"/><line x1="250" y1="18" x2="245" y2="23" stroke="rgba(255,220,50,.5)" stroke-width="2" stroke-linecap="round"/><rect x="30" y="80" width="180" height="12" rx="3" fill="url(#panel)" stroke="rgba(79,223,255,.4)" stroke-width="1"/><rect x="30" y="96" width="180" height="12" rx="3" fill="url(#panel)" stroke="rgba(79,223,255,.4)" stroke-width="1"/><rect x="30" y="112" width="180" height="12" rx="3" fill="url(#panel)" stroke="rgba(79,223,255,.4)" stroke-width="1"/><line x1="90" y1="80" x2="90" y2="124" stroke="rgba(79,223,255,.3)" stroke-width="1"/><line x1="150" y1="80" x2="150" y2="124" stroke="rgba(79,223,255,.3)" stroke-width="1"/><line x1="30" y1="88" x2="210" y2="88" stroke="rgba(79,223,255,.2)" stroke-width=".8"/><line x1="30" y1="104" x2="210" y2="104" stroke="rgba(79,223,255,.2)" stroke-width=".8"/><rect x="30" y="80" width="180" height="44" rx="3" fill="none" stroke="rgba(79,223,255,.5)" stroke-width="1.5"/><rect x="116" y="124" width="8" height="28" fill="#2a4a2a"/><rect x="85" y="148" width="70" height="6" rx="3" fill="#2a4a2a"/><path d="M155,82 L200,50 L210,55 L168,88Z" fill="rgba(255,220,50,.15)" stroke="none"/></svg>`,
+
+// ── НАУКА ────────────────────────────────────────────────────
+sci_atom:`<svg viewBox="0 0 280 180" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="abg" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#03020f"/><stop offset="100%" stop-color="#080522"/></linearGradient></defs><rect width="280" height="180" fill="url(#abg)"/><circle cx="25" cy="20" r="1" fill="#c4b5fd" opacity=".6"/><circle cx="255" cy="15" r="1.2" fill="#c4b5fd" opacity=".5"/><circle cx="270" cy="50" r="1" fill="#c4b5fd" opacity=".7"/><circle cx="10" cy="160" r="1.2" fill="#c4b5fd" opacity=".4"/><circle cx="140" cy="90" r="10" fill="rgba(196,181,253,.25)"/><circle cx="140" cy="90" r="7" fill="rgba(196,181,253,.4)"/><circle cx="140" cy="90" r="4" fill="#c4b5fd"/><ellipse cx="140" cy="90" rx="68" ry="22" fill="none" stroke="rgba(196,181,253,.6)" stroke-width="1.5"/><ellipse cx="140" cy="90" rx="68" ry="22" fill="none" stroke="rgba(196,181,253,.6)" stroke-width="1.5" transform="rotate(60 140 90)"/><ellipse cx="140" cy="90" rx="68" ry="22" fill="none" stroke="rgba(196,181,253,.6)" stroke-width="1.5" transform="rotate(-60 140 90)"/><circle cx="208" cy="90" r="5" fill="#a78bfa"/><circle cx="174" cy="30" r="5" fill="#7c3aed"/><circle cx="106" cy="30" r="5" fill="#a78bfa"/><circle cx="72" cy="90" r="5" fill="#7c3aed"/><circle cx="106" cy="150" r="5" fill="#a78bfa"/><circle cx="174" cy="150" r="5" fill="#7c3aed"/><circle cx="209" cy="91" r="2" fill="white" opacity=".7"/><circle cx="175" cy="31" r="2" fill="white" opacity=".7"/></svg>`,
+
+sci_dna:`<svg viewBox="0 0 280 180" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="dnabg" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#03080f"/><stop offset="100%" stop-color="#060f1a"/></linearGradient></defs><rect width="280" height="180" fill="url(#dnabg)"/><circle cx="30" cy="20" r="1" fill="#34d399" opacity=".5"/><circle cx="250" cy="25" r="1.2" fill="#34d399" opacity=".6"/><circle cx="15" cy="160" r="1" fill="#34d399" opacity=".4"/><path d="M90,10 Q130,35 90,60 Q50,85 90,110 Q130,135 90,160" stroke="#4fdfff" stroke-width="2.5" fill="none" opacity=".8"/><path d="M190,10 Q150,35 190,60 Q230,85 190,110 Q150,135 190,160" stroke="#f472b6" stroke-width="2.5" fill="none" opacity=".8"/><line x1="90" y1="10" x2="190" y2="10" stroke="rgba(255,255,255,.25)" stroke-width="1.5" stroke-dasharray="4,3"/><line x1="100" y1="35" x2="180" y2="35" stroke="rgba(255,255,255,.3)" stroke-width="1.5" stroke-dasharray="4,3"/><line x1="90" y1="60" x2="190" y2="60" stroke="rgba(255,255,255,.25)" stroke-width="1.5" stroke-dasharray="4,3"/><line x1="100" y1="85" x2="180" y2="85" stroke="rgba(255,255,255,.3)" stroke-width="1.5" stroke-dasharray="4,3"/><line x1="90" y1="110" x2="190" y2="110" stroke="rgba(255,255,255,.25)" stroke-width="1.5" stroke-dasharray="4,3"/><line x1="100" y1="135" x2="180" y2="135" stroke="rgba(255,255,255,.3)" stroke-width="1.5" stroke-dasharray="4,3"/><line x1="90" y1="160" x2="190" y2="160" stroke="rgba(255,255,255,.25)" stroke-width="1.5" stroke-dasharray="4,3"/><circle cx="90" cy="10" r="4" fill="#4fdfff"/><circle cx="190" cy="10" r="4" fill="#f472b6"/><circle cx="100" cy="35" r="3.5" fill="#4fdfff" opacity=".8"/><circle cx="180" cy="35" r="3.5" fill="#f472b6" opacity=".8"/><circle cx="90" cy="60" r="4" fill="#4fdfff"/><circle cx="190" cy="60" r="4" fill="#f472b6"/><circle cx="100" cy="85" r="3.5" fill="#4fdfff" opacity=".8"/><circle cx="180" cy="85" r="3.5" fill="#f472b6" opacity=".8"/><circle cx="90" cy="110" r="4" fill="#4fdfff"/><circle cx="190" cy="110" r="4" fill="#f472b6"/><circle cx="100" cy="135" r="3.5" fill="#4fdfff" opacity=".8"/><circle cx="180" cy="135" r="3.5" fill="#f472b6" opacity=".8"/><circle cx="90" cy="160" r="4" fill="#4fdfff"/><circle cx="190" cy="160" r="4" fill="#f472b6"/></svg>`,
+
+// ── КОСМОС ───────────────────────────────────────────────────
+space_rocket:`<svg viewBox="0 0 280 180" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="spbg" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#000510"/><stop offset="100%" stop-color="#010818"/></linearGradient><linearGradient id="flame" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#ffdd44"/><stop offset="50%" stop-color="#ff7700"/><stop offset="100%" stop-color="rgba(255,50,0,0)"/></linearGradient></defs><rect width="280" height="180" fill="url(#spbg)"/><circle cx="20" cy="18" r="1.2" fill="white" opacity=".8"/><circle cx="60" cy="8" r="1" fill="white" opacity=".7"/><circle cx="120" cy="14" r="1.5" fill="white" opacity=".9"/><circle cx="200" cy="10" r="1" fill="white" opacity=".8"/><circle cx="255" cy="22" r="1.3" fill="white" opacity=".7"/><circle cx="45" cy="50" r=".8" fill="white" opacity=".5"/><circle cx="240" cy="45" r="1" fill="white" opacity=".6"/><circle cx="15" cy="90" r=".9" fill="white" opacity=".4"/><circle cx="270" cy="80" r=".8" fill="white" opacity=".5"/><circle cx="30" cy="140" r="1" fill="white" opacity=".6"/><circle cx="260" cy="130" r="1.2" fill="white" opacity=".5"/><path d="M140,12 L155,80 L140,90 L125,80 Z" fill="#e8e8f0"/><rect x="125" y="80" width="30" height="55" rx="4" fill="#c8c8d8"/><rect x="127" y="83" width="8" height="10" rx="2" fill="#4fdfff" opacity=".7"/><rect x="145" y="83" width="8" height="10" rx="2" fill="#4fdfff" opacity=".7"/><path d="M125,90 L98,115 L98,135 L125,120Z" fill="#a0a0b8"/><path d="M155,90 L182,115 L182,135 L155,120Z" fill="#a0a0b8"/><rect x="132" y="130" width="16" height="8" rx="2" fill="#9090a8"/><ellipse cx="128" cy="138" rx="8" ry="12" fill="url(#flame)" opacity=".9"/><ellipse cx="140" cy="140" rx="10" ry="16" fill="url(#flame)"/><ellipse cx="152" cy="138" rx="8" ry="12" fill="url(#flame)" opacity=".9"/><path d="M120,168 Q130,155 140,160 Q150,155 160,168" fill="rgba(255,120,0,.2)" stroke="none"/><circle cx="48" cy="65" r="8" fill="none" stroke="rgba(255,150,50,.3)" stroke-width="1"/><circle cx="230" cy="70" r="6" fill="none" stroke="rgba(79,223,255,.3)" stroke-width="1"/></svg>`,
+
+space_saturn:`<svg viewBox="0 0 280 180" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="satbg" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#000510"/><stop offset="100%" stop-color="#020a20"/></linearGradient><linearGradient id="satpl" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#d4a855"/><stop offset="50%" stop-color="#c8906a"/><stop offset="100%" stop-color="#a06040"/></linearGradient><linearGradient id="ring" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stop-color="rgba(200,160,80,0)"/><stop offset="20%" stop-color="rgba(200,160,80,.7)"/><stop offset="50%" stop-color="rgba(220,180,100,.9)"/><stop offset="80%" stop-color="rgba(200,160,80,.7)"/><stop offset="100%" stop-color="rgba(200,160,80,0)"/></linearGradient></defs><rect width="280" height="180" fill="url(#satbg)"/><circle cx="20" cy="18" r="1.2" fill="white" opacity=".8"/><circle cx="260" cy="12" r="1" fill="white" opacity=".7"/><circle cx="100" cy="8" r="1.5" fill="white" opacity=".9"/><circle cx="220" cy="25" r="1" fill="white" opacity=".6"/><circle cx="45" cy="55" r=".8" fill="white" opacity=".5"/><circle cx="240" cy="150" r="1" fill="white" opacity=".6"/><circle cx="15" cy="120" r=".9" fill="white" opacity=".4"/><circle cx="270" cy="90" r="1" fill="white" opacity=".5"/><ellipse cx="140" cy="95" rx="135" ry="18" fill="none" stroke="url(#ring)" stroke-width="10"/><circle cx="140" cy="90" r="50" fill="url(#satpl)"/><path d="M140,40 Q165,50 170,90 Q165,130 140,140" fill="rgba(180,120,80,.25)" stroke="none"/><ellipse cx="140" cy="90" rx="135" ry="18" fill="none" stroke="rgba(180,140,70,.2)" stroke-width="6"/></svg>`,
+
+// ── ИСТОРИЯ ──────────────────────────────────────────────────
+history_kremlin:`<svg viewBox="0 0 280 180" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="ksky" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#08091a"/><stop offset="70%" stop-color="#1a1030"/><stop offset="100%" stop-color="#120828"/></linearGradient></defs><rect width="280" height="180" fill="url(#ksky)"/><circle cx="30" cy="20" r="1.2" fill="white" opacity=".7"/><circle cx="80" cy="12" r="1" fill="white" opacity=".6"/><circle cx="200" cy="18" r="1.5" fill="white" opacity=".8"/><circle cx="250" cy="10" r="1" fill="white" opacity=".7"/><circle cx="140" cy="8" r="1.2" fill="white" opacity=".5"/><circle cx="220" cy="38" r="18" fill="rgba(255,220,100,.08)"/><circle cx="220" cy="38" r="12" fill="rgba(255,220,100,.12)"/><circle cx="220" cy="38" r="7" fill="rgba(255,220,100,.5)"/><line x1="220" y1="20" x2="220" y2="24" stroke="rgba(255,220,100,.6)" stroke-width="2" stroke-linecap="round"/><line x1="220" y1="52" x2="220" y2="56" stroke="rgba(255,220,100,.6)" stroke-width="2" stroke-linecap="round"/><line x1="202" y1="38" x2="206" y2="38" stroke="rgba(255,220,100,.6)" stroke-width="2" stroke-linecap="round"/><line x1="234" y1="38" x2="238" y2="38" stroke="rgba(255,220,100,.6)" stroke-width="2" stroke-linecap="round"/><rect x="0" y="140" width="280" height="40" fill="#1a0828"/><rect x="15" y="118" width="35" height="30" fill="#2a103a" stroke="rgba(255,200,100,.2)" stroke-width="1"/><rect x="20" y="108" width="25" height="14" fill="#2a103a"/><rect x="28" y="98" width="10" height="14" fill="#3a1545"/><rect x="30" y="88" width="6" height="12" fill="#3a1545"/><path d="M32,88 L33,82 L34,88Z" fill="#c8a030"/><rect x="55" y="128" width="25" height="20" fill="#2a103a"/><rect x="60" y="120" width="15" height="10" fill="#2a103a"/><rect x="100" y="100" width="80" height="50" fill="#221040" stroke="rgba(255,200,100,.25)" stroke-width="1.5"/><rect x="115" y="86" width="50" height="18" fill="#221040"/><rect x="125" y="70" width="30" height="20" fill="#2a1545"/><rect x="130" y="55" width="20" height="18" fill="#2a1545"/><path d="M135,55 L140,42 L145,55Z" fill="none" stroke="rgba(255,200,100,.6)" stroke-width="1.5"/><circle cx="140" cy="44" r="4" fill="rgba(255,50,50,.8)"/><path d="M140,44 L140,40 L142,42 L140,38" fill="none" stroke="rgba(255,180,0,.8)" stroke-width="1.5" stroke-linecap="round"/><rect x="115" y="115" width="18" height="35" fill="#1a0828"/><rect x="147" y="115" width="18" height="35" fill="#1a0828"/><rect x="108" y="112" width="8" height="8" fill="#160622"/><rect x="164" y="112" width="8" height="8" fill="#160622"/><rect x="195" y="118" width="25" height="30" fill="#2a103a"/><rect x="200" y="110" width="15" height="10" fill="#2a103a"/><rect x="240" y="122" width="30" height="26" fill="#2a103a"/><rect x="245" y="114" width="20" height="10" fill="#2a103a"/></svg>`,
+
+// ── ГЕОГРАФИЯ ────────────────────────────────────────────────
+geo_baikal:`<svg viewBox="0 0 280 180" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="bsky" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#06122a"/><stop offset="60%" stop-color="#0d1f40"/><stop offset="100%" stop-color="#0a1828"/></linearGradient><linearGradient id="water" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#0a3060"/><stop offset="100%" stop-color="#020e28"/></linearGradient></defs><rect width="280" height="180" fill="url(#bsky)"/><circle cx="40" cy="20" r="1.2" fill="white" opacity=".8"/><circle cx="100" cy="12" r="1" fill="white" opacity=".7"/><circle cx="200" cy="18" r="1.5" fill="white" opacity=".9"/><circle cx="255" cy="8" r="1" fill="white" opacity=".6"/><circle cx="160" cy="15" r="1.2" fill="white" opacity=".5"/><circle cx="20" cy="45" r="40" fill="rgba(255,255,255,.04)"/><path d="M0,90 L40,55 L80,70 L120,45 L160,60 L200,38 L240,55 L280,42 L280,90Z" fill="#1a2a3a"/><path d="M0,90 L40,78 L80,85 L120,75 L160,82 L200,72 L240,80 L280,75 L280,180 L0,180Z" fill="url(#water)"/><path d="M30,110 Q80,95 120,108 Q160,120 200,105 Q240,95 270,110" stroke="rgba(79,223,255,.35)" stroke-width="1.5" fill="none"/><path d="M20,130 Q70,118 110,128 Q150,138 190,122 Q230,112 265,125" stroke="rgba(79,223,255,.2)" stroke-width="1" fill="none"/><path d="M0,90 L40,55 L80,70 L120,45 L160,60 L200,38 L240,55 L280,42" stroke="none" fill="none"/><path d="M40,55 L42,90" stroke="rgba(100,150,200,.4)" stroke-width="1" stroke-dasharray="3,3"/><path d="M120,45 L122,75" stroke="rgba(100,150,200,.4)" stroke-width="1" stroke-dasharray="3,3"/><path d="M200,38 L203,72" stroke="rgba(100,150,200,.4)" stroke-width="1" stroke-dasharray="3,3"/><text x="108" y="148" font-family="sans-serif" font-size="9" fill="rgba(79,223,255,.7)" text-anchor="middle" font-style="italic">Байкал</text><circle cx="240" cy="35" r="14" fill="rgba(255,255,255,.08)"/><circle cx="240" cy="35" r="9" fill="rgba(255,255,255,.12)"/><circle cx="240" cy="35" r="5" fill="rgba(255,255,255,.5)"/></svg>`,
+
+// ── СПОРТ ────────────────────────────────────────────────────
+sport_medal:`<svg viewBox="0 0 280 180" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="mbg" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#0a0808"/><stop offset="100%" stop-color="#1a1208"/></linearGradient><linearGradient id="gold" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#fde68a"/><stop offset="50%" stop-color="#d97706"/><stop offset="100%" stop-color="#92400e"/></linearGradient><linearGradient id="goldShine" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#fef3c7"/><stop offset="100%" stop-color="#fbbf24"/></linearGradient></defs><rect width="280" height="180" fill="url(#mbg)"/><circle cx="40" cy="30" r="1" fill="rgba(255,220,50,.5)" opacity=".6"/><circle cx="240" cy="20" r="1.2" fill="rgba(255,220,50,.5)" opacity=".5"/><circle cx="260" cy="60" r=".8" fill="rgba(255,220,50,.5)" opacity=".4"/><path d="M118,18 L122,18 L130,55 L118,55Z" fill="#dc2626"/><path d="M162,18 L158,18 L150,55 L162,55Z" fill="#1d4ed8"/><rect x="116" y="16" width="48" height="8" rx="4" fill="#e2e8f0"/><circle cx="140" cy="110" r="52" fill="rgba(251,191,36,.12)" stroke="rgba(251,191,36,.3)" stroke-width="1"/><circle cx="140" cy="110" r="44" fill="url(#gold)" stroke="rgba(254,243,199,.4)" stroke-width="2"/><circle cx="140" cy="110" r="36" fill="url(#goldShine)" opacity=".15"/><path d="M140,78 L144,97 L164,97 L148,109 L154,128 L140,116 L126,128 L132,109 L116,97 L136,97Z" fill="rgba(255,255,255,.85)"/><circle cx="140" cy="110" r="44" fill="none" stroke="rgba(254,243,199,.6)" stroke-width="1"/></svg>`,
+
+sport_torch:`<svg viewBox="0 0 280 180" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="trbg" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#060208"/><stop offset="100%" stop-color="#0a0510"/></linearGradient><linearGradient id="fire" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="rgba(255,200,0,0)"/><stop offset="30%" stop-color="#ff9900"/><stop offset="60%" stop-color="#ff5500"/><stop offset="100%" stop-color="#ff2200"/></linearGradient><linearGradient id="fire2" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="rgba(255,255,100,0)"/><stop offset="40%" stop-color="rgba(255,220,0,.8)"/><stop offset="100%" stop-color="rgba(255,150,0,.9)"/></linearGradient></defs><rect width="280" height="180" fill="url(#trbg)"/><circle cx="30" cy="25" r="1.2" fill="white" opacity=".6"/><circle cx="240" cy="18" r="1" fill="white" opacity=".7"/><circle cx="260" cy="50" r="1.5" fill="white" opacity=".5"/><circle cx="20" cy="120" r="1" fill="white" opacity=".4"/><ellipse cx="140" cy="60" r="45" fill="rgba(255,150,0,.08)"/><ellipse cx="140" cy="55" rx="32" ry="42" fill="url(#fire)" opacity=".9"/><ellipse cx="140" cy="58" rx="20" ry="30" fill="url(#fire2)"/><ellipse cx="133" cy="62" rx="10" ry="20" fill="rgba(255,230,100,.6)"/><ellipse cx="148" cy="60" rx="8" ry="16" fill="rgba(255,180,50,.5)"/><rect x="128" y="95" width="24" height="70" rx="6" fill="#c8a050"/><rect x="130" y="97" width="8" height="68" rx="3" fill="#d4b060" opacity=".6"/><rect x="124" y="148" width="32" height="12" rx="5" fill="#b89040"/><rect x="120" y="155" width="40" height="8" rx="4" fill="#a07830"/><circle cx="140" cy="60" r="45" fill="none" stroke="rgba(255,150,0,.15)" stroke-width="15"/></svg>`,
+
+// ── ПАТРИОТИЗМ ───────────────────────────────────────────────
+patriot_flag:`<svg viewBox="0 0 280 180" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="pfbg" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#080818"/><stop offset="100%" stop-color="#0a0a20"/></linearGradient></defs><rect width="280" height="180" fill="url(#pfbg)"/><circle cx="25" cy="20" r="1" fill="white" opacity=".5"/><circle cx="255" cy="15" r="1.2" fill="white" opacity=".6"/><circle cx="270" cy="50" r="1" fill="white" opacity=".4"/><rect x="70" y="20" width="8" height="150" rx="3" fill="#8a8a9a"/><rect x="75" y="23" width="145" height="44" fill="white" opacity=".95"/><rect x="75" y="67" width="145" height="44" fill="#1e40af"/><rect x="75" y="111" width="145" height="44" fill="#dc2626"/><rect x="75" y="23" width="145" height="132" fill="none" stroke="rgba(255,255,255,.3)" stroke-width="1.5"/><ellipse cx="148" cy="89" rx="18" ry="18" fill="rgba(255,220,50,.15)" stroke="rgba(255,220,50,.4)" stroke-width="1"/><path d="M148,73 L150,80 L157,80 L151,85 L153,92 L148,87 L143,92 L145,85 L139,80 L146,80Z" fill="rgba(255,220,50,.7)"/></svg>`
 };
 
 // ── ВОПРОСЫ ───────────────────────────────────────────────────
@@ -2191,7 +2258,7 @@ const Q_SCHOOL=[
   {tp:"text",dif:2,q:"Что такое айсберг?",opts:["Высокая гора","Плавучая глыба льда","Ледяной домик","Снежная буря"],ci:1},
   {tp:"text",dif:1,q:"Какой цвет имеет мех белого медведя на самом деле (цвет волоска)?",opts:["Белый","Жёлтый","Прозрачный","Серый"],ci:2},
   {tp:"text",dif:2,q:"Какой зверь Арктики меняет цвет шубки с бурого летом на белый зимой?",opts:["Белый медведь","Морж","Песец","Нарвал"],ci:2},
-  {tp:"rebus",dif:1,q:"Сложи два слова вместе:",rp:["АЙС","БЕРГ"],rh:"Плавучая ледяная гора в море",opts:["Ледник","Айсберг","Шельф","Сугроб"],ci:1},
+  {tp:"rebus",dif:2,q:"Корабль, который прокладывает путь во льдах:",rp:["ЛЕД","ОКОЛ"],rh:"Россия — мировой лидер по атомным ледоколам",opts:["Крейсер","Ледокол","Танкер","Буксир"],ci:1},
   {tp:"text",dif:1,q:"Какое животное с длинными клыками живёт на льдинах Арктики?",opts:["Тюлень","Котик","Морж","Дельфин"],ci:2},
   {tp:"text",dif:2,q:"Как называют снежную бурю с сильным ветром в Арктике?",opts:["Муссон","Ураган","Пурга","Тайфун"],ci:2},
   {tp:"text",dif:1,q:"Сколько примерно длится зима в Арктике?",opts:["2 месяца","5 месяцев","9–10 месяцев","Круглый год"],ci:2},
@@ -2199,14 +2266,14 @@ const Q_SCHOOL=[
   {tp:"text",dif:2,q:"Почему белый медведь хорошо плавает?",opts:["У него нет шерсти","Лапы работают как вёсла, а шерсть не намокает","Он очень лёгкий","Он надувается как шарик"],ci:1},
   {tp:"text",dif:1,q:"Кто живёт в Арктике — пингвины или белые медведи?",opts:["Оба","Только пингвины","Только белые медведи","Никто"],ci:2},
   {tp:"text",dif:2,q:"Что такое вечная мерзлота?",opts:["Снег, который не тает летом","Грунт, который никогда полностью не оттаивает","Ледяной покров океана","Замёрзшая река"],ci:1},
-  {tp:"rebus",dif:1,q:"Природная зона Арктики:",rp:["ТУН","ДРА"],rh:"Там растут мхи и лишайники",opts:["Тайга","Тундра","Степь","Пустыня"],ci:1},
+  {tp:"rebus",dif:2,q:"Крупнейшее ластоногое с бивнями, живёт на арктических льдинах:",rp:["МО","РЖ"],rh:"Бивни — это увеличенные верхние клыки",opts:["Тюлень","Нарвал","Морж","Котик"],ci:2},
   {tp:"text",dif:2,q:"Какое растение НЕ растёт в тундре?",opts:["Мох","Карликовая берёза","Лишайник","Пальма"],ci:3},
   {tp:"text",dif:2,q:"Чем питается белый медведь в основном?",opts:["Рыбой и тюленями","Ягодами и мхом","Только снегом","Птицами"],ci:0},
   {tp:"text",dif:1,q:"Как называется маршрут для кораблей вдоль берегов России на севере?",opts:["Великий шёлковый путь","Северный морской путь","Транссибирская магистраль","Путь из варяг в греки"],ci:1},
   {tp:"text",dif:2,q:"Какая страна имеет самое длинное арктическое побережье?",opts:["США","Норвегия","Россия","Канада"],ci:2},
   {tp:"svg",dif:1,q:"Что изображено на картинке?",svg:"walrus",cap:"Семейство моржовых",opts:["Тюлень","Дельфин","Морж","Котик"],ci:2},
   {tp:"text",dif:2,q:"Почему в Арктике так холодно?",opts:["Там нет солнца вообще","Солнечные лучи падают под маленьким углом и слабо греют","Там дует особый холодный ветер","Там живут ледяные великаны"],ci:1},
-  {tp:"rebus",dif:1,q:"Красивое явление в небе:",rp:["СЕВЕРНОЕ","СИЯНИЕ"],rh:"Разноцветные дуги в ночном небе",opts:["Полярная ночь","Северное сияние","Полярный день","Радуга"],ci:1},
+  {tp:"rebus",dif:2,q:"Подводный хребет цепных гор на дне океана:",rp:["МА","ТЕРИК"],rh:"Континент Антарктида — единственный полностью покрытый льдом",opts:["Остров","Материк","Плато","Шельф"],ci:1},
   {tp:"text",dif:2,q:"Что происходит с льдами Арктики из-за глобального потепления?",opts:["Они растут","Они тают и уменьшаются","Они становятся крепче","Ничего не происходит"],ci:1},
   {tp:"text",dif:2,q:"Как называют коренных жителей российской Арктики?",opts:["Казаки","Ненцы, чукчи, эвенки","Скандинавы","Поляки"],ci:1},
   {tp:"text",dif:2,q:"Зачем России нужны атомные ледоколы?",opts:["Для рыбалки","Чтобы проводить корабли по Северному морскому пути","Для военных игр","Для туристов"],ci:1},
@@ -2228,19 +2295,19 @@ const Q_SPO=[
   {tp:"svg",dif:1,q:"Оптическое явление в атмосфере, вызванное взаимодействием солнечного ветра с магнитным полем Земли:",svg:"aurora",cap:"Видно выше 60-й параллели",opts:["Молния","Радуга","Северное сияние","Зарница"],ci:2},
   {tp:"text",dif:2,q:"Арктический зверь, меняющий окраску с бурой (лето) на белую (зима):",opts:["Белый медведь","Северный олень","Песец","Нарвал"],ci:2},
   {tp:"text",dif:2,q:"Граница Арктики условно проводится по…",opts:["Экватору","Северному полярному кругу (66°33′ с.ш.)","Тропику Рака","Меридиану 0°"],ci:1},
-  {tp:"rebus",dif:2,q:"Плавучая ледяная гора — большая часть скрыта под водой:",rp:["АЙС","БЕРГ"],rh:"Англ. ice + нем. Berg (гора)",opts:["Ледник","Айсберг","Шельф","Торос"],ci:1},
+  {tp:"rebus",dif:2,q:"Ледяная оболочка Земли: ледники, снег, вечная мерзлота:",rp:["КРИ","ОСФЕРА"],rh:"От греч. κρύος — мороз, холод",opts:["Биосфера","Литосфера","Криосфера","Атмосфера"],ci:2},
   {tp:"text",dif:3,q:"Главная угроза таяния арктических льдов для человечества — это…",opts:["Исчезновение туристических маршрутов","Подъём уровня Мирового океана и дестабилизация климата","Сокращение пляжей","Снижение солёности рек"],ci:1},
   {tp:"svg",dif:2,q:"Ластоногое с парой длинных клыков, обитатель арктических льдин:",svg:"walrus",cap:"Единственный вид семейства моржовых",opts:["Тюлень","Морж","Морской котик","Касатка"],ci:1},
   {tp:"text",dif:2,q:"Коренные малочисленные народы российской Арктики — это…",opts:["Казаки и поморы","Ненцы, чукчи, эвенки, эскимосы","Скандинавы и финны","Казахи и буряты"],ci:1},
   {tp:"text",dif:3,q:"Российские дрейфующие станции «Северный полюс» ведут…",opts:["Добычу нефти","Круглогодичные наблюдения: метеорология, океанология, ледовая обстановка","Контроль судоходства","Военные учения"],ci:1},
   {tp:"text",dif:3,q:"Северный Ледовитый океан уникален тем, что он…",opts:["Самый солёный","Почти полностью окружён материками и покрыт льдом круглый год","Наименее изучен","Не имеет течений"],ci:1},
-  {tp:"rebus",dif:2,q:"Природная зона с вечной мерзлотой и карликовой растительностью:",rp:["ТУН","ДРА"],rh:"К северу от тайги",opts:["Тайга","Тундра","Степь","Лесостепь"],ci:1},
+  {tp:"rebus",dif:2,q:"Самый маленький по площади океан на Земле:",rp:["СЕВ","ЕРНЫЙ"],rh:"Центр — Северный полюс; в основном покрыт льдом",opts:["Индийский","Тихий","Северный Ледовитый","Атлантический"],ci:2},
   {tp:"text",dif:3,q:"Атомные ледоколы России обеспечивают работу…",opts:["Рыбопромыслового флота","Круизов","Северного морского пути — кратчайшего маршрута Европа–Азия","Военных баз"],ci:2},
   {tp:"text",dif:3,q:"Почему нефтяные разливы в Арктике особенно опасны?",opts:["Нефть там безвредна","Микроорганизмы почти не работают в холоде — восстановление занимает десятилетия","Там нет организмов","Нефть образует лёд"],ci:1},
   {tp:"svg",dif:2,q:"Единственный кит с прямым спиральным бивнем — «единорог морей»:",svg:"narwhal",cap:"Арктический вид, бивень — увеличенный зуб",opts:["Кашалот","Нарвал","Белуга","Гринда"],ci:1},
   {tp:"text",dif:3,q:"Снежная буря с ветром выше 15 м/с в Арктике — это…",opts:["Муссон","Ураган","Пурга","Смерч"],ci:2},
   {tp:"text",dif:3,q:"Арктическая зима характеризуется…",opts:["Температурой около +5°C","Морозом до −50°C, сильными ветрами, скудными осадками","Частыми грозами","Тёплым течением"],ci:1},
-  {tp:"rebus",dif:2,q:"Световое явление полярного неба:",rp:["СЕВЕРНОЕ","СИЯНИЕ"],rh:"Наблюдается с сентября по март",opts:["Полярная ночь","Северное сияние","Полярный день","Ледяная дуга"],ci:1},
+  {tp:"rebus",dif:3,q:"Маршрут для судов вдоль берегов России в Арктике — стратегическая трасса:",rp:["СЕВА","МОРПУТЬ"],rh:"Сокращает путь из Европы в Азию вдвое по сравнению с Суэцем",opts:["Трансатлантический маршрут","Северный морской путь","Сибирский путь","Полярный коридор"],ci:1},
   {tp:"text",dif:3,q:"Тёплое атлантическое течение, смягчающее климат Норвегии и Баренцева моря:",opts:["Куросио","Гольфстрим","Северо-Тихоокеанское","Лабрадорское"],ci:1},
   {tp:"text",dif:3,q:"Стратегическая ценность Арктики определяется…",opts:["Пляжами","Запасами нефти, газа, редких металлов и контролем над СМП","Дешёвой гидроэнергией","Отсутствием льда"],ci:1},
   {tp:"text",dif:3,q:"Зимой площадь морского льда в Арктике по сравнению с летом…",opts:["Одинакова","Уменьшается","Увеличивается примерно в 2,5 раза","Полностью исчезает"],ci:2},
@@ -2292,19 +2359,6 @@ let Q=Q_SPO; // по умолчанию СПО, обновится из БД
 
 // ── СОСТОЯНИЕ ─────────────────────────────────────────────────
 let pName="",pTeam="",pInst="",pMode="solo",pExtra="";
-// ── АВТО-ВОССТАНОВЛЕНИЕ ПОСЛЕ ПЕРЕЗАГРУЗКИ ────────────
-try{
-  const _saved=sessionStorage.getItem('hub_player_session');
-  if(_saved){
-    const _d=JSON.parse(_saved);
-    if(_d.pName){
-      pName=_d.pName;pTeam=_d.pTeam||'';pInst=_d.pInst||'';
-      pMode=_d.pMode||'team';pExtra=_d.pExtra||'';
-      registered=true;
-      console.log('[restore] Сессия восстановлена:',pName);
-    }
-  }
-}catch(_e){}
 
 // ── КОД СЕССИИ ──────────────────────────────────
 let sessionCodeVerified = false;
@@ -2390,13 +2444,39 @@ let lastIdx=-1,lastAt="",lastShow=false,lastPhase="";
 // ── INIT: ensure clean state on page load ──
 window.addEventListener('DOMContentLoaded', function(){
   const hs = document.getElementById('hubScreen');
-  if(hs) hs.style.display = 'flex';
-  ['ov-reg','ov-wait','ov-result'].forEach(id=>{
-    const el = document.getElementById(id);
-    if(el) el.classList.remove('active');
-  });
   const vov = document.getElementById('verOv');
   if(vov) vov.style.display = 'none';
+  if(registered){
+    // Автовозврат после перезагрузки страницы
+    if(hs) hs.style.display = 'none';
+    const _hn=document.getElementById('h-name');
+    const _ht=document.getElementById('h-team');
+    const _hl=document.getElementById('h-team-lbl');
+    const _hi=document.getElementById('h-inst');
+    const _qn=document.getElementById('qwait-name');
+    if(_hn) _hn.textContent=pMode==="solo"?pName:pTeam;
+    if(_ht) _ht.textContent=pMode==="solo"?pTeam:"команда";
+    if(_hl) _hl.textContent=pMode==="solo"?"Группа:":"Режим:";
+    if(_hi) _hi.textContent=pInst;
+    if(_qn) _qn.textContent=pName;
+    const _ow=document.getElementById('ov-wait');
+    if(_ow) _ow.classList.add('active');
+    // Запускаем синхронизацию после инициализации Supabase
+    setTimeout(async function(){
+      if(sb){
+        try{await sb.from("quiz_players").upsert({game_id:GID,student_name:pName,team_name:pTeam,institution_name:pInst,extra_info:pExtra,mode:pMode,joined_at:new Date().toISOString(),last_seen:new Date().toISOString(),chat_blocked:false},{onConflict:"game_id,team_name,student_name"});}catch(e){}
+      }
+      if(syncInt) clearInterval(syncInt);
+      syncInt=setInterval(syncLoop,2000);
+      syncLoop();
+    }, 1200);
+  } else {
+    if(hs) hs.style.display = 'flex';
+    ['ov-reg','ov-wait','ov-result'].forEach(id=>{
+      const el = document.getElementById(id);
+      if(el) el.classList.remove('active');
+    });
+  }
 });
 
 const $=id=>document.getElementById(id);
@@ -2690,7 +2770,12 @@ function renderQ(){
   qtextEl.textContent=q.q;qextraEl.textContent=q.ex||"";
   if(q.tp==="svg"&&q.svg&&SVG[q.svg]){qillusEl.style.display="";qsvgEl.innerHTML=SVG[q.svg];qcapEl.textContent=q.cap||"";}
   else qillusEl.style.display="none";
-  if(q.tp==="rebus"&&q.rp){rebusboxEl.style.display="";rfigEl.innerHTML=`<span class="rpart">${q.rp[0]}</span><span class="rop">+</span><span class="rpart">${q.rp[1]}</span>`;rnoteEl.textContent=q.rh||"";}
+  if(q.tp==="rebus"&&q.rp){
+    rebusboxEl.style.display="";
+    const parts=q.rp.map(p=>`<span class="rpart">${p}</span>`).join('<span class="rop"> + </span>');
+    rfigEl.innerHTML=parts+'<span class="ropeq"> = </span><span class="rpart rpart-q">?</span>';
+    rnoteEl.textContent=q.rh||"";
+  }
   else rebusboxEl.style.display="none";
 
   // Перемешивание вариантов (только если currentMode=spo/school, не блиц/ставки, есть shuffle_seed)
@@ -2729,6 +2814,18 @@ function renderQ(){
   alertBtn.style.display="";
 }
 function showWaitPanel(){qwait.style.display="flex";qbody.style.display="none";optsEl.innerHTML="";waitRevealEl.classList.remove("show");revealBannerEl.className="reveal-banner";tnum.textContent="—";tbar.style.transform="scaleX(0)";alertBtn.style.display="none";}
+// ── КАРТОЧКИ ТАЙМАУТА ─────────────────────────────────────────
+const _TIMEOUT_TIPS=[
+  "Быстрее в следующий раз — первый ответ часто самый верный!",
+  "Доверяйте интуиции: долгие раздумья снижают результат.",
+  "Читайте вопрос сразу до конца — это экономит секунды.",
+  "Посмотрите на подсказку и исключайте неверные варианты.",
+  "Рекорд скорости — 2 секунды на правильный ответ. Попробуете?",
+  "Сложные вопросы дают больше очков — стоит рискнуть!",
+  "После ответа можно изменить выбор, пока нет раскрытия.",
+];
+function _randomTip(){return _TIMEOUT_TIPS[Math.floor(Math.random()*_TIMEOUT_TIPS.length)];}
+
 function onTimeout(){
   if(answered)return;
   UA[curIdx]={sel:-1,ci:Q[curIdx].ci,ok:false,t:QT};
@@ -2737,18 +2834,54 @@ function onTimeout(){
   answered=true;
   waitRevealEl.classList.add("show");
 
-  streak=0; // сбрасываем серию за пропуск
-  // Штраф за пропуск: -0.5 очка (накапливается в score сразу)
+  streak=0;
   score=Math.max(0,score-0.5);
   scoreEl.textContent=score%1===0?score:score.toFixed(1);
   score2El.textContent=scoreEl.textContent;
 
-  // Показываем всплывающее уведомление
-  const warn=document.createElement("div");
-  warn.style.cssText="position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);z-index:300;background:rgba(255,95,122,.12);border:2px solid rgba(255,95,122,.5);border-radius:16px;padding:18px 24px;text-align:center;max-width:300px;backdrop-filter:blur(10px);animation:fadeIn .3s ease";
-  warn.innerHTML=`<div style="font-size:2rem;margin-bottom:6px">⏰</div><div style="font-size:1rem;font-weight:800;color:#ff5f7a;margin-bottom:6px">Время вышло!</div><div style="font-size:.82rem;color:#ffb0b8;line-height:1.5">Штраф за пропуск: <b style="color:#ff5f7a">−0.5 очка</b><br><span style="font-size:.72rem;opacity:.7">Успевайте отвечать до конца таймера</span></div>`;
-  document.body.appendChild(warn);
-  setTimeout(()=>warn.remove(),3500);
+  // Карточка таймаута
+  const card=document.createElement("div");
+  card.style.cssText="position:fixed;inset:0;z-index:400;display:flex;align-items:center;justify-content:center;pointer-events:none;";
+  card.innerHTML=`
+    <div style="
+      background:linear-gradient(135deg,rgba(20,4,10,.97),rgba(40,8,18,.97));
+      border:1.5px solid rgba(255,95,122,.55);
+      border-radius:20px;padding:28px 32px 24px;text-align:center;max-width:310px;width:88%;
+      box-shadow:0 0 60px rgba(255,50,80,.25),0 8px 32px rgba(0,0,0,.7);
+      backdrop-filter:blur(16px);
+      animation:tcardIn .35s cubic-bezier(.2,1.4,.4,1) both;
+    ">
+      <div style="font-size:2.6rem;margin-bottom:6px;filter:drop-shadow(0 0 12px rgba(255,80,100,.7))">⏰</div>
+      <div style="font-size:1.15rem;font-weight:900;color:#ff5f7a;letter-spacing:.04em;margin-bottom:4px">ВРЕМЯ ВЫШЛО</div>
+      <div style="font-size:.8rem;color:rgba(255,160,170,.75);margin-bottom:14px">−0.5 очка за пропуск</div>
+      <div style="border-top:1px solid rgba(255,95,122,.2);padding-top:12px;font-size:.76rem;color:rgba(255,200,210,.65);line-height:1.55;font-style:italic">${_randomTip()}</div>
+    </div>`;
+  // CSS анимация
+  if(!document.getElementById('_tcardStyle')){
+    const st=document.createElement('style');st.id='_tcardStyle';
+    st.textContent='@keyframes tcardIn{from{opacity:0;transform:scale(.8) translateY(20px)}to{opacity:1;transform:scale(1) translateY(0)}}';
+    document.head.appendChild(st);
+  }
+  document.body.appendChild(card);
+  // Мигание экрана
+  const flash=document.createElement("div");
+  flash.style.cssText="position:fixed;inset:0;z-index:399;background:rgba(255,50,80,.12);pointer-events:none;animation:flashOut .5s ease forwards;";
+  if(!document.getElementById('_flashStyle')){
+    const sf=document.createElement('style');sf.id='_flashStyle';
+    sf.textContent='@keyframes flashOut{0%{opacity:1}100%{opacity:0}}';
+    document.head.appendChild(sf);
+  }
+  document.body.appendChild(flash);
+  setTimeout(()=>flash.remove(),500);
+  setTimeout(()=>{
+    card.querySelector('div[style*="animation"]').style.animation='tcardOut .3s ease forwards';
+    if(!document.getElementById('_tcardOutStyle')){
+      const so=document.createElement('style');so.id='_tcardOutStyle';
+      so.textContent='@keyframes tcardOut{to{opacity:0;transform:scale(.9) translateY(-10px)}}';
+      document.head.appendChild(so);
+    }
+    setTimeout(()=>card.remove(),300);
+  },3200);
 
   pushScore();
 }
@@ -3020,6 +3153,20 @@ let currentQuizId="arctic"; // обновляется из applyState
 let lastFetchedState=null; // для доступа к shuffle_seed
 let lastQVisible=true;
 
+// ── АВТО-ВОССТАНОВЛЕНИЕ СЕССИИ ПОСЛЕ ПЕРЕЗАГРУЗКИ ────────────
+try{
+  const _saved=sessionStorage.getItem('hub_player_session');
+  if(_saved){
+    const _d=JSON.parse(_saved);
+    if(_d.pName){
+      pName=_d.pName;pTeam=_d.pTeam||'';pInst=_d.pInst||'';
+      pMode=_d.pMode||'team';pExtra=_d.pExtra||'';
+      if(_d.currentQuizId) currentQuizId=_d.currentQuizId;
+      registered=true;
+    }
+  }
+}catch(_e){}
+
 function applyState(s){
   lastFetchedState=s;
   if(!registered)return;
@@ -3040,6 +3187,7 @@ function applyState(s){
   } else if(phase==="running"){
     if(roundType==="betting_chips"&&lastRoundType!=="betting_chips"){
       lastRoundType="betting_chips";
+      stopTimer();
       betPhase="chips"; betStake=-1;
       document.querySelectorAll(".bet-chip-pl").forEach(c=>c.classList.remove("selected"));
       const btn2=$("betConfirmBtn");if(btn2){btn2.disabled=true;btn2.textContent="Подтвердить ставку";}
@@ -3066,6 +3214,7 @@ function applyState(s){
     }
     if(roundType==="blitz_start"&&lastRoundType!=="blitz_start"){
       lastRoundType="blitz_start";
+      stopTimer();
       startPlayerBlitz(0);
     }
     if(!roundType&&lastRoundType){
@@ -3342,7 +3491,7 @@ async function register(){
   registered=true;
   // Сохраняем для восстановления после перезагрузки
   try{sessionStorage.setItem('hub_player_session',JSON.stringify({
-    pName,pTeam,pInst,pMode,pExtra
+    pName,pTeam,pInst,pMode,pExtra,currentQuizId
   }));}catch(e){}hideOv(ovReg);showOv(ovWait);
   window._updateWatermark&&window._updateWatermark(pName);
   const avg=Q.reduce((s,q)=>s+(q.dif||2),0)/Q.length;
@@ -3685,13 +3834,22 @@ function onBlitzAnswer(i){
   s.answered=true;
   if(s.timerInt){clearInterval(s.timerInt);s.timerInt=null;}
   const mode=currentMode||"spo";
-  const Qb=mode==="school"?Q_BLITZ_SCHOOL:Q_BLITZ_SPO;
+  const _blitzMapAns={
+    ecology:typeof Q_ECO_BLITZ!=='undefined'?Q_ECO_BLITZ:null,
+    history:typeof Q_HISTORY_BLITZ!=='undefined'?Q_HISTORY_BLITZ:null,
+    science:typeof Q_SCIENCE_BLITZ!=='undefined'?Q_SCIENCE_BLITZ:null,
+    patriot:typeof Q_PATRIOT_BLITZ!=='undefined'?Q_PATRIOT_BLITZ:null,
+    geo:typeof Q_GEO_BLITZ!=='undefined'?Q_GEO_BLITZ:null,
+    space:typeof Q_SPACE_BLITZ!=='undefined'?Q_SPACE_BLITZ:null,
+    sport:typeof Q_SPORT_BLITZ!=='undefined'?Q_SPORT_BLITZ:null,
+  };
+  const Qb=_blitzMapAns[currentQuizId]||(mode==="school"?Q_BLITZ_SCHOOL:Q_BLITZ_SPO);
   const q=Qb[s.qi];
   const won=i===q.ci;
   s.results[s.qi]=won;
 
-  // Score: блиц = 0.5 за правильный быстрый ответ
-  if(won){score+=0.5;scoreEl.textContent=score;score2El.textContent=score;pushScore();}
+  // Score: блиц = 0.5 за правильный быстрый ответ (накапливается в results, итог в autoNextBlitz)
+  // НЕ добавляем здесь — итог считается в autoNextBlitz во избежание двойного начисления
 
   // Show answer — only highlight correct when player was WRONG (avoid "auto-selected" confusion)
   for(let j=0;j<4;j++){
@@ -3705,7 +3863,7 @@ function onBlitzAnswer(i){
     }
   }
   const st=$("blitzStatusPl");
-  if(st)st.innerHTML=won?`<span style="color:var(--ok);font-weight:700">+0.5 очка!</span>`:`<span style="color:var(--err)">Неверно — правильный: ${["А","Б","В","Г"][q.ci]}</span>`;
+  if(st)st.innerHTML=won?`<span style="color:var(--ok);font-weight:700">✓ Правильно!</span>`:`<span style="color:var(--err)">Неверно — правильный: ${["А","Б","В","Г"][q.ci]}</span>`;
 
   setTimeout(()=>autoNextBlitz(),1800);
 }

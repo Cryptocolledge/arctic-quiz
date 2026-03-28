@@ -138,7 +138,7 @@ tr:hover td{background:rgba(79,223,255,.03);}
 .prep-player{padding:5px 10px;border-radius:8px;background:rgba(3,10,28,.85);border:1px solid rgba(122,142,255,.2);font-size:.78rem;display:flex;align-items:center;gap:6px;}
 .cmsg.warn-msg{background:rgba(255,159,67,.12);border:1px solid rgba(255,159,67,.5);}
 /* Super game overlay */
-.sg-ov{position:fixed;inset:0;z-index:200;display:flex;align-items:center;background:rgba(2,6,18,.96);padding:16px;}
+.sg-ov{position:fixed;inset:0;z-index:200;display:flex;align-items:center;justify-content:center;background:rgba(2,6,18,.96);padding:16px;}
 .sg-card{width:min(720px,100%);background:rgba(8,18,40,.99);border:2px solid rgba(255,211,107,.5);border-radius:20px;padding:28px;box-shadow:0 0 80px rgba(255,180,0,.15);display:flex;flex-direction:column;gap:14px;max-height:90vh;overflow-y:auto;}
 .sg-title{font-size:1.2rem;font-weight:800;text-align:center;background:linear-gradient(135deg,#ffd36b,#ff9f1c);-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
 .sg-table{width:100%;border-collapse:collapse;}
@@ -182,7 +182,7 @@ tr:hover td{background:rgba(79,223,255,.03);}
 .help-btn-chip.red{background:rgba(255,95,122,.12);border-color:rgba(255,95,122,.3);color:#ffb0b8;}
 .help-btn-chip.gold{background:rgba(255,211,107,.12);border-color:rgba(255,211,107,.3);color:var(--gold);}
 /* === СТАВКИ И БЛИЦ === */
-.round-ov{position:fixed;inset:0;z-index:150;display:flex;align-items:center;padding:16px;background:rgba(2,6,18,.97);padding:16px;}
+.round-ov{position:fixed;inset:0;z-index:150;display:flex;align-items:center;justify-content:center;padding:16px;background:rgba(2,6,18,.97);}
 .round-card{width:min(700px,100%);background:rgba(8,18,40,.99);border-radius:20px;padding:28px;display:flex;flex-direction:column;gap:16px;max-height:92vh;overflow-y:auto;}
 .round-card.betting{border:2px solid rgba(167,139,250,.6);box-shadow:0 0 80px rgba(124,58,237,.2);}
 .round-card.blitz{border:2px solid rgba(249,115,22,.6);box-shadow:0 0 80px rgba(249,115,22,.2);}
@@ -2784,7 +2784,7 @@ let bettingTimerInt = null;
 
 function openBetting(){
   if(bettingTimerInt){clearInterval(bettingTimerInt);bettingTimerInt=null;}
-  const Qbet = getBetQuestions();
+  const Qbet = getBetQuestions().slice(0,1); // 1 вопрос за раунд ставок
   let qi = 0;
 
   let ov = document.getElementById("bettingOverlay");
