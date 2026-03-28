@@ -467,24 +467,19 @@ body{font-family:system-ui,-apple-system,"Segoe UI",sans-serif;color:var(--text)
   box-shadow:0 6px 18px rgba(0,0,0,.45);
 }
 .hcard-btn:active{transform:translateY(0) scale(.97);}
-.hcard-btn-arctic{background:linear-gradient(120deg,#4fdfff,#6b7aff);color:#020d1c;}
-.hcard-btn-solo{background:linear-gradient(120deg,#f59e0b,#d97706);color:#020d1c;font-weight:800;}
-.hcard-btn-anim{
-  position:relative;overflow:hidden;transition:transform .2s,box-shadow .2s;
+/* Единый стиль кнопок карточек */
+.hcard-btn-solo-std{
+  background:linear-gradient(120deg,#fbbf24,#d97706);
+  color:#1a0a00;font-weight:800;
+  box-shadow:0 2px 10px rgba(251,191,36,.25);
 }
-.hcard-btn-anim::after{
-  content:'';position:absolute;inset:0;
-  background:linear-gradient(135deg,rgba(255,255,255,.35),transparent);
-  opacity:0;transition:opacity .2s;border-radius:inherit;
+.hcard-btn-solo-std:hover{
+  box-shadow:0 8px 24px rgba(251,191,36,.55)!important;
+  background:linear-gradient(120deg,#fcd34d,#f59e0b)!important;
 }
-.hcard-btn-anim:hover{transform:translateY(-2px) scale(1.03);box-shadow:0 6px 24px rgba(0,0,0,.4);}
-.hcard-btn-anim:hover::after{opacity:1;}
-.hcard-btn-anim:active{transform:translateY(0) scale(.97);}
-.hcard-btn-solo:hover{box-shadow:0 8px 24px rgba(245,158,11,.6)!important;border-color:rgba(245,158,11,.4)!important;}
-.hcard-btn-solo{box-shadow:0 2px 10px rgba(245,158,11,.2);}
-.hcard-btn-arctic:hover{box-shadow:0 6px 20px rgba(79,223,255,.5)!important;}
-.hcard-btn-eco:hover{box-shadow:0 6px 20px rgba(97,255,178,.5)!important;}
-.hcard-btn-arctic:hover{background:linear-gradient(120deg,#6eeaff,#8090ff);}
+/* Устаревшие классы — оставлены для совместимости */
+.hcard-btn-arctic{background:linear-gradient(120deg,#38bdf8,#0284c7);color:#fff;}
+.hcard-btn-solo{background:linear-gradient(120deg,#fbbf24,#d97706);color:#1a0a00;font-weight:800;}
 .hcard-btn-eco{background:linear-gradient(120deg,#61ffb2,#a7ff78);color:#011208;}
 .hcard-btn-eco:hover{background:linear-gradient(120deg,#7affc4,#b8ff92);}
 .hcard-btn-lock{
@@ -843,9 +838,9 @@ document.addEventListener('DOMContentLoaded',function(){
         </div>
       </div>
       <div class="hcard-footer">
-        <div style="display:flex;gap:6px">
-        <button class="hcard-btn hcard-btn-arctic" onclick="event.stopPropagation();hubSelectQuiz('arctic')" style="flex:1">👥 С ведущим</button>
-        <button class="hcard-btn" onclick="event.stopPropagation();openSoloQuiz('arctic')" style="flex:1;background:linear-gradient(120deg,#f59e0b,#d97706);color:#020d1c">👤 Соло</button>
+        <div style="display:flex;gap:8px;width:100%">
+        <button class="hcard-btn" onclick="event.stopPropagation();hubSelectQuiz('arctic')" style="background:linear-gradient(120deg,#38bdf8,#0284c7);color:#fff">👥 С ведущим</button>
+        <button class="hcard-btn hcard-btn-solo-std" onclick="event.stopPropagation();openSoloQuiz('arctic')">👤 Соло</button>
       </div>
       </div>
     </div>
@@ -866,9 +861,9 @@ document.addEventListener('DOMContentLoaded',function(){
         </div>
       </div>
       <div class="hcard-footer">
-        <div style="display:flex;gap:6px">
-        <button class="hcard-btn hcard-btn-eco" onclick="event.stopPropagation();hubSelectQuiz('ecology')" style="flex:1">👥 С ведущим</button>
-        <button class="hcard-btn" onclick="event.stopPropagation();openSoloQuiz('ecology')" style="flex:1;background:linear-gradient(120deg,#f59e0b,#d97706);color:#020d1c">👤 Соло</button>
+        <div style="display:flex;gap:8px;width:100%">
+        <button class="hcard-btn" onclick="event.stopPropagation();hubSelectQuiz('ecology')" style="background:linear-gradient(120deg,#22c55e,#15803d);color:#fff">👥 С ведущим</button>
+        <button class="hcard-btn hcard-btn-solo-std" onclick="event.stopPropagation();openSoloQuiz('ecology')">👤 Соло</button>
       </div>
       </div>
     </div>
@@ -884,9 +879,9 @@ document.addEventListener('DOMContentLoaded',function(){
         <div class="hcard-meta"><span class="hcard-chip">📚 30 вопросов</span><span class="hcard-chip">⏱ ~40 мин</span></div>
       </div>
       <div class="hcard-footer">
-        <div style="display:flex;gap:6px;width:100%">
-          <button class="hcard-btn" onclick="event.stopPropagation();hubSelectQuiz('history')" style="flex:1;background:linear-gradient(120deg,#c97c10,#92560a);color:#fff">👥 С ведущим</button>
-          <button class="hcard-btn" onclick="event.stopPropagation();openSoloQuiz('history')" style="flex:1;background:linear-gradient(120deg,#f59e0b,#d97706);color:#020d1c">👤 Соло</button>
+        <div style="display:flex;gap:8px;width:100%">
+          <button class="hcard-btn" onclick="event.stopPropagation();hubSelectQuiz('history')" style="background:linear-gradient(120deg,#3b82f6,#1d4ed8);color:#fff">👥 С ведущим</button>
+          <button class="hcard-btn hcard-btn-solo-std" onclick="event.stopPropagation();openSoloQuiz('history')">👤 Соло</button>
         </div>
       </div>
     </div>
@@ -911,9 +906,9 @@ document.addEventListener('DOMContentLoaded',function(){
         <div class="hcard-meta"><span class="hcard-chip">📚 30 вопросов</span><span class="hcard-chip">⏱ ~40 мин</span></div>
       </div>
       <div class="hcard-footer">
-        <div style="display:flex;gap:6px;width:100%">
-          <button class="hcard-btn" onclick="event.stopPropagation();hubSelectQuiz('patriot')" style="flex:1;background:linear-gradient(120deg,#ef4444,#b91c1c);color:#fff">👥 С ведущим</button>
-          <button class="hcard-btn" onclick="event.stopPropagation();openSoloQuiz('patriot')" style="flex:1;background:linear-gradient(120deg,#f59e0b,#d97706);color:#020d1c">👤 Соло</button>
+        <div style="display:flex;gap:8px;width:100%">
+          <button class="hcard-btn" onclick="event.stopPropagation();hubSelectQuiz('patriot')" style="background:linear-gradient(120deg,#ef4444,#b91c1c);color:#fff">👥 С ведущим</button>
+          <button class="hcard-btn hcard-btn-solo-std" onclick="event.stopPropagation();openSoloQuiz('patriot')">👤 Соло</button>
         </div>
       </div>
     </div>
@@ -927,9 +922,9 @@ document.addEventListener('DOMContentLoaded',function(){
         <div class="hcard-meta"><span class="hcard-chip">📚 30 вопросов</span><span class="hcard-chip">⏱ ~40 мин</span></div>
       </div>
       <div class="hcard-footer">
-        <div style="display:flex;gap:6px;width:100%">
-          <button class="hcard-btn" onclick="event.stopPropagation();hubSelectQuiz('science')" style="flex:1;background:linear-gradient(120deg,#a78bfa,#7c3aed);color:#fff">👥 С ведущим</button>
-          <button class="hcard-btn" onclick="event.stopPropagation();openSoloQuiz('science')" style="flex:1;background:linear-gradient(120deg,#f59e0b,#d97706);color:#020d1c">👤 Соло</button>
+        <div style="display:flex;gap:8px;width:100%">
+          <button class="hcard-btn" onclick="event.stopPropagation();hubSelectQuiz('science')" style="background:linear-gradient(120deg,#a78bfa,#7c3aed);color:#fff">👥 С ведущим</button>
+          <button class="hcard-btn hcard-btn-solo-std" onclick="event.stopPropagation();openSoloQuiz('science')">👤 Соло</button>
         </div>
       </div>
     </div>
@@ -943,9 +938,9 @@ document.addEventListener('DOMContentLoaded',function(){
         <div class="hcard-meta"><span class="hcard-chip">📚 30 вопросов</span><span class="hcard-chip">⏱ ~40 мин</span></div>
       </div>
       <div class="hcard-footer">
-        <div style="display:flex;gap:6px;width:100%">
-          <button class="hcard-btn" onclick="event.stopPropagation();hubSelectQuiz('geo')" style="flex:1;background:linear-gradient(120deg,#34d399,#059669);color:#020d1c">👥 С ведущим</button>
-          <button class="hcard-btn" onclick="event.stopPropagation();openSoloQuiz('geo')" style="flex:1;background:linear-gradient(120deg,#6ee7b7,#34d399);color:#020d1c">👤 Соло</button>
+        <div style="display:flex;gap:8px;width:100%">
+          <button class="hcard-btn" onclick="event.stopPropagation();hubSelectQuiz('geo')" style="background:linear-gradient(120deg,#2dd4bf,#0d9488);color:#fff">👥 С ведущим</button>
+          <button class="hcard-btn hcard-btn-solo-std" onclick="event.stopPropagation();openSoloQuiz('geo')">👤 Соло</button>
         </div>
       </div>
     </div>
@@ -959,9 +954,9 @@ document.addEventListener('DOMContentLoaded',function(){
         <div class="hcard-meta"><span class="hcard-chip">📚 30 вопросов</span><span class="hcard-chip">⏱ ~40 мин</span></div>
       </div>
       <div class="hcard-footer">
-        <div style="display:flex;gap:6px;width:100%">
-          <button class="hcard-btn" onclick="event.stopPropagation();hubSelectQuiz('space')" style="flex:1;background:linear-gradient(120deg,#8b5cf6,#6d28d9);color:#fff">👥 С ведущим</button>
-          <button class="hcard-btn" onclick="event.stopPropagation();openSoloQuiz('space')" style="flex:1;background:linear-gradient(120deg,#a78bfa,#8b5cf6);color:#fff">👤 Соло</button>
+        <div style="display:flex;gap:8px;width:100%">
+          <button class="hcard-btn" onclick="event.stopPropagation();hubSelectQuiz('space')" style="background:linear-gradient(120deg,#8b5cf6,#6d28d9);color:#fff">👥 С ведущим</button>
+          <button class="hcard-btn hcard-btn-solo-std" onclick="event.stopPropagation();openSoloQuiz('space')">👤 Соло</button>
         </div>
       </div>
     </div>
@@ -975,9 +970,9 @@ document.addEventListener('DOMContentLoaded',function(){
         <div class="hcard-meta"><span class="hcard-chip">📚 30 вопросов</span><span class="hcard-chip">⏱ ~40 мин</span></div>
       </div>
       <div class="hcard-footer">
-        <div style="display:flex;gap:6px;width:100%">
-          <button class="hcard-btn" onclick="event.stopPropagation();hubSelectQuiz('sport')" style="flex:1;background:linear-gradient(120deg,#fb923c,#ea580c);color:#fff">👥 С ведущим</button>
-          <button class="hcard-btn" onclick="event.stopPropagation();openSoloQuiz('sport')" style="flex:1;background:linear-gradient(120deg,#fcd34d,#fb923c);color:#020d1c">👤 Соло</button>
+        <div style="display:flex;gap:8px;width:100%">
+          <button class="hcard-btn" onclick="event.stopPropagation();hubSelectQuiz('sport')" style="background:linear-gradient(120deg,#fb923c,#ea580c);color:#fff">👥 С ведущим</button>
+          <button class="hcard-btn hcard-btn-solo-std" onclick="event.stopPropagation();openSoloQuiz('sport')">👤 Соло</button>
         </div>
       </div>
     </div>
