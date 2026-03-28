@@ -130,17 +130,17 @@ footer{text-align:center;padding:16px;font-size:.6rem;color:rgba(255,255,255,.15
       </div>
 
       <label>Email (необязательно) <span style="color:var(--muted);font-size:.6rem;">— для восстановления доступа</span></label>
-      <input class="inp" id="regEmail" type="email" placeholder="почта (необязательно)" maxlength="100"/>
+      <input class="inp" id="regEmail" type="email" placeholder="почта (необязательно)" maxlength="100" autocomplete="email"/>
       <label>Имя / Псевдоним *</label>
-      <input class="inp" id="regName" type="text" placeholder="Как вас называть в игре" maxlength="40"/>
+      <input class="inp" id="regName" type="text" placeholder="Как вас называть в игре" maxlength="40" autocomplete="nickname"/>
       <label>Команда / Группа</label>
-      <input class="inp" id="regTeam" type="text" placeholder="Название команды или учебной группы" maxlength="60"/>
+      <input class="inp" id="regTeam" type="text" placeholder="Название команды или учебной группы" maxlength="60" autocomplete="off"/>
       <label>Учебное заведение</label>
-      <input class="inp" id="regInst" type="text" placeholder="Школа, колледж, вуз" maxlength="80"/>
+      <input class="inp" id="regInst" type="text" placeholder="Школа, колледж, вуз" maxlength="80" autocomplete="off"/>
       <label>Пароль *</label>
-      <input class="inp" id="regPwd" type="password" placeholder="Минимум 6 символов" maxlength="40"/>
+      <input class="inp" id="regPwd" type="password" placeholder="Минимум 6 символов" maxlength="40" autocomplete="new-password"/>
       <label>Повторите пароль *</label>
-      <input class="inp" id="regPwd2" type="password" placeholder="Повторите пароль" maxlength="40"/>
+      <input class="inp" id="regPwd2" type="password" placeholder="Повторите пароль" maxlength="40" autocomplete="new-password"/>
 
       <div class="err-msg" id="regErr"></div>
       <div class="ok-msg" id="regOk"></div>
