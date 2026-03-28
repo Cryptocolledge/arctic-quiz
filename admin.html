@@ -496,8 +496,13 @@ body{background:var(--bg);color:var(--txt);font-family:var(--font);min-height:10
 // ══ CONFIG ══
 const SUPABASE_URL='https://arpbhbfyucpojvxipqng.supabase.co';
 const SUPABASE_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFycGJoYmZ5dWNwb2p2eGlwcW5nIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIyMTAwNTQsImV4cCI6MjA4Nzc4NjA1NH0.MQWcU9ph2sWNgbHbfDZ0qKEC1V1PzbI7I7TtQyPNyeg';
-const ADMIN_PASSWORD='Antonyhell233082';
+const ADMIN_HASH='357a3f85124085186c47afb93e0ee117fbaf41e9fd1bda17b650c8d98d163341';
 const GID='default';
+
+async function hashPwd(pwd){
+  const buf=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(pwd));
+  return Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join('');
+}
 
 let sb=null;
 let adminLog=[];
@@ -515,9 +520,12 @@ function alog(msg,cls=''){
 }
 
 // ── AUTH ──
-function doLogin(){
+async function doLogin(){
   const pwd=$('pwdIn').value;
-  if(pwd===ADMIN_PASSWORD||(localStorage.getItem('ao_admin_pwd')&&pwd===localStorage.getItem('ao_admin_pwd'))){
+  if(!pwd)return;
+  const h=await hashPwd(pwd);
+  const savedHash=localStorage.getItem('ao_admin_pwd_hash');
+  if(h===ADMIN_HASH||(savedHash&&h===savedHash)){
     $('loginScr').style.display='none';
     $('adminScr').style.display='flex';
     initAdmin();
@@ -955,10 +963,12 @@ function saveSettings(){
   alog('Настройки сохранены','ok');
   showToast('✅ Настройки сохранены');
 }
-function changePwd(){
+async function changePwd(){
   const p1=$('newPwd').value,p2=$('newPwd2').value;
   if(!p1)return;if(p1!==p2){showToast('❌ Пароли не совпадают');return;}
-  localStorage.setItem('ao_admin_pwd',p1);
+  const h=await hashPwd(p1);
+  localStorage.setItem('ao_admin_pwd_hash',h);
+  localStorage.removeItem('ao_admin_pwd');
   $('newPwd').value='';$('newPwd2').value='';
   showToast('✅ Пароль изменён');alog('Пароль администратора изменён','warn');
 }
