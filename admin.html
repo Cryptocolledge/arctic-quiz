@@ -847,9 +847,28 @@ async function renderGames(){
   try{
     const{data}=await sb.from('quiz_state').select('*').eq('game_id',GID).single();
     if(!data){el.innerHTML='<div class="empty">Игровых сессий нет</div>';return;}
-    el.innerHTML=`<table class="atable"><thead><tr><th>Поле</th><th>Значение</th></tr></thead><tbody>
-      ${Object.entries(data).map(([k,v])=>`<tr><td style="color:var(--muted)">${escH(k)}</td><td>${escH(String(v??'—'))}</td></tr>`).join('')}
-    </tbody></table>
+    const LABELS={
+      game_id:'ID игры',phase:'Фаза',current_index:'Текущий вопрос №',
+      show_answer:'Показан ответ',quiz_mode:'Режим',round_type:'Тип раунда',
+      bet_question_index:'Ставка — вопрос №',bet_correct_index:'Ставка — правильный ответ',
+      session_code:'Код сессии',question_visible:'Вопрос виден',
+      shuffle_seed:'Семя перемешивания',game_timer:'Таймер (сек)',
+      quiz_id:'ID квиза',music_broadcast:'Трансляция музыки',music_playing:'Музыка играет',
+      question_started_at:'Время старта вопроса'
+    };
+    const PHASES={waiting:'⏳ Ожидание',playing:'▶️ Идёт игра',ended:'⏹ Завершена',paused:'⏸ Пауза'};
+    const rows=Object.entries(data).map(([k,v])=>{
+      const label=LABELS[k]||k;
+      let val=v??'—';
+      if(k==='phase')val=PHASES[v]||(v||'—');
+      else if(k==='show_answer'||k==='question_visible'||k==='music_playing')val=v?'✅ Да':'❌ Нет';
+      else if(k==='quiz_mode')val=v==='school'?'🏫 Школа':v==='spo'?'🎓 СПО':(v||'—');
+      else if(k==='question_started_at'&&v){const d=new Date(v);val=d.toLocaleString('ru-RU');}
+      else if(k==='round_type'&&!v)val='—';
+      else if(k==='music_broadcast'&&!v)val='—';
+      return`<tr><td style="color:var(--muted)">${escH(label)}</td><td>${escH(String(val))}</td></tr>`;
+    }).join('');
+    el.innerHTML=`<table class="atable"><thead><tr><th>Параметр</th><th>Значение</th></tr></thead><tbody>${rows}</tbody></table>
     <div style="margin-top:14px;display:flex;gap:8px;flex-wrap:wrap;">
       <button class="act-btn red" onclick="endGame()">⏹ Завершить игру</button>
       <button class="act-btn warn" onclick="resetGame()">🔄 Сброс игры</button>
@@ -860,11 +879,21 @@ async function endGame(){
   if(!confirm('Завершить текущую игру?'))return;
   if(sb)try{await sb.from('quiz_state').update({phase:'ended'}).eq('game_id',GID);}catch(e){}
   alog('Игра завершена','warn');
+  await renderGames();
 }
 async function resetGame(){
   if(!confirm('Сбросить игру к начальному состоянию?'))return;
-  if(sb)try{await sb.from('quiz_state').update({phase:'waiting',current_index:0,round_type:null}).eq('game_id',GID);}catch(e){}
+  if(sb)try{
+    await sb.from('quiz_state').update({
+      phase:'waiting',current_index:0,show_answer:false,round_type:'',
+      bet_question_index:null,bet_correct_index:null,session_code:null,
+      question_visible:false,shuffle_seed:null,game_timer:20,
+      quiz_id:null,music_broadcast:null,music_playing:false,question_started_at:null
+    }).eq('game_id',GID);
+  }catch(e){}
+  showToast('✅ Игра полностью сброшена');
   alog('Игра сброшена','warn');
+  await renderGames();
 }
 
 // ── MODERATION ──
@@ -1025,11 +1054,6 @@ async function broadcastMessage(){
   });
   if(error)showToast('❌ Ошибка: '+error.message);
   else{showToast('✅ Сообщение отправлено');alog('Broadcast: '+msg,'ok');}
-}
-async function resetGame(){
-  if(!sb)return;
-  await sb.from('quiz_state').update({phase:'waiting',current_index:0,show_answer:false,round_type:''}).eq('game_id',GID);
-  showToast('✅ Игра сброшена');alog('Игра сброшена в waiting','warn');
 }
 async function kickAllPlayers(){
   if(!sb||!confirm('Кикнуть ВСЕХ игроков?'))return;
