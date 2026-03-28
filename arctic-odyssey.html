@@ -848,7 +848,13 @@ document.addEventListener('DOMContentLoaded',function(){
     display:flex;align-items:center;gap:8px;background:rgba(255,255,255,.88);
     backdrop-filter:blur(8px);border:1px solid rgba(14,165,233,.2);border-radius:999px;
     padding:5px 14px;box-shadow:0 2px 12px rgba(14,165,233,.12);pointer-events:all;white-space:nowrap">
-    <span id="topBarProgress" class="tb-item" style="font-weight:800;color:#0369a1">🗺 Клетка 1 из 68</span>
+    <span id="topBarProgress" class="tb-item" style="display:inline-flex;align-items:center;gap:5px;">
+      <span id="topBarProgressTxt" style="font-weight:800;color:#0369a1;font-size:.72rem;white-space:nowrap">🗺 1/71</span>
+      <span id="progressTrack" style="position:relative;width:72px;height:8px;background:rgba(14,165,233,.18);border-radius:99px;flex-shrink:0;">
+        <span id="progressFill" style="position:absolute;left:0;top:0;height:100%;background:linear-gradient(90deg,#38bdf8,#22c55e);border-radius:99px;width:1%;transition:width .5s cubic-bezier(.4,0,.2,1)"></span>
+        <span id="progressPenguin" style="position:absolute;top:50%;transform:translate(-50%,-50%);font-size:.7rem;line-height:1;transition:left .5s cubic-bezier(.4,0,.2,1);left:1%;pointer-events:none">🐧</span>
+      </span>
+    </span>
     <span class="tb-sep">|</span>
     <span id="topBarEco" class="tb-item" style="font-weight:700;color:#15803d">🌿 20%</span>
     <span class="tb-sep">|</span>
@@ -1112,7 +1118,7 @@ const DFACES=['⚀','⚁','⚂','⚃','⚄','⚅'];
 
 // Path
 // 70 клеток: контрольные точки на индексах 23 и 46 (между ними ~23 клетки)
-const PTYPES=[
+const _PTYPES_BASE=[
   /* 0–11: Зона 1 — Начало пути */
   'camp','tundra','animal','threat','weather','market',
   'animal','aurora','tundra','inuit','threat',
@@ -1138,6 +1144,27 @@ const PTYPES=[
   'aurora','tundra','inuit','crack','animal',
   'threat','camp'
 ];
+// Активный массив типов клеток — перемешивается при старте каждой игры
+let PTYPES=[..._PTYPES_BASE];
+// Фиксированные позиции: 0=старт, 23=КП1, 46=КП2, последняя=финиш
+const _FIXED_POS=new Set([0,23,46,_PTYPES_BASE.length-1]);
+function _shufflePTYPES(seed){
+  // Seeded pseudo-random для воспроизводимости
+  let s=seed||1;
+  const rand=()=>{s=(s*1664525+1013904223)>>>0;return s/4294967296;};
+  const arr=[..._PTYPES_BASE];
+  // Перемешиваем каждую зону отдельно, не трогая фиксированные позиции
+  const zones=[[1,22],[24,45],[47,_PTYPES_BASE.length-2]];
+  zones.forEach(([from,to])=>{
+    for(let i=to;i>from;i--){
+      const j=from+Math.floor(rand()*(i-from+1));
+      [arr[i],arr[j]]=[arr[j],arr[i]];
+    }
+  });
+  PTYPES=arr;
+  // Сбрасываем кэши доски — типы клеток изменились
+  _cellCache.clear();_sortedCells=null;
+}
 
 const TCOL={
   camp:'rgba(34,197,94,.12)',tundra:'rgba(74,222,128,.15)',
@@ -1204,7 +1231,7 @@ const SHOP_ITEMS=[
   // Средние (3-4 правильных)
   {id:'solar',ico:'☀️',name:'Солнечная панель',price:130,eco:5,desc:'+5% эко сразу'},
   {id:'drone',ico:'🚁',name:'Дрон-разведчик',price:140,eco:0,desc:'Видишь тип следующих 2 клеток!'},
-  {id:'lab',ico:'🔬',name:'Эко-лаборатория',price:160,eco:0,desc:'Двойные очки за правильный ответ'},
+  {id:'lab',ico:'🔬',name:'Эко-лаборатория',price:160,eco:0,desc:'Двойная денежная награда за правильный ответ'},
   // Дорогие (5-6 правильных)
   {id:'wind',ico:'🌬️',name:'Ветрогенератор',price:190,eco:8,desc:'+8% эко сразу · +30₽ каждый ход'},
   {id:'icebreaker',ico:'🚢',name:'Ледокол',price:210,eco:0,desc:'Пропускай трещины льда!'},
@@ -2054,6 +2081,7 @@ function throwDice(){
     const v1=Math.floor(Math.random()*5)+1, v2=Math.floor(Math.random()*5)+1;
     let v=Math.max(v1,v2);
     if(p.diceBonus) v=Math.min(6, v+p.diceBonus);
+    if(p._weatherPenalty){v=Math.max(1,v+p._weatherPenalty);p._weatherPenalty=0;}
     DS.result=v;
     // Записываем в историю
     _diceHistory.push(v);
@@ -2088,6 +2116,7 @@ function throwDice(){
   // Determine result — d5 (1–5) для более долгой игры
   let v = Math.floor(Math.random()*5)+1;
   if(p.diceBonus) v = Math.min(6, v + p.diceBonus);
+  if(p._weatherPenalty){v=Math.max(1,v+p._weatherPenalty);p._weatherPenalty=0;}
   DS.result = v;
   // Записываем в историю
   _diceHistory.push(v);
@@ -2648,10 +2677,43 @@ function buildCells(){
     });
   }
 }
-let _bgCache=null,_bgCacheW=0,_bgCacheH=0;
+let _bgCache=null,_bgCacheW=0,_bgCacheH=0,_bgCachePhase=-1;
+// ── СМЕНА НЕБА — день → полярные сумерки → полярная ночь ──
+let _skyPhase=0; // 0=день, 1=полярная ночь
+// Цвета неба на 4 фазах [top, mid, bottom]
+const _SKY=[
+  ['#a8d8f0','#c2e8f8','#d8f0fa'],   // 0 — солнечный день
+  ['#8ab4d4','#a8c8e0','#c0daea'],   // 0.33 — послеполудень
+  ['#3a5270','#5a6e8a','#7a8ea0'],   // 0.66 — полярные сумерки
+  ['#0e1a2e','#1a2840','#0a1820'],   // 1 — полярная ночь
+];
+function _lerpHex(a,b,t){
+  const p=s=>parseInt(s,16);
+  const r=n=>Math.round(n).toString(16).padStart(2,'0');
+  const ah=a.replace('#',''),bh=b.replace('#','');
+  return '#'+r(p(ah.slice(0,2))*(1-t)+p(bh.slice(0,2))*t)
+           +r(p(ah.slice(2,4))*(1-t)+p(bh.slice(2,4))*t)
+           +r(p(ah.slice(4,6))*(1-t)+p(bh.slice(4,6))*t);
+}
+function _skyColors(){
+  const t=_skyPhase*3; // 0..3
+  const i=Math.min(2,Math.floor(t));
+  const f=t-i;
+  return _SKY[i].map((c,ci)=>_lerpHex(c,_SKY[i+1][ci],f));
+}
+function updateSkyPhase(){
+  if(!players.length) return;
+  const maxPos=Math.max(...players.map(p=>p.pos));
+  const newPhase=Math.min(1, maxPos/(PTYPES.length-1));
+  if(Math.abs(newPhase-_skyPhase)>0.01){
+    _skyPhase=newPhase;
+    _bgCache=null; // инвалидируем кэш фона
+    _bgCachePhase=newPhase;
+  }
+}
 function drawBgCache(){
   const dpr=window.devicePixelRatio||1;
-  if(_bgCache&&_bgCacheW===BW&&_bgCacheH===BH){
+  if(_bgCache&&_bgCacheW===BW&&_bgCacheH===BH&&_bgCachePhase===_skyPhase){
     // Рисуем в CSS-координатах (BX уже масштабирован на DPR)
     BX.drawImage(_bgCache,0,0,BW,BH); return;
   }
@@ -2662,11 +2724,22 @@ function drawBgCache(){
   // Рисуем в CSS-пространстве через трансформ
   cx.setTransform(dpr,0,0,dpr,0,0);
 
+  const [sc0,sc1,sc2]=_skyColors();
   const skyG=cx.createLinearGradient(0,0,BW,BH);
-  skyG.addColorStop(0,'#a8d8f0');
-  skyG.addColorStop(.4,'#c2e8f8');
-  skyG.addColorStop(1,'#d8f0fa');
+  skyG.addColorStop(0,sc0);
+  skyG.addColorStop(.4,sc1);
+  skyG.addColorStop(1,sc2);
   cx.fillStyle=skyG;cx.fillRect(0,0,BW,BH);
+  // Полярная ночь — добавляем звёзды и мерцание сияния
+  if(_skyPhase>0.5){
+    const starAlpha=(_skyPhase-0.5)*2*0.7;
+    cx.fillStyle=`rgba(220,240,255,${starAlpha})`;
+    for(let s=0;s<40;s++){
+      const sx=(s*137.508)%BW, sy=(s*97.3)%BH;
+      const sr=s%3===0?1.5:1;
+      cx.beginPath();cx.arc(sx,sy,sr,0,Math.PI*2);cx.fill();
+    }
+  }
   [[.15,.72,.18,.1],[.65,.8,.22,.08],[.82,.55,.12,.08]].forEach(([rx,ry,rw,rh])=>{
     const g=cx.createRadialGradient(rx*BW,ry*BH,0,rx*BW,ry*BH,rw*BW);
     g.addColorStop(0,'rgba(30,130,200,.45)');g.addColorStop(1,'rgba(30,130,200,0)');
@@ -2685,7 +2758,7 @@ function drawBgCache(){
     cx.fillStyle=ig;cx.beginPath();cx.moveTo(x,y-s);cx.lineTo(x+s*.7,y+s*.1);cx.lineTo(x+s*.3,y+s*.5);
     cx.lineTo(x-s*.3,y+s*.5);cx.lineTo(x-s*.7,y+s*.1);cx.closePath();cx.fill();
   });
-  _bgCacheW=BW;_bgCacheH=BH;
+  _bgCacheW=BW;_bgCacheH=BH;_bgCachePhase=_skyPhase;
   // Выводим в CSS-координатах
   BX.drawImage(_bgCache,0,0,BW,BH);
 }
@@ -2702,6 +2775,8 @@ function initBoard(){
     BC.style.width=BW+'px'; BC.style.height=BH+'px';
     _bgCache=null;
     _cellCache.clear();
+    _tokenCache.clear();
+    _measureCache.clear();
     _sortedCells=null;
     buildCells();
   };
@@ -2773,6 +2848,10 @@ function drawBoard(){
 
 // ── CELL CACHE — каждая клетка кэшируется, перерисовывается только при изменении ──
 const _cellCache = new Map(); // idx → {canvas, playerHere, curHere}
+// ── TOKEN CACHE — фишка игрока кэшируется как offscreen canvas ──
+const _tokenCache = new Map(); // `${tokenIdx}_${tr}` → {canvas, size}
+// ── MEASURE CACHE — ширина текста очков кэшируется ──
+const _measureCache = new Map(); // text → width
 
 function _cellCacheKey(cell, anyHere, isCurHere){
   return `${cell.type}_${Math.round(cell.r)}_${anyHere?1:0}_${isCurHere?1:0}`;
@@ -2972,32 +3051,56 @@ function drawCell(cell){
   }
 }
 
+// ── TOKEN OFFSCREEN CACHE — создаём фишку один раз, потом drawImage ──
+function _buildTokenCanvas(tokenIdx, tr, tok){
+  const dpr=window.devicePixelRatio||1;
+  const sz=Math.ceil((tr+4)*2.4); // достаточно для ободка+блика
+  const oc=document.createElement('canvas');
+  oc.width=Math.round(sz*dpr); oc.height=Math.round(sz*dpr);
+  const c=oc.getContext('2d');
+  c.setTransform(dpr,0,0,dpr,0,0);
+  const cx=sz/2, cy=sz/2;
+  // Белый ободок
+  c.beginPath();c.arc(cx,cy,tr+3,0,Math.PI*2);
+  c.fillStyle='#ffffff';c.fill();
+  c.strokeStyle='rgba(0,60,120,.2)';c.lineWidth=1;c.stroke();
+  // Цветной круг с радиальным градиентом (создаётся один раз)
+  const tg=c.createRadialGradient(cx-tr*.3,cy-tr*.3,tr*.1,cx,cy,tr);
+  tg.addColorStop(0,tok.color+'ff');
+  tg.addColorStop(1,tok.color+'aa');
+  c.beginPath();c.arc(cx,cy,tr,0,Math.PI*2);
+  c.fillStyle=tg;c.fill();
+  // Блик
+  c.beginPath();c.arc(cx-tr*.18,cy-tr*.28,tr*.38,0,Math.PI*2);
+  c.fillStyle='rgba(255,255,255,.32)';c.fill();
+  // Emoji
+  c.font=`${tr*1.05}px serif`;c.textAlign='center';c.textBaseline='middle';
+  c.fillText(tok.ico,cx,cy);
+  return {canvas:oc,sz};
+}
+
 // Draw 3D-looking tokens
 function drawTokens(){
   if(!players.length)return;
   const byPos={};
   players.forEach((p,i)=>{byPos[p.pos]=byPos[p.pos]||[];byPos[p.pos].push(i);});
   const offs=[[0,0],[-.55,0],[.55,0],[0,-.55]];
+  const now=Date.now();
   players.forEach((p,pi)=>{
     const cell=cells[p.pos];if(!cell)return;
     const j=byPos[p.pos].indexOf(pi);
     const off=offs[j]||[0,0];
     const targetX=cell.x+off[0]*cell.r*1.1;
     const targetY=cell.y+off[1]*cell.r*1.1;
-    // Инициализация при первом показе
     if(p._tx===null||p._tx===undefined){p._tx=targetX;p._ty=targetY;}
-    // Во время анимации animMove управляет _tx/_ty напрямую
-    // Когда не движется — плавно подтягиваем к целевой позиции (например при ресайзе)
     if(!moving){
       p._tx+=(targetX-p._tx)*.18;
       p._ty+=(targetY-p._ty)*.18;
     }
     const ax=p._tx, ay=p._ty;
-
-    // Фишка рисуется крупнее клетки для заметности
     const tr=Math.max(16, cell.r*.38);
     const isCur=pi===curP;
-    const bounce=isCur?(Math.sin(Date.now()*.005)*3):0;
+    const bounce=isCur?(Math.sin(now*.005)*3):0;
     const tok=TOKENS[p.tokenIdx]||TOKENS[0];
 
     BX.save();
@@ -3008,49 +3111,34 @@ function drawTokens(){
     BX.ellipse(ax,ay+tr*.85+bounce,tr*.85,tr*.22,0,0,Math.PI*2);
     BX.fill();
 
-    // ── Белый ободок (без shadowBlur — он очень дорогой на большом canvas) ──
-    BX.beginPath();BX.arc(ax,ay+bounce,tr+3,0,Math.PI*2);
-    BX.fillStyle='#ffffff';BX.fill();
-    // Контурная обводка вместо тени
-    BX.strokeStyle='rgba(0,60,120,.2)';BX.lineWidth=1;BX.stroke();
-
-    // ── Цветной круг фишки ──
-    BX.beginPath();BX.arc(ax,ay+bounce,tr,0,Math.PI*2);
-    const tg=BX.createRadialGradient(ax-tr*.3,ay-tr*.3+bounce,tr*.1,ax,ay+bounce,tr);
-    tg.addColorStop(0,tok.color+'ff');
-    tg.addColorStop(1,tok.color+'aa');
-    BX.fillStyle=tg;BX.fill();
-
-    // ── Блик сверху ──
-    BX.beginPath();BX.arc(ax-tr*.18,ay-tr*.28+bounce,tr*.38,0,Math.PI*2);
-    BX.fillStyle='rgba(255,255,255,.32)';BX.fill();
-
-    // ── Emoji фишки ──
-    BX.font=`${tr*1.05}px serif`;
-    BX.textAlign='center';BX.textBaseline='middle';
-    BX.fillText(tok.ico,ax,ay+bounce);
+    // ── Фишка из кэша (без создания градиентов каждый кадр) ──
+    const cacheKey=`${p.tokenIdx}_${Math.round(tr)}`;
+    let cached=_tokenCache.get(cacheKey);
+    if(!cached){cached=_buildTokenCanvas(p.tokenIdx,tr,tok);_tokenCache.set(cacheKey,cached);}
+    BX.drawImage(cached.canvas, ax-cached.sz/2, ay+bounce-cached.sz/2, cached.sz, cached.sz);
 
     // ── Активное кольцо (пульсирует у текущего) ──
     if(isCur){
-      const pulse=tr+6+Math.sin(Date.now()*.008)*2;
+      const pulse=tr+6+Math.sin(now*.008)*2;
       BX.beginPath();BX.arc(ax,ay+bounce,pulse,0,Math.PI*2);
       BX.strokeStyle=tok.color;BX.lineWidth=2.5;
       BX.setLineDash([5,4]);BX.stroke();BX.setLineDash([]);
     }
 
-    // ── Имя игрока под фишкой — чтобы понятно кто где ──
+    // ── Имя игрока под фишкой ──
     const nameSize=Math.max(9, tr*.48);
     BX.font=`900 ${nameSize}px Nunito,sans-serif`;
     BX.textAlign='center';BX.textBaseline='top';
     const nameY=ay+tr+5+bounce;
-    const nameW=BX.measureText(p.name).width+8;
-    // Фон таблички имени
+    // measureText кэшируем — имя меняется редко
+    const nmKey='nm_'+p.name+'_'+Math.round(nameSize);
+    let nameW=_measureCache.get(nmKey);
+    if(nameW===undefined){nameW=BX.measureText(p.name).width+8;_measureCache.set(nmKey,nameW);}
     BX.fillStyle='rgba(255,255,255,.92)';
     BX.beginPath();
     if(BX.roundRect) BX.roundRect(ax-nameW/2,nameY-1,nameW,nameSize+5,99);
     else BX.rect(ax-nameW/2,nameY-1,nameW,nameSize+5);
     BX.fill();
-    // Текст имени
     BX.fillStyle=tok.color;
     BX.fillText(p.name,ax,nameY+1);
 
@@ -3065,8 +3153,11 @@ function drawScoreLabels(){
     const bx=p._tx,by=p._ty-tr-16;
     const txt=`${p.money}₽`;
     BX.save();
-    BX.font=`800 ${Math.max(10,tr*.58)}px Nunito,sans-serif`;
-    const tw=BX.measureText(txt).width;
+    const fnt=`800 ${Math.max(10,tr*.58)}px Nunito,sans-serif`;
+    BX.font=fnt;
+    const mKey='sc_'+txt+'_'+Math.round(tr);
+    let tw=_measureCache.get(mKey);
+    if(tw===undefined){tw=BX.measureText(txt).width;_measureCache.set(mKey,tw);}
     const pw=tw+9,ph=tr*.72;
     BX.fillStyle='rgba(255,255,255,.92)';BX.strokeStyle=PCOLORS[p.idx];BX.lineWidth=1.5;
     BX.beginPath();BX.roundRect(bx-pw/2,by-ph/2,pw,ph,99);BX.fill();BX.stroke();
@@ -3154,13 +3245,23 @@ function renderAll(){
   renderPlayers();updateEco();renderRes();renderLB();
   updateAbilityPanel();
   updateSidebarWidgets();
+  updateSkyPhase();
   const te=document.getElementById('topBarEco');
-  const tp=document.getElementById('topBarProgress');
   const tr=document.getElementById('topBarRound');
   const total=typeof PTYPES!=='undefined'?PTYPES.length:49;
   if(te) te.textContent='🌿 '+Math.round(eco)+'%';
-  if(tp&&players[curP]) tp.textContent='🗺 Клетка '+(players[curP].pos+1)+' из '+total;
   if(tr) tr.textContent='Ход #'+_roundCounter;
+  // Шкала прогресса с пингвином
+  if(players[curP]){
+    const pos=players[curP].pos+1;
+    const pct=Math.max(1,Math.min(99,Math.round(pos/total*100)));
+    const txt=document.getElementById('topBarProgressTxt');
+    const fill=document.getElementById('progressFill');
+    const penguin=document.getElementById('progressPenguin');
+    if(txt) txt.textContent='🗺 '+pos+'/'+total;
+    if(fill) fill.style.width=pct+'%';
+    if(penguin) penguin.style.left=pct+'%';
+  }
 }
 function renderPlayers(){
   // Убрали _cellCache.clear() — это убивало кэш при каждом шаге анимации (270ms)
@@ -3461,7 +3562,7 @@ function _landCellWork(p,type,ci){
     const cpRewards = cpNum===1
       ? {money:150, score:10, eco:8, label:'Первая база'}
       : {money:200, score:15, eco:12, label:'Полярная станция'};
-    sfx('aurora');
+    sfx('checkpoint_reach');
     addLog(`🚩 ${p.name} — Контрольная точка ${cpNum}!`,'w');
     const qbank = getQBank();
     const qraw = qbank[Math.floor(Math.random()*qbank.length)];
@@ -3496,6 +3597,7 @@ function _landCellWork(p,type,ci){
     return;
   }
   if(type==='camp'){
+    sfx('camp_land');
     p.money+=30; p.score+=2; eco+=1;
     floatScore('+30₽',p.color);
     addLog(`🏕️ ${p.name} в лагере +30₽`,'g');
@@ -3504,6 +3606,7 @@ function _landCellWork(p,type,ci){
     popup('camp',{ico:'🏕️',tit:'Базовый лагерь',sub:'+30₽ за отдых',
       fact:'Арктика — дом 4 млн человек! Коренные народы живут здесь 30 000+ лет.'});
   } else if(type==='tundra'){
+    sfx('tundra');
     const c=pickCellQ(TUNDRA, ci, "TUNDRA");
     if(!c){showEnd();return;}
     let earn=50;if(p.items?.includes('wind'))earn+=30;
@@ -3514,6 +3617,7 @@ function _landCellWork(p,type,ci){
     popup('tundra',{ico:'🌿',tit:'Тундра',sub:`+${earn}₽ + ресурс ${c.r}`,fact:c.f,
       quiz:MODE==='school'?c.qs:c.qu});
   } else if(type==='animal'){
+    sfx('animal');
     const c=pickCellQ(ANIMALS, ci, "ANIMALS");
     if(!c){showEnd();return;}
     // 25% chance of typed/riddle question
@@ -3538,6 +3642,7 @@ function _landCellWork(p,type,ci){
         floatScore(`+${earn}₽`,pp.color);addLog(`✅ ${pp.name} +${earn}₽ +6%`,'g');chkBadge(pp);},
       onW:()=>{eco-=3;updateEco();addLog(`❌ ${players[curP].name} -3% эко`,'b');}});
   } else if(type==='threat'){
+    sfx('threat_land');
     const c=pickCellQ(THREATS, ci, "THREATS");
     if(!c){showEnd();return;}
     eco-=c.dmg*.3;updateEco();addLog(`⚡ Угроза! ${c.n}`,'b');
@@ -3564,14 +3669,22 @@ function _landCellWork(p,type,ci){
         showBigBonus(pp,`😞 Угроза не устранена`,`-${fine}₽ · эко снизилось`,'#ef4444');
       }});
   } else if(type==='market'){
-    showMarket();return;
+    sfx('market_open');showMarket();return;
   } else if(type==='project'){
+    sfx('project_land');
     renderRes();
     const has3=new Set(p.res).size>=3;
     popup('project',{ico:'🏗️',tit:'Экологический проект',
       sub:has3?'Есть 3 ресурса — строй!':'Нужны 3 разных ресурса.',
       fact:'Арктические станции изучают климат. Данные используют учёные всего мира!'});
   } else if(type==='aurora'){
+    p._auroraChain=(p._auroraChain||0)+1;
+    if(p._auroraChain>=3){
+      // Максимум 2 сияния подряд — иначе завершаем ход
+      p._auroraChain=0;
+      addLog(`🌌 ${p.name} — сияние, но цепочка завершена (лимит 2)!`,'w');
+      showEnd();return;
+    }
     rolled=false;$('rollBtn').disabled=false;
     addLog(`🌌 ${p.name} — бонусный ход!`,'w');sfx('aurora');
     popup('aurora',{ico:'🌌',tit:'Северное сияние!',sub:'🎁 Бросайте ещё раз!',
@@ -3579,6 +3692,7 @@ function _landCellWork(p,type,ci){
     // Aurora даёт повторный ход — не показываем endBtn, кубик уже разблокирован выше
     return;
   } else if(type==='crack'){
+    sfx('crack');
     // 🐻‍❄️ Медведь: игнорирует трещину
     const bearImmune = TOKENS[p.tokenIdx]?.id==='bear';
     if(p.items&&p.items.includes('icebreaker')){
@@ -3603,8 +3717,8 @@ function _landCellWork(p,type,ci){
   } else if(type==='inuit'){
     const rs=['🌱','🌿','❄️'],r1=rs[Math.floor(Math.random()*rs.length)],r2=rs[Math.floor(Math.random()*rs.length)];
     p.res.push(r1);p.res.push(r2);if(p.res.length>6)p.res=p.res.slice(-6);
-    p.money+=100;p.score+=3;renderRes();renderPlayers();floatScore('+100₽ 🤝',p.color);
-    addLog(`🤝 ${p.name} встретил инуитов! +100₽`,'g');sfx('inuit');
+    p.money+=100;p.score+=3;p._inuitCount=(p._inuitCount||0)+1;renderRes();renderPlayers();floatScore('+100₽ 🤝',p.color);
+    addLog(`🤝 ${p.name} встретил инуитов! +100₽`,'g');sfx('inuit');chkBadge(p);
     const npc=INUIT_NPCS[Math.floor(Math.random()*INUIT_NPCS.length)];
     showInuitNPC(npc, r1, r2, 100);
     return; // NPC overlay handles closePopup
@@ -3626,7 +3740,7 @@ function _landCellWork(p,type,ci){
       p.skipNext=true;
       addLog(`🌀 ${p.name} пропускает следующий ход!`,'b');
     }
-    if(w.dmg){p.diceBonus=(p.diceBonus||0)+w.dmg;}
+    if(w.dmg){p._weatherPenalty=(p._weatherPenalty||0)+w.dmg;}
     popup('weather',{ico:w.i,tit:'Погода: '+w.n,sub:w.eff,fact:w.f,
       quiz:MODE==='school'?w.qs:w.qu,
       onR:()=>{
@@ -4384,8 +4498,8 @@ function checkTyped(){
   // Тяжёлые колбэки (renderPlayers, updateEco, floatScore) — в следующий task
   setTimeout(()=>{
     const cp2=players[curP];
-    if(cp2){cp2._qTotal=(cp2._qTotal||0)+1;if(correct)cp2._qOk=(cp2._qOk||0)+1;}
-    if(correct&&cp2){const wt=TOKENS[cp2.tokenIdx];if(wt?.id==='walrus'&&cp2.bonusAnswer>0&&cp2._walrusActive){cp2.bonusAnswer--;cp2._walrusActive=false;cp2._walrusMultiplier=true;}}
+    if(cp2){cp2._qTotal=(cp2._qTotal||0)+1;if(correct){cp2._qOk=(cp2._qOk||0)+1;cp2._correctStreak=(cp2._correctStreak||0)+1;cp2._maxStreak=Math.max(cp2._maxStreak||0,cp2._correctStreak);}else{cp2._correctStreak=0;}}
+    if(cp2){const wt=TOKENS[cp2.tokenIdx];if(wt?.id==='walrus'&&cp2._walrusActive){if(correct&&cp2.bonusAnswer>0){cp2.bonusAnswer--;cp2._walrusMultiplier=true;}cp2._walrusActive=false;}}
     if(correct){onCorrectAnswer();}
     if(correct&&pCb?.onR)pCb.onR();else if(!correct&&pCb?.onW)pCb.onW();
     showInuitReaction(correct);
@@ -4461,7 +4575,7 @@ function pickQ(sel,cor,eEnc){
   // Тяжёлые колбэки — следующий task
   setTimeout(()=>{
     const cp=players[curP];
-    if(cp){cp._qTotal=(cp._qTotal||0)+1;if(ok)cp._qOk=(cp._qOk||0)+1;}
+    if(cp){cp._qTotal=(cp._qTotal||0)+1;if(ok){cp._qOk=(cp._qOk||0)+1;cp._correctStreak=(cp._correctStreak||0)+1;cp._maxStreak=Math.max(cp._maxStreak||0,cp._correctStreak);}else{cp._correctStreak=0;}}
     if(ok&&cp){const wt=TOKENS[cp.tokenIdx];if(wt?.id==='walrus'&&cp.bonusAnswer>0&&cp._walrusActive){cp.bonusAnswer--;cp._walrusActive=false;cp._walrusMultiplier=true;}}
     if(ok){onCorrectAnswer();}
     if(ok&&pCb?.onR)pCb.onR();else if(!ok&&pCb?.onW)pCb.onW();
@@ -4610,6 +4724,7 @@ function endTurn(){
   const cpn=$('turnPlayerName');if(cpn)cpn.textContent=players[curP]?.name||'';
   players[curP]._hintUsedThisQ=false;
   players[curP]._rerollUsedThisThrow=false;
+  players[curP]._auroraChain=0;
   const cp=players[curP];
   const tnb=$('turnNameBig');const tmb=$('turnMoneyBig');const td=$('turnDot');
   if(tnb)tnb.textContent=cp?.name||'—';
@@ -4854,12 +4969,13 @@ function startGame(){
     name:$('pn'+i)?.value.trim()||PNAMES[i],
     color:PCOLORS[i],idx:i,
     tokenIdx:playerTokens[i]!==null?playerTokens[i]:0,
-    pos:0,score:0,money:100,res:[],items:[],badges:[],skipNext:false,_qTotal:0,_qOk:0,
+    pos:0,score:0,money:100,res:[],items:[],badges:[],skipNext:false,_qTotal:0,_qOk:0,_correctStreak:0,_maxStreak:0,
     diceBonus:0,doubleQuiz:false,hasHint:false,reroll:0,doubleDice:0,skipCell:0,buildDiscount:0,
     passiveMoney:0,passiveScore:0,hasScouting:false,bonusAnswer:0,bonusAnswerMax:0,
     doubleDiceMax:0,skipCellMax:0,rerollMax:0,
     _walrusActive:false,_walrusMultiplier:false,_ternJump:0,_sealPending:false,
-    _tx:null,_ty:null,_hintUsedThisQ:false,_rerollUsedThisThrow:false,_prevPos:0
+    _tx:null,_ty:null,_hintUsedThisQ:false,_rerollUsedThisThrow:false,_prevPos:0,
+    _weatherPenalty:0,_auroraChain:0
   }:null).filter(Boolean);
   if(players.length<2){alert('Минимум 2 игрока!');return;}
   // Check every active player has chosen a token
@@ -4875,6 +4991,8 @@ function startGame(){
   // Apply token effects
   players.forEach(p=>{const tok=TOKENS[p.tokenIdx];if(tok?.effect)tok.effect(p);});
   boardSeed=Math.floor(Math.random()*999999)+1;
+  _shufflePTYPES(boardSeed); // перемешиваем клетки внутри зон — каждая игра уникальна
+  _skyPhase=0; // сброс смены неба
   // Сбрасываем очереди вопросов — новая игра, новый порядок
   Object.keys(_qShuffleQueue).forEach(k=>delete _qShuffleQueue[k]);
   curP=0;eco=20;rolled=false;moving=false;
@@ -4892,15 +5010,27 @@ function startGame(){
 function goMenu(){
   if(confirm('Вернуться в меню?')){
     $('popMov').classList.add('off');$('winMov').classList.add('off');
+    PTYPES=[..._PTYPES_BASE]; // сбрасываем на оригинал
+    _skyPhase=0;
     SS('menuScr');initMenu();}
 }
 
 // ══ BADGES ══
 const BDEFS=[
-  {ico:'🌿',n:'Эко-активист',d:'Экология 50%',ck:()=>eco>=50},
+  // Оригинальные
+  {ico:'🌿',n:'Эко-активист',d:'Экология достигла 50%',ck:()=>eco>=50},
   {ico:'💰',n:'Богатей',d:'1000₽ в кармане',ck:p=>p.money>=1000},
-  {ico:'🏗️',n:'Инженер',d:'Построил станцию',ck:p=>p.items?.length>=2},
-  {ico:'🧠',n:'Знаток',d:'20 очков',ck:p=>p.score>=20},
+  {ico:'🏗️',n:'Инженер',d:'Купил 2 предмета',ck:p=>p.items?.length>=2},
+  {ico:'🧠',n:'Знаток',d:'20 очков набрано',ck:p=>p.score>=20},
+  // Новые
+  {ico:'🔥',n:'Серийный знаток',d:'5 правильных ответов подряд',ck:p=>p._maxStreak>=5},
+  {ico:'🌊',n:'Полярник',d:'Дошёл до клетки 50+',ck:p=>p.pos>=49},
+  {ico:'🎯',n:'Снайпер',d:'80%+ правильных ответов (≥5 вопросов)',ck:p=>p._qTotal>=5&&p._qOk/p._qTotal>=.8},
+  {ico:'💎',n:'Коллекционер',d:'Собрал 4 разных ресурса',ck:p=>new Set(p.res).size>=4},
+  {ico:'🌍',n:'Хранитель Арктики',d:'Экология достигла 80%',ck:()=>eco>=80},
+  {ico:'⭐',n:'Легенда',d:'2000₽ накоплено',ck:p=>p.money>=2000},
+  {ico:'🤝',n:'Друг инуитов',d:'Встретил инуитов 2 раза',ck:p=>(p._inuitCount||0)>=2},
+  {ico:'🚀',n:'Финишёр',d:'Добрался до финиша',ck:p=>p.pos>=PTYPES.length-1},
 ];
 function chkBadge(p){BDEFS.forEach(b=>{if(!p.badges.includes(b.ico)&&b.ck(p)){p.badges.push(b.ico);showBadge(b);}});}
 function showBadge(b){
@@ -5032,6 +5162,22 @@ function showWin(reason){
     </div>
     <!-- Игроки -->
     <div style="text-align:left;margin-bottom:16px">${playersHtml}</div>
+    <!-- Значки игроков -->
+    ${(()=>{
+      const allBadges=srt.map(p=>{
+        if(!p.badges||!p.badges.length) return '';
+        const tok=TOKENS[p.tokenIdx]||TOKENS[0];
+        return `<div style="display:flex;align-items:center;gap:6px;margin-bottom:4px">
+          <span style="font-size:.75rem;font-weight:800;color:${p.color}">${tok.ico} ${p.name}:</span>
+          <span style="font-size:1.05rem;letter-spacing:2px">${p.badges.join('')}</span>
+        </div>`;
+      }).join('');
+      if(!allBadges) return '';
+      return `<div style="background:rgba(255,216,77,.07);border:1px solid rgba(255,216,77,.25);border-radius:14px;padding:10px 12px;margin-bottom:12px;text-align:left">
+        <div style="font-size:.58rem;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:rgba(255,216,77,.6);margin-bottom:6px">🏅 ЗАРАБОТАННЫЕ ЗНАЧКИ</div>
+        ${allBadges}
+      </div>`;
+    })()}
     <!-- Рекомендация -->
     <div style="background:rgba(14,165,233,.1);border:1px solid rgba(14,165,233,.3);border-radius:14px;padding:12px;margin-bottom:16px;font-size:.78rem;color:#b8e8ff;line-height:1.6">
       💡 <b>Совет от Арктики:</b> ${rec}
@@ -5159,6 +5305,14 @@ function sfx(t){
   else if(t==='weather_good'){[N.E5,N.G5,N.A5,N.C6].forEach((f,i)=>tn(f,.3,.16,'sine',i*.12));}
   else if(t==='weather_bad'){for(let i=0;i<5;i++)noise(60+i*25,.5,.18,i*.12);tn(N.A4*.5,.6,.1,'sine',0);}
   else if(t==='hint'){tn(N.A5,.08,.14,'sine',0);tn(N.D5,.25,.1,'sine',.06);}
+  else if(t==='crack'){noise(120,.12,.35,0);noise(180,.08,.25,.05);tn(N.C4*.7,.25,.12,'sawtooth',.04);noise(90,.4,.18,.1);}
+  else if(t==='tundra'){[N.G4,N.A4,N.C5].forEach((f,i)=>tn(f,.55,.09,'sine',i*.18));noise(200,.6,.07,.12);}
+  else if(t==='animal'){[N.E5,N.G5,N.A5,N.G5,N.E5].forEach((f,i)=>tn(f,.14,.18,'sine',i*.09));noise(600,.12,.06,.3);}
+  else if(t==='threat_land'){noise(80,.18,.3,0);noise(60,.35,.22,.1);tn(N.C4*.6,.45,.14,'sawtooth',.05);}
+  else if(t==='market_open'){[N.C5,N.E5,N.G5].forEach((f,i)=>tn(f,.12,.2,'sine',i*.07));noise(900,.1,.08,.18);}
+  else if(t==='project_land'){[N.G5,N.C6].forEach((f,i)=>tn(f,.22,.18,'triangle',i*.12));noise(500,.15,.07,.06);}
+  else if(t==='camp_land'){tn(N.G4,.3,.14,'sine',0);tn(N.D5,.3,.12,'sine',.1);tn(N.G5,.25,.1,'sine',.2);}
+  else if(t==='checkpoint_reach'){[N.C5,N.E5,N.G5,N.C6].forEach((f,i)=>tn(f,.3,.22,'sine',i*.1));noise(600,.2,.1,.38);}
 }
 // PROFILE SYSTEM — localStorage + Supabase
 // ══════════════════════════════════════════
@@ -5518,10 +5672,11 @@ function startLobbyMusic(){
   const vb = document.getElementById('volBar');
   if(vb) vb.style.display = 'none';
 
+  // Проверяем что уже играет именно лобби-трек (а не игровая музыка)
   const a = _activeEl();
-  if(a && !a.paused && _isGameMusic===false && a.src.length>0){
-    return; // already playing lobby music
-  }
+  const alreadyLobby = a && !a.paused && a.src && a.src.endsWith(LOBBY_TRACK.url);
+  if(alreadyLobby) return;
+
   crossfadeTo(LOBBY_TRACK.url, LOBBY_TRACK.name, null);
   const active = _activeEl();
   if(active){ active.loop = true; }
