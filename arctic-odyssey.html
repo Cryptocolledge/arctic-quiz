@@ -233,7 +233,7 @@ html,body{width:100%;height:100%;font-family:var(--font);background:var(--sky);c
 /* ════ POPUP ════ */
 .mov{position:fixed;inset:0;z-index:500;display:flex;align-items:center;justify-content:center;
   background:rgba(0,40,80,.45);backdrop-filter:blur(12px);padding:14px;}
-.mov.off{display:none;}
+.mov.off{display:none!important;}
 @keyframes mIn{from{transform:scale(.88)translateY(16px);opacity:0}to{transform:scale(1)translateY(0);opacity:1}}
 .mbox{background:var(--panel);border:1px solid var(--border);border-radius:22px;
   padding:22px;width:min(490px,100%);animation:mIn .28s cubic-bezier(.34,1.56,.64,1);
@@ -1005,18 +1005,22 @@ document.addEventListener('DOMContentLoaded',function(){
       <div class="pf-tab" id="pfTabGuest" onclick="switchPfTab('guest')">Гостевой</div>
     </div>
     <div id="pfLogin">
-      <input class="pfield" id="pfLoginName" placeholder="Имя игрока / Логин">
-      <input class="pfield" type="password" id="pfLoginPwd" placeholder="Пароль">
-      <div class="perr" id="pfLoginErr"></div>
-      <button class="mbtn pri" onclick="doProfileLogin()">Войти →</button>
+      <form autocomplete="on" onsubmit="doProfileLogin();return false;">
+        <input class="pfield" id="pfLoginName" placeholder="Имя игрока / Логин" autocomplete="username">
+        <input class="pfield" type="password" id="pfLoginPwd" placeholder="Пароль" autocomplete="current-password">
+        <div class="perr" id="pfLoginErr"></div>
+        <button class="mbtn pri" type="submit">Войти →</button>
+      </form>
     </div>
     <div id="pfReg" style="display:none">
-      <input class="pfield" id="pfRegName" placeholder="Имя игрока (будет в рейтинге)">
-      <input class="pfield" id="pfRegTeam" placeholder="Команда (необязательно)">
-      <input class="pfield" type="password" id="pfRegPwd" placeholder="Пароль">
-      <input class="pfield" type="password" id="pfRegPwd2" placeholder="Повторите пароль">
-      <div class="perr" id="pfRegErr"></div>
-      <button class="mbtn pri" onclick="doProfileReg()">Зарегистрироваться →</button>
+      <form autocomplete="on" onsubmit="doProfileReg();return false;">
+        <input class="pfield" id="pfRegName" placeholder="Имя игрока (будет в рейтинге)" autocomplete="username">
+        <input class="pfield" id="pfRegTeam" placeholder="Команда (необязательно)" autocomplete="organization">
+        <input class="pfield" type="password" id="pfRegPwd" placeholder="Пароль" autocomplete="new-password">
+        <input class="pfield" type="password" id="pfRegPwd2" placeholder="Повторите пароль" autocomplete="new-password">
+        <div class="perr" id="pfRegErr"></div>
+        <button class="mbtn pri" type="submit">Зарегистрироваться →</button>
+      </form>
     </div>
     <div id="pfGuest" style="display:none">
       <div style="text-align:center;padding:12px 0;color:var(--muted);font-size:.8rem;">

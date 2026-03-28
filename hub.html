@@ -330,31 +330,52 @@ body{font-family:system-ui,-apple-system,"Segoe UI",sans-serif;color:var(--text)
 /* Мобильное меню */
 .hub-nav-mobile{display:none;position:relative;}
 .hub-burger{
-  background:none;border:1px solid rgba(255,255,255,.15);border-radius:8px;
-  color:rgba(255,255,255,.6);cursor:pointer;font-size:1.1rem;padding:5px 10px;
-  line-height:1;transition:all .2s;
+  background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.18);border-radius:10px;
+  color:rgba(255,255,255,.8);cursor:pointer;font-size:1.3rem;
+  padding:10px 14px;line-height:1;transition:all .2s;
+  min-width:44px;min-height:44px;display:flex;align-items:center;justify-content:center;
+  -webkit-tap-highlight-color:transparent;
 }
-.hub-burger:hover{border-color:rgba(255,255,255,.4);color:#fff;}
+.hub-burger:hover,.hub-burger:active{border-color:rgba(79,223,255,.5);color:#4fdfff;background:rgba(79,223,255,.08);}
 .hub-mobile-dropdown{
-  position:absolute;top:calc(100% + 8px);right:0;
-  background:rgba(4,12,30,.97);border:1px solid rgba(79,223,255,.2);
-  border-radius:12px;padding:8px;min-width:180px;
-  box-shadow:0 8px 32px rgba(0,0,0,.6);backdrop-filter:blur(12px);
-  flex-direction:column;gap:4px;z-index:500;
+  position:fixed;top:0;left:0;right:0;bottom:0;
+  background:rgba(4,12,30,.98);border:none;
+  border-radius:0;padding:0;min-width:unset;
+  box-shadow:none;backdrop-filter:blur(16px);
+  flex-direction:column;gap:0;z-index:900;
+  overflow-y:auto;
 }
+.hub-mob-header{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:16px 20px;border-bottom:1px solid rgba(255,255,255,.07);
+  padding-top:max(16px,env(safe-area-inset-top));
+}
+.hub-mob-title{font-size:1rem;font-weight:800;color:#4fdfff;}
+.hub-mob-close{
+  background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.15);
+  border-radius:8px;color:rgba(255,255,255,.7);cursor:pointer;
+  font-size:1.3rem;min-width:40px;min-height:40px;
+  display:flex;align-items:center;justify-content:center;
+  -webkit-tap-highlight-color:transparent;
+}
+.hub-mob-section{padding:8px 12px;color:rgba(255,255,255,.3);font-size:.65rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;}
 .hub-mob-item{
-  display:block;padding:9px 14px;border-radius:8px;font-size:.82rem;
-  color:rgba(255,255,255,.75);text-decoration:none;cursor:pointer;
+  display:flex;align-items:center;padding:14px 20px;font-size:.9rem;
+  color:rgba(255,255,255,.85);text-decoration:none;cursor:pointer;
   border:none;background:none;text-align:left;width:100%;font-weight:600;
-  transition:background .15s;
+  transition:background .15s;min-height:52px;border-bottom:1px solid rgba(255,255,255,.04);
+  gap:10px;
 }
-.hub-mob-item:hover{background:rgba(79,223,255,.08);color:#fff;}
+.hub-mob-item:active{background:rgba(79,223,255,.08);}
 .hub-mob-host{color:rgba(255,255,255,.3);font-size:.7rem;}
 
 @media(max-width:640px){
   .hub-nav-desktop{display:none;}
   .hub-nav-mobile{display:block;}
-  .hub-header{padding:12px 16px;}
+  .hub-header{padding:10px 14px;}
+}
+@media(min-width:641px){
+  .hub-mob-header,.hub-mob-section{display:none;}
 }
 /* ═══════════════════════════════════════════════════════════════ */
 
@@ -434,9 +455,11 @@ body{font-family:system-ui,-apple-system,"Segoe UI",sans-serif;color:var(--text)
   display:flex;align-items:center;gap:8px;
 }
 .hcard-btn{
-  flex:1;padding:9px 12px;border-radius:9px;border:none;
+  flex:1;padding:10px 12px;border-radius:9px;border:none;
   font-size:.78rem;font-weight:700;cursor:pointer;
   transition:all .2s;letter-spacing:.02em;white-space:nowrap;
+  min-height:44px;display:flex;align-items:center;justify-content:center;
+  -webkit-tap-highlight-color:transparent;
 }
 .hcard-btn:hover{
   transform:translateY(-2px) scale(1.04);
@@ -732,41 +755,46 @@ document.addEventListener('DOMContentLoaded',function(){
 
     <!-- Мобильное меню -->
     <div class="hub-nav-mobile">
-      <button class="hub-burger" onclick="var m=document.getElementById('hubMobileMenu');m.style.display=m.style.display==='flex'?'none':'flex';" aria-label="Меню">☰</button>
+      <button class="hub-burger" onclick="hubOpenMobileMenu()" aria-label="Меню">☰</button>
       <div class="hub-mobile-dropdown" id="hubMobileMenu" style="display:none;">
+        <div class="hub-mob-header">
+          <span class="hub-mob-title">📋 Меню</span>
+          <button class="hub-mob-close" onclick="hubCloseMobileMenu()">✕</button>
+        </div>
+        <div class="hub-mob-section">Платформа</div>
         <a href="arctic-odyssey.html" target="_blank" class="hub-mob-item" style="color:#ffd84d;font-weight:800;">🎲 Арктическая одиссея</a>
-        <span class="hub-mob-item" style="color:#a8f0ff;" onclick="document.getElementById('ov-about').classList.add('active');document.getElementById('hubMobileMenu').style.display='none'">🚀 О платформе</span>
+        <span class="hub-mob-item" style="color:#a8f0ff;" onclick="document.getElementById('ov-about').classList.add('active');hubCloseMobileMenu()">🚀 О платформе</span>
         <a href="facts.html" target="_blank" class="hub-mob-item" style="color:#c4b5fd">🌍 Факты об Арктике</a>
-        <div style="border-top:1px solid rgba(255,255,255,.07);margin:4px 0"></div>
-        <div style="padding:4px 10px 3px;font-size:.6rem;color:rgba(97,255,178,.35);letter-spacing:.1em;text-transform:uppercase">🎮 Мини-игры</div>
-        <span class="hub-mob-item" style="color:#ffd84d" onclick="openMiniGame('hangman');document.getElementById('hubMobileMenu').style.display='none'">🔤 Виселица</span>
-        <span class="hub-mob-item" style="color:#c4b5fd" onclick="openMiniGame('anagram');document.getElementById('hubMobileMenu').style.display='none'">🔀 Анаграммы</span>
-        <span class="hub-mob-item" style="color:#61ffb2" onclick="openMiniGame('puzzle');document.getElementById('hubMobileMenu').style.display='none'">🧩 Факт-пазл</span>
-        <span class="hub-mob-item" style="color:#4fdfff" onclick="openMiniGame('guessplace');document.getElementById('hubMobileMenu').style.display='none'">📍 Угадай место</span>
-        <span class="hub-mob-item" style="color:#f97316" onclick="openMiniGame('wheel');document.getElementById('hubMobileMenu').style.display='none'">🎰 Колесо фортуны</span>
-        <div style="border-top:1px solid rgba(255,255,255,.07);margin:4px 0"></div>
+        <div class="hub-mob-section">🎮 Мини-игры</div>
+        <span class="hub-mob-item" style="color:#ffd84d" onclick="openMiniGame('hangman');hubCloseMobileMenu()">🔤 Виселица</span>
+        <span class="hub-mob-item" style="color:#c4b5fd" onclick="openMiniGame('anagram');hubCloseMobileMenu()">🔀 Анаграммы</span>
+        <span class="hub-mob-item" style="color:#61ffb2" onclick="openMiniGame('puzzle');hubCloseMobileMenu()">🧩 Факт-пазл</span>
+        <span class="hub-mob-item" style="color:#4fdfff" onclick="openMiniGame('guessplace');hubCloseMobileMenu()">📍 Угадай место</span>
+        <span class="hub-mob-item" style="color:#f97316" onclick="openMiniGame('wheel');hubCloseMobileMenu()">🎰 Колесо фортуны</span>
+        <div class="hub-mob-section">Доступ</div>
         <a href="profiles.html" class="hub-mob-item">👤 Профили</a>
         <a href="observer.html" class="hub-mob-item">👁 Наблюдатель</a>
-        <span class="hub-mob-item hub-mob-host" onclick="try{localStorage.setItem('hub_auth_ts',Date.now().toString())}catch(e){}var w=window.open('presenter.html','_blank');if(!w||w.closed||typeof w.closed=='undefined'){location.href='presenter.html';}document.getElementById('hubMobileMenu').style.display='none'">⚙ Ведущий</span>
-        <a href="admin.html" class="hub-mob-item" style="color:#ffaa4d" onclick="document.getElementById('hubMobileMenu').style.display='none'">🛡️ Админ</a>
-        <span class="hub-mob-item" style="color:rgba(79,223,255,.8)" onclick="document.getElementById('helpModal').style.display='flex';document.getElementById('hubMobileMenu').style.display='none'">❓ Помощь</span>
-        <div style="border-top:1px solid rgba(255,255,255,.08);margin:4px 0"></div>
+        <span class="hub-mob-item hub-mob-host" onclick="try{localStorage.setItem('hub_auth_ts',Date.now().toString())}catch(e){}var w=window.open('presenter.html','_blank');if(!w||w.closed||typeof w.closed=='undefined'){location.href='presenter.html';}hubCloseMobileMenu()">⚙️ Панель ведущего</span>
+        <a href="admin.html" class="hub-mob-item" style="color:#ffaa4d" onclick="hubCloseMobileMenu()">🛡️ Панель администратора</a>
+        <span class="hub-mob-item" style="color:rgba(79,223,255,.8)" onclick="document.getElementById('helpModal').style.display='flex';hubCloseMobileMenu()">❓ Помощь</span>
+        <div class="hub-mob-section">📊 Статистика</div>
         <div class="hub-mob-item" onclick="toggleBurgerPanel('mbRating')" style="justify-content:space-between">
-          <span>🏆 Лучшие игроки</span><span id="mbRatingArrow" style="font-size:.7rem">▼</span>
+          <span>🏆 Лучшие игроки</span><span id="mbRatingArrow" style="font-size:.8rem;color:rgba(255,255,255,.3)">▼</span>
         </div>
-        <div id="mbRating" style="display:none;padding:8px 4px 4px">
+        <div id="mbRating" style="display:none;padding:8px 16px 12px">
           <div id="hubTopPlayersMob" style="display:flex;flex-direction:column;gap:6px">
             <div style="font-size:.72rem;color:rgba(180,220,255,.3);padding:6px">Загрузка…</div>
           </div>
         </div>
         <div class="hub-mob-item" onclick="toggleBurgerPanel('mbAnnounces')" style="justify-content:space-between">
-          <span>📢 Анонсы</span><span id="mbAnnouncesArrow" style="font-size:.7rem">▼</span>
+          <span>📢 Анонсы</span><span id="mbAnnouncesArrow" style="font-size:.8rem;color:rgba(255,255,255,.3)">▼</span>
         </div>
-        <div id="mbAnnounces" style="display:none;padding:8px 4px 4px">
+        <div id="mbAnnounces" style="display:none;padding:8px 16px 12px">
           <div id="hubAnnouncesListMob">
             <div style="font-size:.72rem;color:rgba(180,220,255,.3);padding:6px">Нет анонсов</div>
           </div>
         </div>
+        <div style="height:max(20px,env(safe-area-inset-bottom))"></div>
       </div>
     </div>
   </div>
@@ -857,7 +885,7 @@ document.addEventListener('DOMContentLoaded',function(){
       </div>
       <div class="hcard-footer">
         <div style="display:flex;gap:6px;width:100%">
-          <button class="hcard-btn" onclick="event.stopPropagation();hubSelectQuiz('history')" style="flex:1;background:linear-gradient(120deg,#ffd36b,#f59e0b);color:#1a0a00">👥 С ведущим</button>
+          <button class="hcard-btn" onclick="event.stopPropagation();hubSelectQuiz('history')" style="flex:1;background:linear-gradient(120deg,#c97c10,#92560a);color:#fff">👥 С ведущим</button>
           <button class="hcard-btn" onclick="event.stopPropagation();openSoloQuiz('history')" style="flex:1;background:linear-gradient(120deg,#f59e0b,#d97706);color:#020d1c">👤 Соло</button>
         </div>
       </div>
@@ -4333,6 +4361,16 @@ async function loadHubAnnouncements(){
 }
 
 // toggle burger sub-panels
+function hubOpenMobileMenu(){
+  const m=document.getElementById('hubMobileMenu');
+  m.style.display='flex';
+  document.body.style.overflow='hidden';
+}
+function hubCloseMobileMenu(){
+  const m=document.getElementById('hubMobileMenu');
+  m.style.display='none';
+  document.body.style.overflow='';
+}
 function toggleBurgerPanel(id){
   const panel=document.getElementById(id);
   if(!panel)return;

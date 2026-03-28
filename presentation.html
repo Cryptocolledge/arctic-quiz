@@ -2,7 +2,7 @@
 <html lang="ru">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>КвизЦентр — Презентация проекта</title>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;900&display=swap');
@@ -25,8 +25,10 @@
     background:var(--bg);
     color:#fff;
     overflow:hidden;
-    height:100vh;
-    width:100vw;
+    height:100dvh;
+    width:100%;
+    padding-top:env(safe-area-inset-top);
+    padding-bottom:env(safe-area-inset-bottom);
   }
 
   /* ── STARS ── */
@@ -35,7 +37,7 @@
   @keyframes twinkle{0%,100%{opacity:.15;transform:scale(1)}50%{opacity:.9;transform:scale(1.4)}}
 
   /* ── SLIDES ── */
-  .deck{position:relative;width:100vw;height:100vh;z-index:1;}
+  .deck{position:relative;width:100%;height:100dvh;z-index:1;}
   .slide{
     position:absolute;inset:0;
     display:flex;flex-direction:column;
@@ -44,6 +46,7 @@
     opacity:0;pointer-events:none;
     transition:opacity .5s ease,transform .5s ease;
     transform:translateY(30px);
+    overflow-y:auto;
   }
   .slide.active{opacity:1;pointer-events:all;transform:translateY(0);}
   .slide.exit{opacity:0;transform:translateY(-30px);}
@@ -268,14 +271,39 @@
   #arrowR{right:16px;}
 
   @media(max-width:768px){
-    .slide{padding:28px 24px;}
+    .slide{padding:20px 18px;justify-content:flex-start;padding-top:max(20px,env(safe-area-inset-top));}
     .g3,.g4{grid-template-columns:repeat(2,1fr);}
     .road-grid{grid-template-columns:1fr;}
     .prob-row{grid-template-columns:1fr;}
     .arrow-mid{display:none;}
-    .stats{gap:24px;}
-    .stat-num{font-size:2.4rem;}
+    .stats{gap:16px;}
+    .stat-num{font-size:2rem;}
+    .stat-label{font-size:.65rem;}
     #arrowL,#arrowR{display:none;}
+    h1{font-size:clamp(1.6rem,7vw,2.8rem);}
+    h2{font-size:clamp(1.3rem,5.5vw,2rem);}
+    .sub{font-size:clamp(.8rem,3.5vw,1rem);}
+    .logo-big{font-size:3.5rem;}
+    .card{padding:14px 16px;}
+    .card .icon{font-size:1.5rem;}
+    .grid{margin-top:18px;gap:10px;}
+    .tech-row{gap:8px;}
+    .tech-pill{padding:7px 14px;font-size:.75rem;}
+    .frow-list{margin-top:16px;gap:8px;}
+    .timeline{margin-top:18px;}
+    .badge-row{gap:8px;margin-top:14px;}
+    #counter{bottom:8px;right:12px;}
+    #nav{bottom:8px;}
+  }
+  @media(max-width:480px){
+    .slide{padding:16px 14px;padding-top:max(16px,env(safe-area-inset-top));}
+    .g2,.g3,.g4{grid-template-columns:1fr;}
+    .stats{flex-direction:column;gap:12px;}
+    .stat-sep{display:none;}
+    .quote{padding:20px;font-size:.9rem;}
+    .cta-btn{padding:12px 28px;font-size:.9rem;}
+    .titem{grid-template-columns:70px 1fr;}
+    .tdate{font-size:.7rem;}
   }
 </style>
 </head>
