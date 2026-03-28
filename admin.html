@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>🛡️ Панель администратора — АрктикаКвиз</title>
+<title>🛡️ Панель администратора — КвизЦентр</title>
 <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
 <style>
 *{margin:0;padding:0;box-sizing:border-box;}
@@ -728,7 +728,7 @@ function renderPlayersTable(){
       <td><b>${escH(p.student_name||'—')}</b>${hasBanWord(p.student_name||'')?'<span class="badge err" style="margin-left:5px">⚠️</span>':''}</td>
       <td>${escH(p.team_name||'—')}</td>
       <td style="color:var(--muted);font-size:.68rem">${fmtTime(p.joined_at)}</td>
-      <td>${p.chat_blocked?'<span class="badge err">Заблокирован</span>':'<span class="badge ok">Активен</span>'}</td>
+      <td>${(()=>{if(p.chat_blocked)return'<span class="badge err">Заблокирован</span>';const t=new Date(p.last_active||p.joined_at);const mins=Math.floor((Date.now()-t.getTime())/60000);if(mins<5)return'<span class="badge ok">В сети</span>';return`<span class="badge" style="background:rgba(100,116,139,.15);color:#94a3b8;border-color:rgba(100,116,139,.3)">Не в сети · ${mins<60?mins+'м назад':Math.floor(mins/60)+'ч назад'}</span>`;})()}</td>
       <td class="row-actions">
         <button class="act-btn" onclick="viewPlayer('${escH(p.student_name)}','${escH(p.team_name)}')">👁</button>
         <button class="act-btn ${p.chat_blocked?'grn':'warn'}" onclick="blockPlayer('${escH(p.student_name)}','${escH(p.team_name)}',${!p.chat_blocked})">${p.chat_blocked?'Разблок':'Блок'}</button>
