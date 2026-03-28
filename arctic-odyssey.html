@@ -640,7 +640,16 @@ document.addEventListener('DOMContentLoaded',function(){
     <!-- Цель -->
     <div style="background:rgba(14,165,233,.08);border:1.5px solid rgba(14,165,233,.25);border-radius:14px;padding:12px 14px;margin-bottom:14px">
       <div style="font-weight:900;color:#0369a1;margin-bottom:4px;font-size:.88rem">🎯 Как выиграть?</div>
-      <p style="margin:0">Побеждает тот, кто <b>первым добежит до финиша</b>, <b>наберёт 50+ очков</b> или <b>поднимет экологию до 100%</b>!</p>
+      <p style="margin:0">Побеждает тот, кто <b>первым доберётся до финиша</b> (71-я клетка) и нажмёт «Завершить ход». Очки и деньги влияют на итоговую оценку, но <b>единственный путь к победе — дойти до финиша</b>!</p>
+    </div>
+
+    <!-- Случайное поле -->
+    <div style="background:rgba(124,58,237,.07);border:1.5px solid rgba(124,58,237,.25);border-radius:14px;padding:10px 13px;margin-bottom:12px">
+      <div style="font-size:.78rem;font-weight:900;color:#7c3aed;margin-bottom:3px">🎲 Каждая игра уникальна!</div>
+      <p style="font-size:.72rem;color:var(--muted);margin:0;line-height:1.6">
+        Клетки внутри каждой зоны <b>перемешиваются случайно</b> при каждом старте — маршрут всегда разный.<br>
+        Старт, Контрольные точки (24 и 47) и Финиш всегда остаются на своих местах.
+      </p>
     </div>
 
     <!-- Шаг 0 -->
@@ -651,6 +660,22 @@ document.addEventListener('DOMContentLoaded',function(){
     <h3>🎲 Как ходить?</h3>
     <p>В свой ход нажми кубик — фишка передвинется. На клетке случится событие. Затем нажми <b>«Завершить ход»</b>.</p>
     <p>Стартовый кошелёк: <b>100₽</b> у каждого игрока или команды.</p>
+
+    <!-- Прогресс-бар -->
+    <div style="background:rgba(14,165,233,.07);border:1.5px solid rgba(14,165,233,.2);border-radius:12px;padding:9px 12px;margin-bottom:10px">
+      <div style="font-size:.75rem;font-weight:900;color:#0369a1;margin-bottom:2px">🐧 Шкала прогресса</div>
+      <p style="font-size:.72rem;color:var(--muted);margin:0;line-height:1.5">
+        В верхней строке отображается мини-шкала с пингвином — она показывает, как далеко текущий игрок продвинулся к финишу. Пингвин двигается вперёд с каждым ходом!
+      </p>
+    </div>
+
+    <!-- Смена неба -->
+    <div style="background:rgba(30,58,138,.07);border:1.5px solid rgba(30,58,138,.2);border-radius:12px;padding:9px 12px;margin-bottom:12px">
+      <div style="font-size:.75rem;font-weight:900;color:#1d4ed8;margin-bottom:2px">🌅 Смена времени суток</div>
+      <p style="font-size:.72rem;color:var(--muted);margin:0;line-height:1.5">
+        По мере продвижения к финишу небо постепенно меняется: <b>день → послеполудень → сумерки → полярная ночь</b>. При полярной ночи на небе появляются звёзды!
+      </p>
+    </div>
 
     <!-- Спецброски -->
     <div class="rules-section">🎲 Особые броски кубика</div>
@@ -689,6 +714,7 @@ document.addEventListener('DOMContentLoaded',function(){
       <div class="rcard" style="border-color:#3b82f6">🌤️<b>Погода</b><span>Бонус или штраф к броску</span></div>
       <div class="rcard" style="border-color:#ffd700;background:rgba(255,215,0,.06)">🚩<b>Контр. точка</b><span>Ответь или откат −3!</span></div>
     </div>
+    <p style="font-size:.7rem;color:var(--muted);margin-bottom:8px">🔊 При попадании на каждую клетку звучит уникальный звуковой эффект.</p>
 
     <!-- КТ -->
     <h3>🚩 Контрольные точки</h3>
@@ -715,7 +741,7 @@ document.addEventListener('DOMContentLoaded',function(){
       <li>Построить эко-станцию (3 разных ресурса) → <b>+200₽ +20% эко</b></li>
       <li>Белая мгла — ответить на вопрос → <b>+1 клетка</b></li>
       <li>Серия 3× одинаковых бросков → <b>+25–60₽ бонус</b></li>
-      <li>Дойти до финиша первым → <b>+300₽</b></li>
+      <li>Дойти до финиша → <b>+300₽</b></li>
     </ul>
 
     <!-- Рынок -->
@@ -735,7 +761,13 @@ document.addEventListener('DOMContentLoaded',function(){
 
     <!-- Экология -->
     <h3>🌿 Экология Арктики</h3>
-    <p>Следи за полоской экологии в левой панели. Правильно отвечай на вопросы и нейтрализуй угрозы — она растёт. Если поднять до <b>100% — игра выиграна!</b></p>
+    <p>Следи за полоской экологии в левой панели. Правильно отвечай на вопросы и нейтрализуй угрозы — она растёт.</p>
+    <div style="background:rgba(34,197,94,.08);border:1.5px solid rgba(34,197,94,.3);border-radius:12px;padding:9px 12px;margin-bottom:8px">
+      <div style="font-size:.75rem;font-weight:900;color:#15803d;margin-bottom:2px">🌍 Эко 100% — групповая награда!</div>
+      <p style="font-size:.72rem;color:var(--muted);margin:0;line-height:1.5">
+        Когда экология достигает <b>100%</b> — Арктика спасена! Все игроки получают <b>+100₽ и +5 очков</b>, но игра продолжается до финиша.
+      </p>
+    </div>
 
     <!-- Фишки -->
     <div class="rules-section">🎒 Бонусы фишек</div>
@@ -761,6 +793,24 @@ document.addEventListener('DOMContentLoaded',function(){
       <div class="rcard">💡<b>Подсказка 1</b><span>Стоит 50₽ · первая часть ответа</span></div>
       <div class="rcard">💡<b>Подсказка 2</b><span>Стоит 80₽ · появляется после первой</span></div>
       <div class="rcard">🤝<b>Обмен ресурсами</b><span>Если есть 2+ ресурса · бесплатная подсказка</span></div>
+    </div>
+
+    <!-- Значки -->
+    <div class="rules-section">🏅 Значки достижений</div>
+    <p style="font-size:.72rem;color:var(--muted);margin-bottom:6px">Значки зарабатываются автоматически по ходу игры и показываются в финальном экране:</p>
+    <div class="rules-grid">
+      <div class="rcard">🌿<b>Эко-активист</b><span>Экология достигла 50%</span></div>
+      <div class="rcard">💰<b>Богатей</b><span>1000₽ в кармане</span></div>
+      <div class="rcard">🏗️<b>Инженер</b><span>Построил 2+ предмета</span></div>
+      <div class="rcard">🧠<b>Знаток</b><span>20 очков набрано</span></div>
+      <div class="rcard">🔥<b>Серийный знаток</b><span>5 правильных ответов подряд</span></div>
+      <div class="rcard">🌊<b>Полярник</b><span>Дошёл до клетки 50+</span></div>
+      <div class="rcard">🎯<b>Снайпер</b><span>80%+ правильных (от 5 вопросов)</span></div>
+      <div class="rcard">💎<b>Коллекционер</b><span>Собрал 4 разных ресурса</span></div>
+      <div class="rcard">🌍<b>Хранитель Арктики</b><span>Экология достигла 80%</span></div>
+      <div class="rcard">⭐<b>Легенда</b><span>2000₽ накоплено</span></div>
+      <div class="rcard">🤝<b>Друг инуитов</b><span>Встретил инуитов 2 раза</span></div>
+      <div class="rcard">🚀<b>Финишёр</b><span>Добрался до финиша!</span></div>
     </div>
 
     <button class="mbtn pri" style="margin-top:14px;" onclick="closeRules()">← Всё понял, играем!</button>
@@ -1000,8 +1050,8 @@ document.addEventListener('DOMContentLoaded',function(){
 <div class="mov off" id="popMov"><div class="mbox" id="popBox"></div></div>
 
 <!-- WIN -->
-<div class="mov off" id="winMov" style="position:fixed;inset:0;z-index:5000;background:rgba(2,9,24,.97);overflow-y:auto;padding:16px;">
-  <div id="winBox" style="max-width:520px;width:100%;background:linear-gradient(135deg,#0a1f3a,#051630);border:2px solid rgba(79,223,255,.3);border-radius:28px;padding:28px 24px;text-align:center;box-shadow:0 24px 80px rgba(0,0,0,.8);">
+<div class="mov off" id="winMov" style="position:fixed;inset:0;z-index:5000;background:rgba(2,9,24,.97);overflow-y:auto;padding:16px;display:flex;flex-direction:column;align-items:center;">
+  <div id="winBox" style="max-width:520px;width:100%;background:linear-gradient(135deg,#0a1f3a,#051630);border:2px solid rgba(79,223,255,.3);border-radius:28px;padding:28px 24px;text-align:center;box-shadow:0 24px 80px rgba(0,0,0,.8);flex-shrink:0;">
   </div>
 </div>
 <script>
@@ -1692,7 +1742,7 @@ const RIDDLES_STUDENT=[
 ];
 // ══ STATE ══
 const SLOTS=[{on:true},{on:true},{on:false},{on:false}];
-let MODE='school',GRADE=4,DIFFICULTY='easy',players=[],curP=0,eco=20;
+let MODE='school',GRADE=4,DIFFICULTY='easy',players=[],curP=0,eco=20,_ecoMaxRewarded=false;
 let rolled=false,moving=false,qTmr=null,qDone=false,chDone=false,pCb=null;
 const HINT_COST=50;       // cost in ₽ for first hint
 const HINT2_COST=80;      // cost for second hint
@@ -3305,7 +3355,7 @@ function updateEco(){
     else if(v<80){ch.textContent='🌿';msg.textContent='Природа восстанавливается!';msg.style.color='#22c55e';}
     else{ch.textContent='🎉';msg.textContent='Арктика спасена! Так держать!';msg.style.color='#0369a1';}
   }
-  if(v>=100)setTimeout(()=>showWin('eco'),700);
+  if(v>=100&&!_ecoMaxRewarded){_ecoMaxRewarded=true;players.forEach(p=>{p.money+=100;p.score+=5;});renderPlayers();floatScore('🌍 АРКТИКА СПАСЕНА! +100₽','#22c55e');addLog('🌍 Арктика полностью спасена! Все игроки получают +100₽ +5 очков','g');}
 }
 function _renderDiceHistory(){
   const el=document.getElementById('diceHistoryEl');
@@ -3765,7 +3815,6 @@ function tryBuild(){
   showBadge({ico:'🏗️',n:'Инженер',d:'Построил Эко-Станцию!'});
   chkBadge(p);
   $('bldBtn').style.display='none';
-  if(p.score>=50||p.money>=1000)setTimeout(()=>showWin('score'),700);
 }
 
 // ══ MARKET ══
@@ -4715,11 +4764,6 @@ function endTurn(){
     p.score+=1; addLog(`🦉 ${p.name} — мудрость: +1 очко`,'g');
   }
   renderPlayers();
-  // БАГ 3 FIX: Проверка победы по очкам и деньгам после каждого хода
-  if(p.score>=50||p.money>=1000){
-    setTimeout(()=>showWin('score'),400);
-    return;
-  }
   curP=(curP+1)%players.length;
   const cpn=$('turnPlayerName');if(cpn)cpn.textContent=players[curP]?.name||'';
   players[curP]._hintUsedThisQ=false;
@@ -4995,7 +5039,8 @@ function startGame(){
   _skyPhase=0; // сброс смены неба
   // Сбрасываем очереди вопросов — новая игра, новый порядок
   Object.keys(_qShuffleQueue).forEach(k=>delete _qShuffleQueue[k]);
-  curP=0;eco=20;rolled=false;moving=false;
+  curP=0;eco=20;_ecoMaxRewarded=false;rolled=false;moving=false;
+  const _tb=$('topBar'); if(_tb) _tb.style.display='';
   SS('gameScr');
   if(typeof onMusicGameStart==='function')onMusicGameStart();
   setTimeout(()=>{initBoard();initDicePhysics();renderAll();
@@ -5078,6 +5123,7 @@ function launchConfetti(){
   }
 }
 function showWin(reason){
+  const tb=$('topBar'); if(tb) tb.style.display='none';
   const winnerForProgress=players.reduce((a,b)=>a.score>b.score?a:b,players[0]);
   if(winnerForProgress)saveArcticProgress(winnerForProgress.money||0, Math.round(eco||0));
   clearInterval(qTmr);
