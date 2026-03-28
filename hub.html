@@ -5703,9 +5703,19 @@ function wqAnswer(sel,correct){
 <div class="ov-about" id="ov-about" onclick="if(event.target===this)this.classList.remove('active')">
   <div class="about-frame-wrap">
     <button class="about-close" onclick="document.getElementById('ov-about').classList.remove('active')" title="Закрыть">✕</button>
-    <iframe src="presentation.html" loading="lazy" id="about-iframe" title="О платформе — презентация"></iframe>
+    <iframe id="about-iframe" title="О платформе — презентация"></iframe>
   </div>
 </div>
+<script>
+(function(){
+  var loaded=false;
+  document.querySelectorAll('[onclick*="ov-about"]').forEach(function(el){
+    el.addEventListener('click',function(){
+      if(!loaded){document.getElementById('about-iframe').src='presentation.html';loaded=true;}
+    });
+  });
+})();
+</script>
 
 </body>
 </html>
