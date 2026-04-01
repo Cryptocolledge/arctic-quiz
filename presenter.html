@@ -354,6 +354,19 @@ tr:hover td{background:rgba(79,223,255,.03);}
         </div>
       </div>
 
+      <!-- ТАЙМЕР ОТВЕТА -->
+      <div>
+        <div style="font-size:.6rem;color:var(--muted);margin-bottom:6px;text-transform:uppercase;letter-spacing:.07em;">⏱ Время на ответ</div>
+        <div style="display:flex;gap:5px;flex-wrap:wrap;" id="timerBtnsWrap">
+          <button class="btn btn-sm" id="timerBtn15" onclick="presSetTimer(15)" style="font-size:.7rem;padding:5px 10px;">15 сек</button>
+          <button class="btn btn-sm" id="timerBtn20" onclick="presSetTimer(20)" style="font-size:.7rem;padding:5px 10px;">20 сек</button>
+          <button class="btn btn-sm" id="timerBtn25" onclick="presSetTimer(25)" style="font-size:.7rem;padding:5px 10px;">25 сек</button>
+          <button class="btn btn-sm" id="timerBtn30" onclick="presSetTimer(30)" style="font-size:.7rem;padding:5px 10px;">30 сек</button>
+          <button class="btn btn-sm" id="timerBtn45" onclick="presSetTimer(45)" style="font-size:.7rem;padding:5px 10px;">45 сек</button>
+          <button class="btn btn-sm" id="timerBtn60" onclick="presSetTimer(60)" style="font-size:.7rem;padding:5px 10px;">60 сек</button>
+        </div>
+      </div>
+
       <!-- УРОВЕНЬ + ФОРМАТ: отдельная строка под темой -->
       <div style="display:flex;gap:10px;align-items:flex-start;">
         <!-- Уровень -->
@@ -685,13 +698,13 @@ tr:hover td{background:rgba(79,223,255,.03);}
 
   <div style="text-align:center;padding:8px;font-size:.72rem;color:var(--muted);">
     Нашли ошибку или есть предложение? Пишите разработчику:
-    <a href="/cdn-cgi/l/email-protection#1162746579212520205168703f6364" style="color:#4fdfff;text-decoration:none;"><span class="__cf_email__" data-cfemail="fe8d9b8a96cecacfcfbe879fd08c8b">[email&#160;protected]</span></a>
+    <a href="mailto:quiz@example.com" style="color:#4fdfff;text-decoration:none;">quiz@example.com</a>
   </div>
 
 </div>
 </div>
 
-<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"
   onerror="loadSupabaseFallback()"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script>
@@ -1545,6 +1558,8 @@ function startPresTimer(at,qtOverride){
 function applyState(s){
   lastState=s;
   if(!s){chipPhase.textContent="⏳";chipPhase.className="chip";stPhase.textContent="Ожидание";stopPresTimer();btnReveal.disabled=true;ansState.className="ans-state";return;}
+  // Синхронизируем QT и подсветку кнопок таймера из state
+  if(s.game_timer&&s.game_timer!==QT) presSetTimer(s.game_timer);
   // Переключаем набор вопросов по quiz_mode
   const qmode=s.quiz_mode||"spo";
   const currentQId = QUIZ_ID_CURRENT||s.quiz_id||QUIZ_ID;
@@ -1649,7 +1664,7 @@ async function ups(patch){
     session_code:lastState?.session_code||null,
     question_visible:lastState?.question_visible!==undefined?lastState.question_visible:true,
     shuffle_seed:lastState?.shuffle_seed??0,
-    game_timer:lastState?.game_timer??25,
+    game_timer:lastState?.game_timer??30,
   };
   const full={...base,...patch};
   try{const{data,error}=await sb.from("quiz_state").upsert(full,{onConflict:"game_id"}).select().maybeSingle();if(error)return null;if(data)lastState=data;return data;}catch(e){return null;}
@@ -1673,9 +1688,18 @@ async function goStart(){
 }
 async function goPause(){applyState(await ups({phase:"paused"}));}
 async function goResume(){applyState(await ups({phase:"running",question_started_at:nowUtc(),show_answer:false,question_visible:true}));showRevealQBtn(false);}
+let _preScoreboardNextIdx = null; // tracks pending next index after auto-scoreboard
+
 async function goNext(){
   const cur=lastState?.current_index??0,nxt=cur+1;
   if(nxt>=Q.length){applyState(await ups({phase:"ended",show_answer:false}));return;}
+  // Auto-show intermediate scoreboard after every 10th question (idx 9, 19, 29...)
+  if((cur+1)%10===0 && lastState?.phase==='running'){
+    _preScoreboardNextIdx = nxt;
+    applyState(await ups({phase:"scoreboard"}));
+    return;
+  }
+  _preScoreboardNextIdx = null;
   const vis = presenterMode==="online" ? false : true;
   const seed = Math.floor(Math.random()*100000);
   applyState(await ups({phase:"running",current_index:nxt,question_started_at:vis?nowUtc():null,show_answer:false,question_visible:vis,shuffle_seed:seed,game_timer:QT}));
@@ -1705,8 +1729,18 @@ if(_btnSB)_btnSB.addEventListener("click",async()=>{
   applyState(await ups({phase:"scoreboard"}));
 });
 if(_btnContSB)_btnContSB.addEventListener("click",async()=>{
-  // Возвращаем к running с тем же вопросом
-  applyState(await ups({phase:"running",question_started_at:lastState?.question_started_at||null}));
+  if(_preScoreboardNextIdx !== null){
+    // Auto-scoreboard: advance to the pending next question
+    const nxt = _preScoreboardNextIdx;
+    _preScoreboardNextIdx = null;
+    const vis = presenterMode==="online" ? false : true;
+    const seed = Math.floor(Math.random()*100000);
+    applyState(await ups({phase:"running",current_index:nxt,question_started_at:vis?nowUtc():null,show_answer:false,question_visible:vis,shuffle_seed:seed,game_timer:QT}));
+    if(!vis) showRevealQBtn(true); else showRevealQBtn(false);
+  } else {
+    // Manual scoreboard: return to same question
+    applyState(await ups({phase:"running",question_started_at:lastState?.question_started_at||null}));
+  }
 });
 
 // 100 к 1
@@ -3129,6 +3163,19 @@ function applyPresenterMode(){
     QT=20;
     showModeHint("🖥 Очный режим","Таймер 20 сек. Варианты ответа перемешаны у каждого игрока. Откройте projector.html на проекторе.");
   }
+  presSetTimer(QT);
+}
+
+function presSetTimer(t){
+  QT=t;
+  const chip=$("timerChip"); if(chip) chip.textContent=t+" сек";
+  [15,20,25,30,45,60].forEach(v=>{
+    const b=$("timerBtn"+v);
+    if(!b)return;
+    if(v===t){b.style.background="linear-gradient(120deg,#4fdfff,#61ffb2)";b.style.color="#02111f";b.style.borderColor="rgba(79,223,255,.9)";}
+    else{b.style.background="";b.style.color="";b.style.borderColor="";}
+  });
+  if(lastState?.phase==="running") ups({game_timer:t});
 }
 
 function showModeHint(title, text){

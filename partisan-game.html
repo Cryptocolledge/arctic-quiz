@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no">
+<title>ВЕЧНЫЕ МСТИТЕЛИ · 1942</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;user-select:none;-webkit-user-select:none;}
+body{background:#040810;display:flex;justify-content:center;align-items:center;
+  min-height:100vh;overflow:hidden;font-family:'Courier New',monospace;}
+
+#wrap{position:relative;
+  box-shadow:0 0 0 3px #7a3a0a,0 0 0 6px #c8a030,0 0 80px rgba(0,0,0,.9);
+  border-radius:6px;overflow:hidden;}
+canvas#gc{display:block;}
+
+/* ── HUD ──────────────────────────────────────────── */
+#hud{position:absolute;top:10px;left:10px;display:flex;flex-direction:column;
+  gap:6px;pointer-events:none;z-index:10;}
+.bar-wrap{background:rgba(4,10,20,.9);border:1px solid rgba(180,140,40,.25);
+  border-radius:8px;padding:6px 10px;min-width:160px;}
+.bar-lbl{font-size:8px;letter-spacing:.12em;color:rgba(180,140,40,.55);
+  margin-bottom:4px;text-transform:uppercase;}
+.bar-bg{height:7px;background:rgba(255,255,255,.05);border-radius:4px;overflow:hidden;}
+.bar-fg{height:100%;border-radius:4px;transition:width .15s;}
+#hpfg{background:linear-gradient(90deg,#7a0f0f,#e03535);}
+#xpfg{background:linear-gradient(90deg,#8b6b00,#ffd700);}
+#mkfg{background:linear-gradient(90deg,#0f6b2a,#44ee88);}
+
+#lvl{position:absolute;top:10px;right:10px;background:rgba(4,10,20,.9);
+  border:1px solid rgba(180,140,40,.25);border-radius:8px;padding:6px 12px;
+  text-align:center;pointer-events:none;z-index:10;}
+#lvlnum{font-size:24px;font-weight:bold;color:#ffd700;line-height:1;}
+#lvllbl{font-size:7px;color:rgba(180,140,40,.5);letter-spacing:.1em;}
+#weaponLbl{font-size:9px;color:#c8a030;letter-spacing:.08em;margin-top:2px;}
+
+#abs{position:absolute;bottom:50px;left:10px;display:flex;gap:6px;
+  z-index:10;pointer-events:none;}
+.aslot{width:40px;height:40px;background:rgba(4,10,20,.9);
+  border:1px solid rgba(180,140,40,.15);border-radius:8px;
+  display:flex;align-items:center;justify-content:center;font-size:18px;
+  opacity:.22;transition:all .3s;}
+.aslot.on{opacity:1;border-color:rgba(180,140,40,.55);box-shadow:0 0 10px rgba(60,180,80,.3);}
+
+#msg{position:absolute;bottom:96px;right:10px;max-width:230px;
+  background:rgba(4,10,20,.95);border-left:3px solid #b89020;
+  border-radius:0 8px 8px 0;padding:8px 12px;font-size:10px;
+  color:#e8d080;line-height:1.5;pointer-events:none;z-index:10;}
+
+#bossbar{position:absolute;top:70px;left:50%;transform:translateX(-50%);
+  width:320px;background:rgba(4,10,20,.95);border:1px solid rgba(180,40,40,.5);
+  border-radius:10px;padding:8px 12px;display:none;z-index:10;pointer-events:none;}
+#bossbar.on{display:block;}
+#bossnm{text-align:center;font-size:10px;letter-spacing:.12em;color:#ff7777;margin-bottom:5px;}
+.bbg{height:12px;background:rgba(255,255,255,.05);border-radius:6px;overflow:hidden;}
+#bossfg{height:100%;background:linear-gradient(90deg,#800000,#ff4444);
+  border-radius:6px;transition:width .2s;}
+
+#mmwrap{position:absolute;bottom:10px;right:10px;width:150px;height:90px;
+  background:rgba(4,10,20,.9);border:1px solid rgba(180,140,40,.2);
+  border-radius:7px;overflow:hidden;z-index:10;}
+#mm{width:100%;height:100%;}
+
+#hint{position:absolute;bottom:10px;left:10px;font-size:8px;
+  color:rgba(180,140,40,.3);pointer-events:none;z-index:10;line-height:1.8;}
+
+#dlg{position:absolute;bottom:120px;left:50%;transform:translateX(-50%);
+  width:68%;max-width:430px;background:rgba(2,8,18,.97);
+  border:1px solid rgba(180,140,40,.4);border-radius:8px;
+  padding:10px 14px;font-size:11px;color:#e0d090;line-height:1.65;
+  display:none;z-index:12;pointer-events:none;}
+#dlgName{color:#ffd700;font-size:9px;letter-spacing:.12em;margin-bottom:5px;text-transform:uppercase;}
+
+/* ── OVERLAYS ────────────────────────────────────── */
+.ov{position:absolute;inset:0;background:rgba(4,10,20,.97);
+  display:none;flex-direction:column;align-items:center;
+  justify-content:center;z-index:20;backdrop-filter:blur(12px);}
+.ov.on{display:flex;}
+.ovt{font-size:26px;font-weight:bold;color:#c8a030;letter-spacing:.2em;
+  margin-bottom:24px;text-shadow:0 0 20px rgba(200,160,48,.4);}
+.ovb{background:rgba(180,140,40,.08);border:1px solid rgba(180,140,40,.35);
+  color:#e8d080;padding:10px 32px;margin:5px;font-size:13px;
+  font-family:monospace;letter-spacing:.08em;cursor:pointer;
+  border-radius:28px;transition:all .2s;}
+.ovb:hover{background:rgba(180,140,40,.22);border-color:#c8a030;transform:scale(1.04);}
+
+/* ── START SCREEN ────────────────────────────────── */
+#ovStart{background:#040810;padding:0;}
+#startBg{position:absolute;inset:0;width:100%;height:100%;}
+#startContent{position:relative;z-index:2;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;width:100%;height:100%;padding:20px;}
+
+.star-spin{font-size:32px;animation:starSpin 8s linear infinite;
+  filter:drop-shadow(0 0 12px rgba(200,40,40,.8)) drop-shadow(0 0 24px rgba(200,40,40,.4));
+  margin-bottom:14px;}
+@keyframes starSpin{to{transform:rotate(360deg);}}
+
+.start-pre{font-size:9px;color:rgba(210,170,60,.80);letter-spacing:.28em;
+  margin-bottom:10px;animation:fadeUp .8s ease .3s both;}
+.start-title{font-size:clamp(28px,5vw,44px);font-weight:bold;color:#c8a030;
+  letter-spacing:.22em;text-align:center;line-height:1.12;margin-bottom:6px;
+  text-shadow:0 0 30px rgba(200,160,48,.5),0 0 60px rgba(200,160,48,.2);
+  animation:titlePulse 3s ease-in-out infinite,fadeUp .8s ease .5s both;}
+@keyframes titlePulse{0%,100%{text-shadow:0 0 20px rgba(200,160,48,.4),0 0 40px rgba(200,160,48,.2);}
+  50%{text-shadow:0 0 40px rgba(200,160,48,.7),0 0 80px rgba(200,160,48,.35);}}
+.start-sub{color:rgba(200,160,55,.70);font-size:11px;margin-bottom:34px;
+  letter-spacing:.1em;animation:fadeUp .8s ease .7s both;}
+
+.start-btn-wrap{display:flex;flex-direction:column;gap:10px;align-items:center;
+  animation:fadeUp .8s ease .9s both;}
+.start-btn{background:linear-gradient(135deg,rgba(180,140,40,.12),rgba(180,140,40,.06));
+  border:1px solid rgba(180,140,40,.4);color:#e8d080;
+  padding:13px 46px;font-size:15px;font-family:monospace;
+  letter-spacing:.1em;cursor:pointer;border-radius:30px;transition:all .25s;
+  text-shadow:0 0 8px rgba(200,160,48,.3);}
+.start-btn:hover{background:linear-gradient(135deg,rgba(200,160,48,.25),rgba(180,140,40,.15));
+  border-color:#c8a030;transform:scale(1.05);
+  box-shadow:0 0 20px rgba(200,160,48,.25);}
+
+.start-controls{margin-top:22px;font-size:8px;color:rgba(200,160,55,.58);letter-spacing:.08em;}
+@keyframes fadeUp{from{opacity:0;transform:translateY(14px);}to{opacity:1;transform:none;}}
+
+/* ── STORY ───────────────────────────────────────── */
+#ovStory{background:rgba(2,6,14,.98);}
+#storyText{font-size:12px;color:#c8b870;line-height:2.1;min-height:130px;
+  text-align:left;font-family:monospace;white-space:pre-wrap;
+  max-width:500px;border-left:2px solid rgba(180,140,40,.25);padding-left:16px;}
+
+/* ── TRANSITION ──────────────────────────────────── */
+#ovTransition{cursor:pointer;}
+#transTitle{font-size:28px;font-weight:bold;color:#c8a030;letter-spacing:.2em;
+  text-align:center;text-shadow:0 0 30px rgba(200,160,48,.5);
+  animation:transIn .6s ease;}
+#transZone{font-size:10px;color:rgba(180,140,40,.5);letter-spacing:.25em;
+  margin-top:8px;animation:transIn .6s ease .2s both;}
+#transHint{font-size:9px;color:rgba(180,140,40,.2);margin-top:40px;animation:transIn .6s ease .8s both;}
+@keyframes transIn{from{opacity:0;transform:scale(.9);}to{opacity:1;transform:none;}}
+
+/* ── SKILL PICKER ────────────────────────────────── */
+#ovSkill{background:rgba(2,6,14,.98);}
+#skillTitle{color:#ffd700;font-size:14px;letter-spacing:.15em;margin-bottom:24px;}
+#skillCards{display:flex;gap:14px;justify-content:center;flex-wrap:wrap;}
+.skill-card{background:rgba(180,140,40,.06);border:1px solid rgba(180,140,40,.3);
+  color:#e8d080;padding:18px 22px;font-family:monospace;cursor:pointer;
+  border-radius:12px;transition:all .2s;width:160px;text-align:center;}
+.skill-card:hover{background:rgba(180,140,40,.18);border-color:#c8a030;
+  transform:translateY(-4px);box-shadow:0 8px 24px rgba(200,160,48,.2);}
+.sk-icon{font-size:28px;margin-bottom:10px;}
+.sk-name{font-size:11px;font-weight:bold;color:#ffd700;margin-bottom:6px;letter-spacing:.08em;}
+.sk-desc{font-size:9px;color:rgba(180,140,40,.6);line-height:1.5;}
+
+/* ── TOUCH ───────────────────────────────────────── */
+#touch{position:absolute;bottom:0;left:0;right:0;height:110px;
+  display:none;z-index:15;pointer-events:none;}
+.tb{position:absolute;bottom:18px;width:58px;height:58px;
+  background:rgba(180,140,40,.12);border:2px solid rgba(180,140,40,.25);
+  border-radius:50%;display:flex;align-items:center;justify-content:center;
+  font-size:20px;color:rgba(180,140,40,.5);pointer-events:all;
+  -webkit-tap-highlight-color:transparent;touch-action:none;}
+#tb-l{left:12px;}#tb-r{left:80px;}#tb-j{right:80px;}
+#tb-a{right:12px;background:rgba(180,40,40,.15);border-color:rgba(200,50,50,.3);}
+</style>
+</head>
+<body>
+<div id="wrap">
+<canvas id="gc"></canvas>
+
+<!-- ── HUD ── -->
+<div id="hud">
+  <div class="bar-wrap">
+    <div class="bar-lbl">❤ Здоровье</div>
+    <div class="bar-bg"><div class="bar-fg" id="hpfg" style="width:100%"></div></div>
+  </div>
+  <div class="bar-wrap">
+    <div class="bar-lbl">⭐ Опыт</div>
+    <div class="bar-bg"><div class="bar-fg" id="xpfg" style="width:0%"></div></div>
+  </div>
+  <div class="bar-wrap" id="mkbar" style="display:none">
+    <div class="bar-lbl">🎭 Маскировка</div>
+    <div class="bar-bg"><div class="bar-fg" id="mkfg" style="width:100%"></div></div>
+  </div>
+</div>
+<div id="lvl">
+  <div id="lvlnum">1</div>
+  <div id="lvllbl">УРОВЕНЬ</div>
+  <div id="weaponLbl">ШТК</div>
+</div>
+<div id="abs">
+  <div class="aslot" id="ab0">🎭</div>
+  <div class="aslot" id="ab1">🔑</div>
+  <div class="aslot" id="ab2">📡</div>
+  <div class="aslot" id="ab3">💣</div>
+</div>
+<div id="msg">↑ прыжок &nbsp; X атака &nbsp; Q оружие</div>
+<div id="bossbar">
+  <div id="bossnm">КОМАНДИР</div>
+  <div class="bbg"><div id="bossfg" style="width:100%"></div></div>
+</div>
+<div id="mmwrap"><canvas id="mm" width="150" height="90"></canvas></div>
+<div id="hint">← → движение &nbsp;|&nbsp; ↑ прыжок &nbsp;|&nbsp; ↓ присед &nbsp;|&nbsp; ←← перекат &nbsp;|&nbsp; X атака &nbsp;|&nbsp; Q оружие &nbsp;|&nbsp; ESC пауза</div>
+<div id="dlg"><div id="dlgName"></div><div id="dlgText"></div></div>
+
+<!-- ── START SCREEN ── -->
+<div class="ov on" id="ovStart">
+  <canvas id="startBg"></canvas>
+  <div id="startContent">
+    <div class="star-spin">★</div>
+    <div class="start-pre">ПАРТИЗАНСКАЯ ИГРА · 1942 · БЕЛАРУСЬ</div>
+    <div class="start-title">ВЕЧНЫЕ<br>МСТИТЕЛИ</div>
+    <div class="start-sub">Наследие героев</div>
+    <div class="start-btn-wrap">
+      <button class="start-btn" id="btnStart">▶ &nbsp;НАЧАТЬ ИГРУ</button>
+      <button class="start-btn" id="btnLoadStart" style="font-size:12px;padding:10px 32px;opacity:.7">📂 &nbsp;Загрузить</button>
+    </div>
+    <div class="start-controls">← → движение &nbsp;|&nbsp; ↑ прыжок &nbsp;|&nbsp; ↓ присед &nbsp;|&nbsp; X атака &nbsp;|&nbsp; Q оружие &nbsp;|&nbsp; ←← / →→ перекат</div>
+  </div>
+</div>
+
+<!-- ── STORY ── -->
+<div class="ov" id="ovStory">
+  <div style="max-width:560px;text-align:center;padding:10px 24px">
+    <div style="font-size:9px;color:rgba(180,140,40,.42);letter-spacing:.28em;margin-bottom:20px">ЛЕТО · 1942 · БЕЛАРУСЬ</div>
+    <div id="storyText"></div>
+    <button class="ovb" id="btnPlay" style="margin-top:24px;font-size:14px;padding:12px 42px;display:none">⚔ &nbsp;В БОЙ, ПАРТИЗАН!</button>
+  </div>
+</div>
+
+<!-- ── LEVEL TRANSITION ── -->
+<div class="ov" id="ovTransition">
+  <div id="transTitle"></div>
+  <div id="transZone"></div>
+  <div id="transHint">Нажми для продолжения</div>
+</div>
+
+<!-- ── SKILL PICKER ── -->
+<div class="ov" id="ovSkill">
+  <div id="skillTitle">⭐ НОВЫЙ УРОВЕНЬ — ВЫБЕРИ НАВЫК</div>
+  <div id="skillCards"></div>
+</div>
+
+<!-- ── PAUSE ── -->
+<div class="ov" id="ovPause">
+  <div class="ovt">⚔ ПАУЗА ⚔</div>
+  <button class="ovb" id="btnResume">▶ Продолжить</button>
+  <button class="ovb" id="btnSave">💾 Сохранить</button>
+  <button class="ovb" id="btnLoad">📂 Загрузить</button>
+  <button class="ovb" id="btnRestart">↺ Начать заново</button>
+</div>
+
+<!-- ── DEATH ── -->
+<div class="ov" id="ovDeath">
+  <div style="font-size:44px;margin-bottom:14px">☠</div>
+  <div class="ovt" style="color:#cc3030">ГЕРОЙ ПАЛ</div>
+  <div style="color:rgba(180,140,40,.5);font-size:11px;margin-bottom:22px;font-family:monospace">Но дело партизан живёт вечно!</div>
+  <button class="ovb" id="btnRespawn">↺ Возродиться</button>
+</div>
+
+<!-- ── TOUCH CONTROLS ── -->
+<div id="touch">
+  <div class="tb" id="tb-l">◀</div>
+  <div class="tb" id="tb-r">▶</div>
+  <div class="tb" id="tb-j">↑</div>
+  <div class="tb" id="tb-a" style="font-size:15px">⚔</div>
+</div>
+</div>
+
+<!-- ── MODULES (порядок важен) ── -->
+<script src="js/engine.js"></script>
+<script src="js/world.js"></script>
+<script src="js/levels.js"></script>
+<script src="js/entities.js"></script>
+<script src="js/renderer.js"></script>
+<script src="js/ui.js"></script>
+<script src="js/game.js"></script>
+</body>
+</html>

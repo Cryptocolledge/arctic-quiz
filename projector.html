@@ -7,32 +7,78 @@
 <style>
 :root{--bg:#020a1a;--accent:#4fdfff;--ok:#61ffb2;--gold:#ffd36b;--text:#f7fbff;--muted:#7a9fc0;}
 *{box-sizing:border-box;margin:0;padding:0}
-html,body{width:100%;height:100%;background:var(--bg);overflow:hidden;}
-body{font-family:"Segoe UI",system-ui,sans-serif;color:var(--text);display:flex;flex-direction:column;height:100vh;}
+html,body{width:100%;height:100%;overflow:hidden;}
+body{
+  font-family:"Segoe UI",system-ui,sans-serif;color:var(--text);display:flex;flex-direction:column;height:100vh;
+  background:
+    radial-gradient(ellipse 120% 80% at 50% -10%,rgba(10,30,70,.7),transparent),
+    radial-gradient(ellipse 60% 40% at 85% 80%,rgba(5,20,50,.6),transparent),
+    radial-gradient(ellipse 50% 40% at 15% 70%,rgba(4,15,40,.5),transparent),
+    #020a1a;
+}
 
 /* ТОП-BAR */
-.topbar{display:flex;align-items:center;justify-content:space-between;padding:12px 28px;background:rgba(5,14,34,.95);border-bottom:1px solid rgba(79,223,255,.15);flex-shrink:0;cursor:grab;user-select:none;position:relative;z-index:51;}
+@keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
+@keyframes dragPulse{0%,100%{opacity:.7;transform:scale(1)}50%{opacity:1;transform:scale(1.05)}}
+@keyframes scanline{0%{transform:translateX(-100%)}100%{transform:translateX(100vw)}}
+.topbar{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:0 28px;height:70px;
+  background:linear-gradient(90deg,rgba(2,8,22,1) 0%,rgba(5,14,38,.99) 30%,rgba(8,20,52,.98) 50%,rgba(5,14,38,.99) 70%,rgba(2,8,22,1) 100%);
+  border-bottom:2px solid rgba(79,223,255,.35);
+  box-shadow:0 2px 32px rgba(0,0,0,.7),0 0 0 1px rgba(79,223,255,.08),0 4px 60px rgba(79,223,255,.06);
+  flex-shrink:0;cursor:grab;user-select:none;position:relative;z-index:51;overflow:hidden;
+}
+.topbar::before{
+  content:'';position:absolute;inset:0;
+  background:linear-gradient(90deg,transparent 0%,rgba(79,223,255,.06) 20%,rgba(97,255,178,.05) 50%,rgba(79,223,255,.06) 80%,transparent 100%);
+  background-size:200% 100%;animation:shimmer 6s linear infinite;pointer-events:none;
+}
+.topbar::after{
+  content:'';position:absolute;bottom:0;left:0;right:0;height:2px;
+  background:linear-gradient(90deg,transparent,rgba(79,223,255,.6),rgba(97,255,178,.5),rgba(79,223,255,.6),transparent);
+  filter:blur(1px);
+}
 .topbar:active{cursor:grabbing;}
-.topbar-drag-hint{font-size:.55rem;color:rgba(79,223,255,.3);letter-spacing:.08em;margin-left:8px;pointer-events:none;}
-.topbar-left{display:flex;align-items:center;gap:12px;}
-.logo{font-size:1.1rem;font-weight:900;letter-spacing:.07em;text-transform:uppercase;background:linear-gradient(90deg,#4fdfff,#61ffb2);-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
-.qcounter{font-size:.85rem;color:var(--muted);padding:3px 10px;border-radius:999px;background:rgba(79,223,255,.08);border:1px solid rgba(79,223,255,.2);}
-.topbar-right{display:flex;align-items:center;gap:16px;}
+.topbar:hover{border-bottom-color:rgba(79,223,255,.6);box-shadow:0 2px 40px rgba(0,0,0,.8),0 0 0 1px rgba(79,223,255,.15),0 4px 80px rgba(79,223,255,.1);}
+.topbar-drag-hint{
+  font-size:.68rem;font-weight:700;color:rgba(79,223,255,.9);letter-spacing:.15em;margin-left:4px;
+  pointer-events:none;padding:5px 12px;border-radius:999px;
+  background:linear-gradient(135deg,rgba(79,223,255,.15),rgba(97,255,178,.1));
+  border:1px solid rgba(79,223,255,.45);
+  box-shadow:0 0 12px rgba(79,223,255,.2);
+  animation:dragPulse 2s ease-in-out infinite;
+}
+.topbar-left{display:flex;align-items:center;gap:14px;}
+.logo{
+  font-size:1.15rem;font-weight:900;letter-spacing:.1em;text-transform:uppercase;
+  background:linear-gradient(90deg,#4fdfff 0%,#a8ffea 40%,#61ffb2 70%,#4fdfff 100%);
+  background-size:200% 100%;-webkit-background-clip:text;-webkit-text-fill-color:transparent;
+  animation:shimmer 4s linear infinite;
+  filter:drop-shadow(0 0 12px rgba(79,223,255,.5));
+}
+.qcounter{
+  font-size:.82rem;color:var(--muted);padding:4px 12px;border-radius:999px;
+  background:rgba(79,223,255,.08);border:1px solid rgba(79,223,255,.22);
+  font-weight:600;letter-spacing:.03em;
+}
+.topbar-right{display:flex;align-items:center;gap:14px;}
 
 /* ПРОГРЕСС */
-.progress-bar{height:3px;background:rgba(255,255,255,.06);flex-shrink:0;}
-.progress-fill{height:100%;background:linear-gradient(90deg,#4fdfff,#61ffb2);transition:width .4s;}
+.progress-bar{height:5px;background:rgba(255,255,255,.06);flex-shrink:0;}
+.progress-fill{height:100%;background:linear-gradient(90deg,#4fdfff,#61ffb2,#4fdfff);background-size:200% 100%;animation:shimmer 3s linear infinite;transition:width .5s ease;box-shadow:0 0 8px rgba(79,223,255,.4);}
 
 /* ОСНОВНАЯ ОБЛАСТЬ */
-.main{flex:1;display:flex;align-items:center;justify-content:center;padding:32px 5vw;overflow:hidden;}
-.question-block{width:100%;max-width:1100px;display:flex;flex-direction:column;gap:28px;}
+.main{flex:1;display:flex;align-items:center;justify-content:center;padding:28px 5vw;overflow:hidden;position:relative;}
+.main::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 80% 60% at 50% 30%,rgba(79,223,255,.04),transparent);pointer-events:none;}
+.question-block{width:100%;max-width:1160px;display:flex;flex-direction:column;gap:28px;}
 
 /* ВОПРОС */
 .q-meta{display:flex;gap:8px;align-items:center;flex-wrap:wrap;}
-.q-chip{padding:4px 12px;border-radius:999px;font-size:.85rem;background:rgba(4,14,38,.9);border:1px solid rgba(79,223,255,.6);color:#cff6ff;}
-.q-pts{padding:4px 12px;border-radius:999px;font-size:.85rem;font-weight:700;background:rgba(255,211,107,.1);border:1px solid rgba(255,211,107,.4);color:var(--gold);}
-.q-diff{padding:4px 10px;border-radius:999px;font-size:.85rem;border:1px solid rgba(255,255,255,.15);color:var(--muted);}
-.q-text{font-size:clamp(1.6rem,3.5vw,3rem);line-height:1.25;font-weight:800;color:#f0f8ff;}
+.q-chip{padding:5px 14px;border-radius:999px;font-size:.88rem;font-weight:700;background:rgba(4,14,38,.95);border:1px solid rgba(79,223,255,.7);color:#cff6ff;box-shadow:0 0 10px rgba(79,223,255,.15);}
+.q-pts{padding:5px 14px;border-radius:999px;font-size:.88rem;font-weight:800;background:rgba(255,211,107,.12);border:1px solid rgba(255,211,107,.5);color:var(--gold);box-shadow:0 0 10px rgba(255,211,107,.15);}
+.q-diff{padding:5px 12px;border-radius:999px;font-size:.88rem;border:1px solid rgba(255,255,255,.18);color:var(--muted);}
+.q-text{font-size:clamp(1.7rem,3.8vw,3.2rem);line-height:1.25;font-weight:800;color:#f0f8ff;text-shadow:0 2px 30px rgba(79,223,255,.12);}
 
 /* ИЛЛЮСТРАЦИЯ */
 .q-illus{display:flex;flex-direction:column;align-items:center;gap:8px;}
@@ -47,18 +93,23 @@ body{font-family:"Segoe UI",system-ui,sans-serif;color:var(--text);display:flex;
 .r-hint{font-size:.8rem;color:var(--muted);margin-top:4px;text-align:center;}
 
 /* ОТВЕТЫ — показываются только после раскрытия */
-.opts-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
-.opt-row{display:flex;align-items:center;gap:12px;padding:14px 18px;border-radius:14px;background:rgba(8,18,40,.8);border:2px solid rgba(255,255,255,.08);font-size:clamp(.9rem,1.8vw,1.4rem);transition:all .3s;}
-.opt-row.correct{border-color:var(--ok);background:rgba(97,255,178,.12);color:var(--ok);}
-.opt-letter{width:32px;height:32px;border-radius:8px;border:2px solid rgba(79,223,255,.4);display:flex;align-items:center;justify-content:center;font-size:.95rem;color:var(--accent);flex-shrink:0;font-weight:800;}
-.opt-row.correct .opt-letter{border-color:var(--ok);color:var(--ok);}
+.opts-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+@keyframes optReveal{from{opacity:0;transform:translateY(14px) scale(.97)}to{opacity:1;transform:none}}
+.opt-row{display:flex;align-items:center;gap:14px;padding:16px 22px;border-radius:16px;background:rgba(5,14,36,.85);border:2px solid rgba(255,255,255,.1);font-size:clamp(.95rem,1.9vw,1.5rem);font-weight:600;transition:all .35s;animation:optReveal .4s ease both;backdrop-filter:blur(6px);}
+.opt-row:nth-child(1){animation-delay:0ms}
+.opt-row:nth-child(2){animation-delay:60ms}
+.opt-row:nth-child(3){animation-delay:120ms}
+.opt-row:nth-child(4){animation-delay:180ms}
+.opt-row.correct{border-color:var(--ok);background:rgba(97,255,178,.14);color:var(--ok);box-shadow:0 0 30px rgba(97,255,178,.18),inset 0 0 20px rgba(97,255,178,.06);}
+.opt-letter{width:36px;height:36px;border-radius:10px;border:2px solid rgba(79,223,255,.45);display:flex;align-items:center;justify-content:center;font-size:1rem;color:var(--accent);flex-shrink:0;font-weight:900;background:rgba(79,223,255,.06);}
+.opt-row.correct .opt-letter{border-color:var(--ok);color:var(--ok);background:rgba(97,255,178,.18);box-shadow:0 0 14px rgba(97,255,178,.4);}
 
 /* ТАЙМЕР */
-.timer-section{display:flex;align-items:center;gap:16px;}
-.timer-num{font-size:clamp(2rem,5vw,4.5rem);font-weight:900;min-width:80px;text-align:center;font-variant-numeric:tabular-nums;color:var(--gold);line-height:1;}
-.timer-bar-wrap{flex:1;height:14px;background:rgba(255,255,255,.06);border-radius:999px;overflow:hidden;}
-.timer-bar{height:100%;border-radius:inherit;transition:width .3s linear;}
-.timer-lbl{font-size:.8rem;color:var(--muted);white-space:nowrap;}
+.timer-section{display:flex;align-items:center;gap:16px;padding:14px 20px;background:rgba(4,10,28,.6);border-radius:16px;border:1px solid rgba(79,223,255,.1);}
+.timer-num{font-size:clamp(2.4rem,6vw,5rem);font-weight:900;min-width:90px;text-align:center;font-variant-numeric:tabular-nums;color:var(--gold);line-height:1;text-shadow:0 0 30px rgba(255,211,107,.4);transition:color .3s;}
+.timer-bar-wrap{flex:1;height:16px;background:rgba(255,255,255,.06);border-radius:999px;overflow:hidden;box-shadow:inset 0 1px 3px rgba(0,0,0,.4);}
+.timer-bar{height:100%;border-radius:inherit;transition:width .3s linear;box-shadow:0 0 10px rgba(79,223,255,.3);}
+.timer-lbl{font-size:.82rem;color:var(--muted);white-space:nowrap;letter-spacing:.05em;text-transform:uppercase;}
 
 /* СТАТУС overlay */
 .status-ov{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(2,6,20,.96);z-index:50;flex-direction:column;gap:20px;text-align:center;}
@@ -67,9 +118,9 @@ body{font-family:"Segoe UI",system-ui,sans-serif;color:var(--text);display:flex;
 .status-sub{font-size:1rem;color:var(--muted);max-width:400px;line-height:1.6;}
 
 /* REVEAL баннер */
-.reveal-banner{position:fixed;bottom:0;left:0;right:0;padding:16px 28px;text-align:center;font-size:1.1rem;font-weight:800;transform:translateY(100%);transition:transform .4s;}
+.reveal-banner{position:fixed;bottom:0;left:0;right:0;padding:18px 32px;text-align:center;font-size:1.2rem;font-weight:800;transform:translateY(100%);transition:transform .45s cubic-bezier(.34,1.56,.64,1);backdrop-filter:blur(12px);letter-spacing:.02em;}
 .reveal-banner.show{transform:translateY(0);}
-.reveal-banner.open{background:rgba(97,255,178,.15);border-top:2px solid rgba(97,255,178,.5);color:var(--ok);}
+.reveal-banner.open{background:rgba(97,255,178,.14);border-top:2px solid rgba(97,255,178,.6);color:var(--ok);box-shadow:0 -4px 40px rgba(97,255,178,.15);}
 
 /* Статистика ответивших */
 .answered-bar{display:flex;align-items:center;gap:10px;padding:8px 14px;background:rgba(8,18,40,.8);border-radius:999px;border:1px solid rgba(79,223,255,.2);}
@@ -81,8 +132,54 @@ body{font-family:"Segoe UI",system-ui,sans-serif;color:var(--text);display:flex;
 .leader-chip{padding:4px 12px;border-radius:999px;background:rgba(255,211,107,.1);border:1px solid rgba(255,211,107,.3);font-size:.82rem;color:var(--gold);}
 
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}
-@keyframes fadeIn{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
-.fade-in{animation:fadeIn .5s ease forwards;}
+@keyframes fadeIn{from{opacity:0;transform:translateY(18px) scale(.98)}to{opacity:1;transform:translateY(0) scale(1)}}
+.fade-in{animation:fadeIn .55s cubic-bezier(.22,1,.36,1) forwards;}
+@keyframes qEntrance{from{opacity:0;transform:translateY(24px) scale(.96)}to{opacity:1;transform:none}}
+.q-entrance{animation:qEntrance .6s cubic-bezier(.22,1,.36,1) both;}
+
+/* ── СТАТУС ОВЕРЛЕЙ — АВРОРА ── */
+.status-ov{background:radial-gradient(ellipse at 50% 110%,rgba(12,30,60,.98) 0%,rgba(2,6,20,.98) 70%);}
+@keyframes aurora1{0%,100%{transform:translateX(0) scaleX(1) skewX(0deg);opacity:.6}50%{transform:translateX(4%) scaleX(1.04) skewX(2deg);opacity:.9}}
+@keyframes aurora2{0%,100%{transform:translateX(0) scaleX(1) skewX(0deg);opacity:.4}50%{transform:translateX(-3%) scaleX(1.03) skewX(-1.5deg);opacity:.7}}
+@keyframes aurora3{0%,100%{transform:translateX(0) scaleX(1);opacity:.3}50%{transform:translateX(2%) scaleX(1.05);opacity:.55}}
+.aurora-layer{position:absolute;inset:0;pointer-events:none;overflow:hidden;}
+.aurora-layer svg{position:absolute;top:0;left:0;width:100%;height:100%;}
+.aurora-band1{animation:aurora1 7s ease-in-out infinite;}
+.aurora-band2{animation:aurora2 9s ease-in-out infinite;}
+.aurora-band3{animation:aurora3 11s ease-in-out infinite;}
+.aurora-stars{position:absolute;inset:0;pointer-events:none;}
+
+/* СТАТУС КОНТЕНТ */
+.status-ov{position:relative;}
+.status-content{position:relative;z-index:2;display:flex;flex-direction:column;align-items:center;gap:20px;text-align:center;}
+.status-icon{font-size:5rem;filter:drop-shadow(0 0 24px rgba(79,223,255,.6));}
+.status-title{font-size:clamp(1.5rem,4vw,3rem);font-weight:900;background:linear-gradient(135deg,#4fdfff,#61ffb2);-webkit-background-clip:text;-webkit-text-fill-color:transparent;filter:drop-shadow(0 0 16px rgba(79,223,255,.3));}
+
+/* ВОПРОС — УЛУЧШЕННЫЙ */
+.question-block{background:rgba(3,10,26,.7);border:1px solid rgba(79,223,255,.15);border-radius:22px;padding:34px 40px;backdrop-filter:blur(12px);box-shadow:0 8px 40px rgba(0,0,0,.5),0 0 0 1px rgba(79,223,255,.06),inset 0 1px 0 rgba(79,223,255,.08);}
+.q-text{font-size:clamp(1.7rem,3.8vw,3.2rem);line-height:1.25;font-weight:800;color:#f0f8ff;text-shadow:0 2px 30px rgba(79,223,255,.12);}
+
+/* ВАРИАНТЫ — УЛУЧШЕННЫЕ */
+.opt-row{transition:all .35s cubic-bezier(.4,0,.2,1);}
+.opt-row.correct{border-color:var(--ok);background:rgba(97,255,178,.14);box-shadow:0 0 24px rgba(97,255,178,.2),inset 0 0 12px rgba(97,255,178,.05);}
+.opt-row.correct .opt-letter{border-color:var(--ok);color:var(--ok);background:rgba(97,255,178,.15);box-shadow:0 0 12px rgba(97,255,178,.4);}
+
+/* ТАЙМЕР — ПУЛЬС НА ОСТАТКЕ */
+@keyframes timerPulse{0%,100%{transform:scale(1)}50%{transform:scale(1.06)}}
+.timer-num.urgent{animation:timerPulse .5s ease-in-out infinite;color:#ff5f7a!important;}
+.timer-num.warn{color:#ffe080!important;}
+
+/* ПРОМЕЖУТОЧНЫЙ СКОРБОРД */
+#scoreboardOv{position:fixed;inset:0;z-index:80;display:none;flex-direction:column;align-items:center;justify-content:center;background:linear-gradient(160deg,#030b1e 0%,#060418 50%,#040810 100%);padding:40px;}
+.sb-title{font-size:clamp(1.4rem,3vw,2.4rem);font-weight:900;letter-spacing:.08em;text-transform:uppercase;background:linear-gradient(90deg,#ffd36b,#ffb300);-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:8px;text-align:center;}
+.sb-sub{font-size:.85rem;color:rgba(255,211,107,.45);margin-bottom:28px;text-align:center;}
+.sb-list{width:min(700px,90%);display:flex;flex-direction:column;gap:10px;max-height:70vh;overflow:hidden;}
+.sb-row{display:flex;align-items:center;gap:16px;padding:12px 20px;border-radius:14px;border:1px solid rgba(255,255,255,.07);background:rgba(255,255,255,.03);animation:sbIn .4s ease both;}
+@keyframes sbIn{from{opacity:0;transform:translateX(-24px)}to{opacity:1;transform:none}}
+.sb-rank{font-size:1.6rem;min-width:44px;text-align:center;}
+.sb-name{flex:1;font-size:clamp(1rem,2vw,1.4rem);font-weight:750;}
+.sb-team{font-size:.75rem;color:var(--muted);margin-top:2px;}
+.sb-score{font-size:clamp(1.2rem,2.5vw,1.8rem);font-weight:900;color:#4fdfff;min-width:70px;text-align:right;}
 
 /* ── АДАПТИВНОСТЬ ПРОЕКТОРА ── */
 @media(max-width:900px){
@@ -101,42 +198,71 @@ body{font-family:"Segoe UI",system-ui,sans-serif;color:var(--text);display:flex;
 </head>
 <body>
 
-<div class="topbar" id="projTopbar">
+<div class="topbar" id="projTopbar" title="Зажми и потяни — переместить окно на другой экран">
   <div class="topbar-left">
     <div class="logo" id="projTitle">🧊 Арктический квиз</div>
-    <span class="topbar-drag-hint">✥ тащи</span>
-    <div class="qcounter" id="projChip" style="font-size:.65rem;padding:2px 8px;border-radius:999px;background:rgba(79,223,255,.1);border:1px solid rgba(79,223,255,.25);color:#9fd8f0;letter-spacing:.07em;">АРКТИКА · ГЕОГРАФИЯ</div>
-    <div class="qcounter" id="qcounter">Вопрос —</div>
-    <div class="progress-bar" style="width:120px;border-radius:999px;overflow:hidden;align-self:center">
+    <span class="topbar-drag-hint" title="Зажми и тяни для перемещения окна">⠿ ТАЩИ СЮДА</span>
+    <div style="width:1px;height:28px;background:rgba(79,223,255,.2);flex-shrink:0;margin:0 4px;"></div>
+    <div class="qcounter" id="projChip" style="font-size:.65rem;padding:4px 10px;background:rgba(79,223,255,.1);border:1px solid rgba(79,223,255,.28);color:#9fd8f0;letter-spacing:.08em;text-transform:uppercase;">АРКТИКА · ГЕОГРАФИЯ</div>
+    <div class="qcounter" id="qcounter" style="font-size:.92rem;font-weight:800;color:#e8f4ff;border-color:rgba(79,223,255,.35);">Вопрос —</div>
+    <div class="progress-bar" style="width:160px;border-radius:999px;overflow:hidden;align-self:center;border:1px solid rgba(79,223,255,.12);">
       <div class="progress-fill" id="progFill" style="width:0%"></div>
     </div>
   </div>
   <div class="topbar-right">
-    <!-- Код игры для участников -->
-    <div id="projCodeBlock" style="display:none;align-items:center;gap:8px;background:rgba(79,223,255,.08);border:1px solid rgba(79,223,255,.25);border-radius:10px;padding:6px 14px;margin-right:8px;">
-      <span style="font-size:.62rem;color:rgba(79,223,255,.6);text-transform:uppercase;letter-spacing:.1em;">Код игры</span>
-      <span id="projCodeNum" style="font-size:1.6rem;font-weight:900;color:#4fdfff;letter-spacing:.15em;font-variant-numeric:tabular-nums;">—</span>
+    <!-- Код игры -->
+    <div id="projCodeBlock" style="display:none;align-items:center;gap:8px;background:linear-gradient(135deg,rgba(79,223,255,.15),rgba(107,122,255,.1));border:1px solid rgba(79,223,255,.45);border-radius:14px;padding:7px 18px;margin-right:4px;cursor:pointer;box-shadow:0 0 16px rgba(79,223,255,.1);" title="Код для участников">
+      <span style="font-size:.6rem;color:rgba(79,223,255,.7);text-transform:uppercase;letter-spacing:.14em;">Код игры</span>
+      <span id="projCodeNum" style="font-size:1.8rem;font-weight:900;color:#4fdfff;letter-spacing:.2em;font-variant-numeric:tabular-nums;text-shadow:0 0 16px rgba(79,223,255,.6);">—</span>
     </div>
     <div class="answered-bar" id="answeredBar" style="display:none">
-      <span style="font-size:.75rem;color:var(--muted)">Ответили</span>
+      <span style="font-size:.72rem;color:var(--muted)">Ответили</span>
       <span class="answered-num" id="answeredNum">0/0</span>
       <div class="answered-bar-track"><div class="answered-bar-fill" id="answeredFill" style="width:0%"></div></div>
     </div>
     <div class="leader-chip" id="leaderChip" style="display:none">🏆 <span id="leaderName">—</span></div>
-    <div style="font-size:.75rem;color:var(--muted)">ПРОЕКТОР</div>
+    <div style="font-size:.65rem;font-weight:700;color:rgba(79,223,255,.8);letter-spacing:.15em;text-transform:uppercase;padding:5px 12px;border:1px solid rgba(79,223,255,.3);border-radius:8px;background:rgba(79,223,255,.07);box-shadow:0 0 10px rgba(79,223,255,.08);">📽 ПРОЕКТОР</div>
   </div>
 </div>
 
 <!-- STATUS OVERLAY -->
 <div class="status-ov" id="statusOv">
-  <div class="status-icon" id="statusIcon">🧊</div>
-  <div class="status-title" id="statusTitle">Арктический квиз</div>
-  <div class="status-sub" id="statusSub">Ожидаем начала игры…</div>
-  <div id="statusOnline" style="font-size:.85rem;color:var(--ok);margin-top:4px"></div>
-  <div id="statusCodeBlock" style="display:none;margin-top:28px;text-align:center;">
-    <div style="font-size:.7rem;color:rgba(79,223,255,.6);text-transform:uppercase;letter-spacing:.15em;margin-bottom:8px;">Код игры для участников</div>
-    <div id="statusCodeNum" style="font-size:4rem;font-weight:900;color:#4fdfff;letter-spacing:.2em;font-variant-numeric:tabular-nums;text-shadow:0 0 30px rgba(79,223,255,.5);">—</div>
-    <div style="font-size:.75rem;color:var(--muted);margin-top:8px;">Введите на hub.html</div>
+  <!-- Aurora animated background -->
+  <div class="aurora-layer" aria-hidden="true">
+    <svg viewBox="0 0 1200 600" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+      <!-- band 1 — teal -->
+      <g class="aurora-band1">
+        <path d="M-100 300 Q200 100 600 250 Q900 380 1300 200 L1300 340 Q900 520 600 390 Q200 240 -100 440 Z" fill="rgba(79,223,255,.13)"/>
+      </g>
+      <!-- band 2 — green -->
+      <g class="aurora-band2">
+        <path d="M-100 360 Q300 160 700 320 Q1000 440 1300 260 L1300 400 Q1000 580 700 460 Q300 300 -100 500 Z" fill="rgba(97,255,178,.09)"/>
+      </g>
+      <!-- band 3 — purple -->
+      <g class="aurora-band3">
+        <path d="M-100 420 Q250 220 650 370 Q950 490 1300 320 L1300 450 Q950 620 650 500 Q250 360 -100 560 Z" fill="rgba(167,139,250,.07)"/>
+      </g>
+      <!-- stars -->
+      <g fill="white">
+        <circle cx="80" cy="60" r="1.2" opacity=".8"/><circle cx="230" cy="30" r=".8" opacity=".6"/>
+        <circle cx="400" cy="80" r="1" opacity=".7"/><circle cx="580" cy="45" r="1.4" opacity=".9"/>
+        <circle cx="750" cy="70" r=".9" opacity=".6"/><circle cx="920" cy="35" r="1.1" opacity=".8"/>
+        <circle cx="1060" cy="90" r=".8" opacity=".5"/><circle cx="1150" cy="50" r="1.3" opacity=".7"/>
+        <circle cx="160" cy="140" r=".7" opacity=".5"/><circle cx="490" cy="160" r="1" opacity=".6"/>
+        <circle cx="820" cy="130" r=".8" opacity=".7"/><circle cx="1080" cy="155" r="1.1" opacity=".5"/>
+      </g>
+    </svg>
+  </div>
+  <div class="status-content">
+    <div class="status-icon" id="statusIcon">🧊</div>
+    <div class="status-title" id="statusTitle">Арктический квиз</div>
+    <div class="status-sub" id="statusSub">Ожидаем начала игры…</div>
+    <div id="statusOnline" style="font-size:.85rem;color:var(--ok);margin-top:4px"></div>
+    <div id="statusCodeBlock" style="display:none;margin-top:28px;text-align:center;">
+      <div style="font-size:.7rem;color:rgba(79,223,255,.6);text-transform:uppercase;letter-spacing:.15em;margin-bottom:8px;">Код игры для участников</div>
+      <div id="statusCodeNum" style="font-size:4rem;font-weight:900;color:#4fdfff;letter-spacing:.2em;font-variant-numeric:tabular-nums;text-shadow:0 0 30px rgba(79,223,255,.5);">—</div>
+      <div style="font-size:.75rem;color:var(--muted);margin-top:8px;">Введите на hub.html</div>
+    </div>
   </div>
 </div>
 
@@ -696,7 +822,9 @@ function startTimer(at){
   const qt=lastState?.game_timer||QT;
   function tick(){
     const left=Math.max(0,Math.ceil(qt-(Date.now()-ms)/1000));
-    $("timerNum").textContent=String(left);
+    const tn=$("timerNum");
+    tn.textContent=String(left);
+    tn.className='timer-num'+(left<=5?' urgent':left<=10?' warn':'');
     $("timerBar").style.width=Math.max(0,left/qt*100)+"%";
     const bar=$("timerBar");
     if(left<=5){bar.style.background="linear-gradient(90deg,#ff5f7a,#c0392b)";}
@@ -717,6 +845,8 @@ function renderQ(s){
   const mainArea=$("mainArea");
   mainArea.style.display="flex";
   $("statusOv").style.display="none";
+  // Запускаем анимацию входа при каждом новом вопросе
+  const qb=$("qBlock");if(qb){qb.classList.remove("q-entrance");void qb.offsetWidth;qb.classList.add("q-entrance");}
 
   // Meta
   const p=pts(q.dif);
@@ -779,6 +909,34 @@ function renderQ(s){
   else{rb.className="reveal-banner";}
 }
 
+// ── СКОРБОРД ПРОЕКТОРА ────────────────────────────────────────
+let _projScoreboardShown=false;
+
+async function showProjScoreboard(){
+  const ov=$("scoreboardOv");const list=$("sbList");
+  ov.style.display="flex";
+  $("mainArea").style.display="none";$("statusOv").style.display="none";
+  if(!sb||!GID){list.innerHTML='<div style="text-align:center;color:rgba(255,255,255,.3);padding:30px;">Нет данных</div>';return;}
+  try{
+    const{data}=await sb.from("quiz_scores").select("student_name,team_name,score").eq("game_id",GID).order("score",{ascending:false}).limit(10);
+    if(!data||!data.length){list.innerHTML='<div style="text-align:center;color:rgba(255,255,255,.3);padding:30px;">Данные ещё не загружены</div>';return;}
+    const medals=['🥇','🥈','🥉'];
+    list.innerHTML=data.map((p,i)=>{
+      const rank=i<3?`<span class="sb-rank">${medals[i]}</span>`:`<span class="sb-rank" style="font-size:1rem;color:rgba(255,255,255,.35)">#${i+1}</span>`;
+      const sc=p.score>=0?`+${p.score}`:String(p.score);
+      const col=p.score>0?'#4fdfff':p.score<0?'#ff5f7a':'rgba(255,255,255,.5)';
+      return `<div class="sb-row" style="animation-delay:${i*80}ms">
+        ${rank}
+        <div style="flex:1"><div class="sb-name">${p.student_name}</div>${p.team_name?`<div class="sb-team">${p.team_name}</div>`:''}</div>
+        <div class="sb-score" style="color:${col}">${sc}</div>
+      </div>`;
+    }).join('');
+    const sub=$("sbSub");if(sub)sub.textContent=`${data.length} участников · Лидер: ${data[0].student_name}`;
+  }catch(e){list.innerHTML='<div style="text-align:center;color:rgba(255,95,122,.4);padding:30px;">Ошибка загрузки</div>';}
+}
+
+function hideProjScoreboard(){$("scoreboardOv").style.display="none";}
+
 // ── APPLY STATE ───────────────────────────────────────────────
 let lastShow=false;
 let lastSurveyPhase="";
@@ -823,8 +981,13 @@ function applyState(s){
   const show=s.show_answer===true;
   const rt=s.round_type||"";
 
-  if(phase==="waiting"){showStatusScreen("⏳","Ожидание","Ждём старта игры…");stopTimer();return;}
-  if(phase==="ended"){showStatusScreen("🏆","Игра завершена","Благодарим за участие!");stopTimer();return;}
+  if(phase==="waiting"){hideProjScoreboard();showStatusScreen("⏳","Ожидание","Ждём старта игры…");stopTimer();return;}
+  if(phase==="ended"){hideProjScoreboard();showStatusScreen("🏆","Игра завершена","Благодарим за участие!");stopTimer();return;}
+  if(phase==="scoreboard"){
+    if(!_projScoreboardShown){_projScoreboardShown=true;showProjScoreboard();}
+    stopTimer();return;
+  }
+  if(_projScoreboardShown){_projScoreboardShown=false;hideProjScoreboard();}
   // 100 к 1 survey phases
   if(phase.startsWith("survey_")){
     if(phase!==lastSurveyPhase||idx!==lastIdx){lastIdx=idx;lastShow=show;lastSurveyPhase=phase;renderQ(s);}
@@ -930,38 +1093,39 @@ init();
 
 // ════ DRAGGABLE WINDOW ════
 (function(){
-  // Проектор работает в попапе — делаем topbar ручкой для перетаскивания окна
   const bar = document.getElementById('projTopbar');
   if(!bar) return;
-  
+
   let isDragging = false;
   let startX, startY, winStartX, winStartY;
+  let pendingX, pendingY, rafId = null;
+
+  function applyMove(){
+    rafId = null;
+    if(!isDragging) return;
+    try{ window.moveTo(winStartX + pendingX, winStartY + pendingY); }catch(e){}
+  }
+
+  function stopDrag(){ isDragging=false; if(rafId){cancelAnimationFrame(rafId);rafId=null;} }
 
   bar.addEventListener('mousedown', function(e){
-    // Не тащим при клике на кнопки
-    if(e.target.closest('button,a,select')) return;
+    if(e.target.closest('button,a,select,input')) return;
     isDragging = true;
-    startX = e.screenX;
-    startY = e.screenY;
-    try{
-      winStartX = window.screenX;
-      winStartY = window.screenY;
-    }catch(err){}
+    startX = e.screenX; startY = e.screenY;
+    try{ winStartX=window.screenX; winStartY=window.screenY; }catch(err){}
     e.preventDefault();
   });
 
   document.addEventListener('mousemove', function(e){
     if(!isDragging) return;
-    const dx = e.screenX - startX;
-    const dy = e.screenY - startY;
-    try{
-      window.moveTo(winStartX + dx, winStartY + dy);
-    }catch(err){}
+    pendingX = e.screenX - startX;
+    pendingY = e.screenY - startY;
+    if(!rafId) rafId = requestAnimationFrame(applyMove);
   });
 
-  document.addEventListener('mouseup', function(){
-    isDragging = false;
-  });
+  document.addEventListener('mouseup', stopDrag);
+  // Если окно потеряло фокус пока тащили (переход на другой монитор)
+  window.addEventListener('blur', stopDrag);
 
   // Touch support
   bar.addEventListener('touchstart', function(e){
@@ -974,13 +1138,21 @@ init();
   document.addEventListener('touchmove', function(e){
     if(!isDragging) return;
     const t = e.touches[0];
-    const dx = t.screenX - startX;
-    const dy = t.screenY - startY;
-    try{ window.moveTo(winStartX+dx, winStartY+dy); }catch(err){}
+    pendingX = t.screenX - startX;
+    pendingY = t.screenY - startY;
+    if(!rafId) rafId = requestAnimationFrame(applyMove);
   }, {passive:true});
-  document.addEventListener('touchend', ()=>{ isDragging=false; });
+  document.addEventListener('touchend', stopDrag);
 })();
 
 </script>
+
+<!-- ПРОМЕЖУТОЧНЫЙ СКОРБОРД -->
+<div id="scoreboardOv">
+  <div style="font-size:3rem;margin-bottom:8px;filter:drop-shadow(0 0 20px rgba(255,211,107,.6))">🏆</div>
+  <div class="sb-title">Промежуточный счёт</div>
+  <div class="sb-sub" id="sbSub">Рейтинг участников</div>
+  <div class="sb-list" id="sbList"><div style="text-align:center;color:rgba(255,255,255,.3);font-size:1rem;padding:30px;">Загрузка…</div></div>
+</div>
 </body>
 </html>

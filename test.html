@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8"/>
+<title>КвизЦентр — Авто-тест</title>
+<style>
+:root{--bg:#0a1628;--card:rgba(22,42,75,0.97);--accent:#4fdfff;--ok:#61ffb2;--err:#ff5f7a;--gold:#ffd36b;--text:#eef4ff;--muted:#c8d8ee;}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{background:linear-gradient(160deg,#0a1628,#0d2040 40%,#0a1a36);font-family:system-ui,-apple-system,"Segoe UI",sans-serif;color:var(--text);min-height:100vh;padding:20px;}
+.shell{max-width:900px;margin:0 auto;display:flex;flex-direction:column;gap:14px;}
+h1{font-size:1.3rem;font-weight:800;letter-spacing:.05em;display:flex;align-items:center;gap:10px;}
+.badge{padding:2px 9px;border-radius:999px;font-size:.65rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;background:rgba(79,223,255,.15);border:1px solid rgba(79,223,255,.4);color:#cff6ff;}
+.summary{display:flex;gap:10px;flex-wrap:wrap;}
+.stat{background:var(--card);border:1px solid rgba(255,255,255,.1);border-radius:14px;padding:12px 18px;min-width:130px;text-align:center;}
+.stat-n{font-size:1.9rem;font-weight:800;}
+.stat-l{font-size:.72rem;color:var(--muted);margin-top:2px;text-transform:uppercase;letter-spacing:.1em;}
+.stat-n.ok{color:var(--ok);}
+.stat-n.err{color:var(--err);}
+.stat-n.warn{color:var(--gold);}
+.suite{background:var(--card);border:1px solid rgba(255,255,255,.1);border-radius:14px;overflow:hidden;}
+.suite-hdr{padding:10px 16px;background:rgba(10,25,55,.8);font-size:.78rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);display:flex;align-items:center;gap:8px;cursor:pointer;user-select:none;}
+.suite-hdr:hover{background:rgba(10,30,65,.9);}
+.suite-body{display:flex;flex-direction:column;}
+.tc{border-top:1px solid rgba(255,255,255,.06);padding:9px 16px;display:grid;grid-template-columns:18px 1fr auto;gap:8px;align-items:start;font-size:.82rem;}
+.tc.pass .ico{color:var(--ok);}
+.tc.fail .ico{color:var(--err);}
+.tc.warn .ico{color:var(--gold);}
+.tc-name{font-weight:600;}
+.tc-detail{font-size:.72rem;color:var(--muted);margin-top:2px;}
+.tc-detail.err{color:#ffb0b8;}
+.tc-time{font-size:.68rem;color:rgba(150,180,220,.5);white-space:nowrap;}
+.ico{font-weight:900;font-size:.9rem;line-height:1.4;}
+.btn{border-radius:999px;border:1px solid rgba(79,223,255,.4);padding:8px 18px;font-size:.82rem;font-weight:700;cursor:pointer;background:linear-gradient(120deg,#4fdfff,#6b7aff);color:#02111f;display:inline-flex;align-items:center;gap:6px;transition:filter .14s,transform .12s;letter-spacing:.03em;}
+.btn:hover{filter:brightness(1.1);transform:translateY(-1px);}
+.btn-g{background:rgba(4,12,30,.95);color:var(--text);border-color:rgba(255,255,255,.15);}
+.toolbar{display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+.progress-wrap{height:4px;border-radius:999px;background:rgba(255,255,255,.07);overflow:hidden;margin-top:4px;}
+.progress-bar{height:100%;border-radius:inherit;background:linear-gradient(90deg,#4fdfff,#61ffb2);transition:width .3s;width:0%;}
+#logBox{background:rgba(2,8,22,.9);border:1px solid rgba(79,223,255,.1);border-radius:12px;padding:12px 16px;font-family:monospace;font-size:.75rem;color:#8ecfef;max-height:220px;overflow-y:auto;white-space:pre-wrap;display:none;}
+</style>
+</head>
+<body>
+<div class="shell">
+  <h1>⚗️ КвизЦентр <span class="badge">авто-тест</span></h1>
+
+  <div class="toolbar">
+    <button class="btn" onclick="runAll()">▶ Запустить все тесты</button>
+    <button class="btn btn-g" onclick="toggleLog()">📋 Лог</button>
+  </div>
+  <div class="progress-wrap"><div class="progress-bar" id="progBar"></div></div>
+
+  <div class="summary" id="summary">
+    <div class="stat"><div class="stat-n" id="sTot">—</div><div class="stat-l">всего</div></div>
+    <div class="stat"><div class="stat-n ok" id="sPass">—</div><div class="stat-l">прошли</div></div>
+    <div class="stat"><div class="stat-n err" id="sFail">—</div><div class="stat-l">упали</div></div>
+    <div class="stat"><div class="stat-n warn" id="sTime">—</div><div class="stat-l">мс всего</div></div>
+  </div>
+
+  <pre id="logBox"></pre>
+  <div id="results"></div>
+</div>
+
+<script>
+// ─────────────────────────────────────────────────────────────────────────────
+// КОПИЯ СКОРИНГОВЫХ ФУНКЦИЙ ИЗ hub.html (для изолированного тестирования)
+// ─────────────────────────────────────────────────────────────────────────────
+
+function pts(d){ return !d||d<=1?1:d===2?2:3; }
+
+/**
+ * Симулирует игровую сессию.
+ * answers: [{dif, correct, changes}]
+ *   dif      — сложность вопроса (1/2/3)
+ *   correct  — true/false
+ *   changes  — сколько раз менял ответ до финального (0 = без смены)
+ * Возвращает {score, streak, log}
+ */
+function simulate(answers){
+  let score=0, streak=0;
+  const REVEALED=new Set();
+  const log=[];
+  let stealCount=0;
+
+  answers.forEach((a,idx)=>{
+    let penalty=0;
+    // Смены ответа: первая смена (changeCount=1) без штрафа,
+    // вторая и далее — каждая по 0.5
+    for(let c=1;c<=a.changes;c++){
+      if(c>1) penalty+=0.5;
+    }
+
+    if(a.correct && !REVEALED.has(idx)){
+      const p=pts(a.dif);
+      const earned=Math.max(0,p-penalty);
+      streak++;
+      let streakBonus=0;
+      if(streak>=3&&streak%3===0) streakBonus=0.5;
+      if(streak%5===0) stealCount++;
+      const total=earned+streakBonus;
+      score+=total;
+      REVEALED.add(idx);
+      log.push({idx,result:'ok',earned,streakBonus,streak,penalty,total,score});
+    } else if(!a.correct){
+      streak=0;
+      REVEALED.add(idx);
+      log.push({idx,result:'err',streak,score});
+    }
+  });
+
+  return {score,streak,stealCount,log,REVEALED};
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// ТЕСТ-ФРЕЙМВОРК
+// ─────────────────────────────────────────────────────────────────────────────
+
+const SUITES=[];
+let _logLines=[];
+
+function suite(name, fn){
+  const tests=[];
+  const it=(tname,tfn)=>tests.push({name:tname,fn:tfn});
+  fn(it);
+  SUITES.push({name,tests});
+}
+
+function expect(val){ return {
+  toBe(expected,msg){
+    if(val!==expected) throw new Error((msg||"")+`\n  Ожидалось: ${expected}\n  Получено:  ${val}`);
+  },
+  toBeCloseTo(expected,decimals=6,msg){
+    const d=Math.abs(val-expected);
+    const tol=Math.pow(10,-decimals)/2;
+    if(d>tol) throw new Error((msg||"")+`\n  Ожидалось ≈${expected}\n  Получено: ${val} (разница ${d})`);
+  },
+  toBeGreaterThan(n,msg){
+    if(val<=n) throw new Error((msg||"")+`\n  Ожидалось > ${n}\n  Получено: ${val}`);
+  }
+};}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// ТЕСТ-СЬЮТЫ
+// ─────────────────────────────────────────────────────────────────────────────
+
+suite("pts() — базовые очки за сложность", it=>{
+  it("сложность 1 → 1 балл",  ()=>expect(pts(1)).toBe(1));
+  it("сложность 2 → 2 балла", ()=>expect(pts(2)).toBe(2));
+  it("сложность 3 → 3 балла", ()=>expect(pts(3)).toBe(3));
+  it("сложность 0 → 1 балл (≤1)",()=>expect(pts(0)).toBe(1));
+  it("сложность 99 → 3 балла",()=>expect(pts(99)).toBe(3));
+});
+
+suite("Базовые правильные ответы", it=>{
+  it("1 верный dif=1 → счёт=1", ()=>{
+    const r=simulate([{dif:1,correct:true,changes:0}]);
+    expect(r.score).toBe(1);
+  });
+  it("1 верный dif=2 → счёт=2", ()=>{
+    const r=simulate([{dif:2,correct:true,changes:0}]);
+    expect(r.score).toBe(2);
+  });
+  it("1 верный dif=3 → счёт=3", ()=>{
+    const r=simulate([{dif:3,correct:true,changes:0}]);
+    expect(r.score).toBe(3);
+  });
+  it("1 неверный → счёт=0", ()=>{
+    const r=simulate([{dif:1,correct:false,changes:0}]);
+    expect(r.score).toBe(0);
+  });
+});
+
+suite("Серия (streak) и бонус", it=>{
+  it("2 верных подряд → нет бонуса, streak=2", ()=>{
+    const r=simulate([
+      {dif:1,correct:true,changes:0},
+      {dif:1,correct:true,changes:0},
+    ]);
+    expect(r.streak).toBe(2);
+    expect(r.score).toBe(2); // 1+1
+  });
+  it("3 верных подряд → +0.5 бонус на 3-м, streak=3", ()=>{
+    const r=simulate([
+      {dif:1,correct:true,changes:0},
+      {dif:1,correct:true,changes:0},
+      {dif:1,correct:true,changes:0},
+    ]);
+    expect(r.streak).toBe(3);
+    expect(r.score).toBeCloseTo(3.5); // 1+1+(1+0.5)
+  });
+  it("6 верных подряд → +0.5 на 3-м и на 6-м", ()=>{
+    const r=simulate(Array(6).fill({dif:1,correct:true,changes:0}));
+    expect(r.streak).toBe(6);
+    // 1+1+(1+0.5)+1+1+(1+0.5) = 7
+    expect(r.score).toBeCloseTo(7);
+  });
+  it("Неверный сбрасывает серию в 0", ()=>{
+    const r=simulate([
+      {dif:1,correct:true,changes:0},
+      {dif:1,correct:true,changes:0},
+      {dif:1,correct:false,changes:0},
+    ]);
+    expect(r.streak).toBe(0);
+  });
+  it("После сброса серия стартует заново — 3 верных снова даёт бонус", ()=>{
+    const r=simulate([
+      {dif:1,correct:true,changes:0},
+      {dif:1,correct:false,changes:0}, // сброс
+      {dif:1,correct:true,changes:0},
+      {dif:1,correct:true,changes:0},
+      {dif:1,correct:true,changes:0}, // streak=3 → бонус
+    ]);
+    expect(r.streak).toBe(3);
+    // 1+0+1+1+(1+0.5) = 4.5
+    expect(r.score).toBeCloseTo(4.5);
+  });
+  it("5 верных подряд → streak%5===0, stealCount=1", ()=>{
+    const r=simulate(Array(5).fill({dif:1,correct:true,changes:0}));
+    expect(r.stealCount).toBe(1);
+  });
+  it("10 верных подряд → stealCount=2", ()=>{
+    const r=simulate(Array(10).fill({dif:1,correct:true,changes:0}));
+    expect(r.stealCount).toBe(2);
+  });
+});
+
+suite("Штраф за смену ответа", it=>{
+  it("0 смен → штраф 0", ()=>{
+    const r=simulate([{dif:2,correct:true,changes:0}]);
+    expect(r.score).toBe(2);
+  });
+  it("1 смена → штраф 0 (первая смена бесплатна)", ()=>{
+    const r=simulate([{dif:2,correct:true,changes:1}]);
+    expect(r.score).toBe(2);
+  });
+  it("2 смены → штраф 0.5 → earned=1.5", ()=>{
+    const r=simulate([{dif:2,correct:true,changes:2}]);
+    // earned=max(0,2-0.5)=1.5
+    expect(r.score).toBeCloseTo(1.5);
+  });
+  it("3 смены → штраф 1.0 → earned=1.0 для dif=2", ()=>{
+    const r=simulate([{dif:2,correct:true,changes:3}]);
+    expect(r.score).toBeCloseTo(1.0);
+  });
+  it("Штраф не уходит ниже 0 (dif=1, штраф=2 → earned=0)", ()=>{
+    const r=simulate([{dif:1,correct:true,changes:5}]);
+    // penalty=0+0.5+0.5+0.5+0.5=2.0 (смены 2..5), earned=max(0,1-2)=0
+    expect(r.score).toBe(0);
+  });
+});
+
+suite("REVEALED — защита от двойного начисления", it=>{
+  it("Дублирующийся вопрос (idx=0 дважды) начисляет очки только раз", ()=>{
+    // Нельзя напрямую из simulate, но проверяем через REVEALED логику:
+    // simulate не дублирует индексы. Проверяем через direct test.
+    let score=0,streak=0;
+    const REVEALED=new Set();
+    function scoreQ(idx,dif){
+      if(REVEALED.has(idx)) return "already";
+      const p=pts(dif);
+      streak++;
+      let bonus=0;if(streak>=3&&streak%3===0)bonus=0.5;
+      const total=p+bonus;
+      score+=total;
+      REVEALED.add(idx);
+      return total;
+    }
+    scoreQ(0,2); // +2
+    scoreQ(0,2); // уже в REVEALED → пропускаем
+    expect(score).toBe(2);
+    expect(REVEALED.size).toBe(1);
+  });
+});
+
+suite("Полная игра — смешанный сценарий", it=>{
+  it("8 вопросов: 5 верных, 2 неверных, 1 с штрафом", ()=>{
+    const answers=[
+      {dif:1,correct:true, changes:0}, // +1,  streak=1, score=1
+      {dif:2,correct:true, changes:0}, // +2,  streak=2, score=3
+      {dif:3,correct:true, changes:0}, // +3.5,streak=3, score=6.5 (бонус 0.5)
+      {dif:1,correct:false,changes:0}, // +0,  streak=0, score=6.5
+      {dif:2,correct:true, changes:2}, // +1.5,streak=1, score=8   (penalty 0.5)
+      {dif:2,correct:false,changes:0}, // +0,  streak=0, score=8
+      {dif:3,correct:true, changes:0}, // +3,  streak=1, score=11
+      {dif:1,correct:true, changes:0}, // +1,  streak=2, score=12
+    ];
+    const r=simulate(answers);
+    expect(r.score).toBeCloseTo(12);
+    expect(r.streak).toBe(2);
+  });
+
+  it("9 верных dif=1 → бонусы на 3,6,9 и stealCount правильный", ()=>{
+    const r=simulate(Array(9).fill({dif:1,correct:true,changes:0}));
+    // 3 бонуса по 0.5 = +1.5 extra + базовые 9
+    expect(r.score).toBeCloseTo(10.5);
+    expect(r.stealCount).toBe(1); // только streak=5
+  });
+
+  it("Все 10 неверных → счёт=0, streak=0", ()=>{
+    const r=simulate(Array(10).fill({dif:3,correct:false,changes:0}));
+    expect(r.score).toBe(0);
+    expect(r.streak).toBe(0);
+  });
+});
+
+suite("Граничные случаи", it=>{
+  it("0 вопросов → score=0, streak=0", ()=>{
+    const r=simulate([]);
+    expect(r.score).toBe(0);
+    expect(r.streak).toBe(0);
+  });
+  it("dif=null/undefined → pts → 1 (≤1 ветка)", ()=>{
+    expect(pts(undefined)).toBe(1);
+    expect(pts(null)).toBe(1);
+  });
+  it("Штраф с 0-балловым вопросом: earned=0, бонус серии всё равно добавляется", ()=>{
+    // dif=1 → pts=1, 5 смен → penalty=1.5, earned=max(0,1-1.5)=0
+    // но если это 3-й вопрос в серии, streakBonus=0.5
+    const r=simulate([
+      {dif:1,correct:true,changes:0},
+      {dif:1,correct:true,changes:0},
+      {dif:1,correct:true,changes:5}, // penalty=1.5, earned=0, bonus=0.5 → total=0.5
+    ]);
+    // 1 + 1 + 0.5 = 2.5
+    expect(r.score).toBeCloseTo(2.5);
+  });
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+// RUNNER
+// ─────────────────────────────────────────────────────────────────────────────
+
+function log(msg){
+  _logLines.push(msg);
+  const el=document.getElementById("logBox");
+  if(el.style.display!=="none") el.textContent=_logLines.join("\n");
+}
+
+function toggleLog(){
+  const el=document.getElementById("logBox");
+  const btn=document.querySelector(".btn-g");
+  if(el.style.display==="none"){
+    el.style.display="block";
+    el.textContent=_logLines.join("\n");
+    btn.textContent="📋 Скрыть лог";
+  } else {
+    el.style.display="none";
+    btn.textContent="📋 Лог";
+  }
+}
+
+async function runAll(){
+  _logLines=[];
+  const resultsEl=document.getElementById("results");
+  resultsEl.innerHTML="";
+
+  let totalPass=0,totalFail=0,totalMs=0;
+  const allTests=SUITES.reduce((s,su)=>s+su.tests.length,0);
+  let done=0;
+
+  for(const su of SUITES){
+    const suiteEl=document.createElement("div");
+    suiteEl.className="suite";
+    const hdr=document.createElement("div");
+    hdr.className="suite-hdr";
+    hdr.innerHTML=`<span>📂</span><span>${su.name}</span>`;
+    const body=document.createElement("div");
+    body.className="suite-body";
+    suiteEl.appendChild(hdr);
+    suiteEl.appendChild(body);
+    resultsEl.appendChild(suiteEl);
+    hdr.onclick=()=>{ body.style.display=body.style.display==="none"?"flex":"none"; };
+
+    let sPass=0,sFail=0;
+    for(const t of su.tests){
+      const t0=performance.now();
+      let err=null;
+      try{ t.fn(); }
+      catch(e){ err=e; }
+      const ms=(performance.now()-t0).toFixed(2);
+      totalMs+=parseFloat(ms);
+
+      const pass=!err;
+      if(pass){sPass++;totalPass++;}else{sFail++;totalFail++;}
+      done++;
+
+      log(`[${pass?"✓":"✗"}] ${su.name} / ${t.name}${err?" — "+err.message.split("\n").slice(0,3).join(" | "):""}`);
+
+      const row=document.createElement("div");
+      row.className=`tc ${pass?"pass":"fail"}`;
+      row.innerHTML=`
+        <span class="ico">${pass?"✓":"✗"}</span>
+        <div>
+          <div class="tc-name">${t.name}</div>
+          ${err?`<div class="tc-detail err">${err.message.replace(/</g,"&lt;")}</div>`:""}
+        </div>
+        <span class="tc-time">${ms}ms</span>`;
+      body.appendChild(row);
+
+      // Прогресс
+      document.getElementById("progBar").style.width=(done/allTests*100)+"%";
+      await new Promise(r=>setTimeout(r,0)); // отдаём UI-поток
+    }
+
+    // Заголовок suite — добавляем итог
+    hdr.innerHTML=`<span>${sFail>0?"⚠️":"✅"}</span><span>${su.name}</span><span style="margin-left:auto;font-size:.68rem;color:${sFail>0?"var(--err)":"var(--ok)"}">${sPass}/${sPass+sFail}</span>`;
+  }
+
+  document.getElementById("sTot").textContent=totalPass+totalFail;
+  document.getElementById("sPass").textContent=totalPass;
+  document.getElementById("sFail").textContent=totalFail;
+  document.getElementById("sTime").textContent=totalMs.toFixed(0);
+
+  log(`\n══ ИТОГ: ${totalPass} прошли, ${totalFail} упали из ${totalPass+totalFail} ══`);
+  const logEl=document.getElementById("logBox");
+  if(logEl.style.display!=="none") logEl.textContent=_logLines.join("\n");
+}
+
+// Запускаем автоматически при загрузке
+window.addEventListener("load",()=>runAll());
+</script>
+</body>
+</html>

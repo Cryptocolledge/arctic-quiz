@@ -418,6 +418,7 @@ body{font-family:system-ui,-apple-system,"Segoe UI",sans-serif;color:var(--text)
 .hcard-history:hover{border-color:rgba(255,211,107,.45);}
 .hcard-science:hover{border-color:rgba(167,139,250,.45);}
 .hcard-patriot:hover{border-color:rgba(255,95,90,.45);}
+.hcard-partisan:hover{border-color:rgba(180,120,50,.55);}
 .hcard-geo:hover{border-color:rgba(52,211,153,.45);}
 .hcard-space:hover{border-color:rgba(139,92,246,.45);}
 .hcard-sport:hover{border-color:rgba(251,146,60,.45);}
@@ -430,12 +431,13 @@ body{font-family:system-ui,-apple-system,"Segoe UI",sans-serif;color:var(--text)
   content:'';position:absolute;inset:0;
   background:linear-gradient(180deg,transparent 30%,rgba(8,18,40,.92) 100%);
 }
-.hcard-arctic .hcard-banner{background:linear-gradient(135deg,#03254c,#0a5f8a,#1a9acc);}
-.hcard-eco    .hcard-banner{background:linear-gradient(135deg,#031a0a,#0a4d1a,#1d8a30);}
-.hcard-lock   .hcard-banner{background:linear-gradient(135deg,#12060f,#2a1020);}
-.hcard-geo    .hcard-banner{background:linear-gradient(135deg,#01200d,#054a2a,#0a7a3e);}
-.hcard-space  .hcard-banner{background:linear-gradient(135deg,#050118,#130550,#1a0870);}
-.hcard-sport  .hcard-banner{background:linear-gradient(135deg,#1a0700,#4a1400,#7a2000);}
+.hcard-arctic   .hcard-banner{background:linear-gradient(135deg,#03254c,#0a5f8a,#1a9acc);}
+.hcard-eco      .hcard-banner{background:linear-gradient(135deg,#031a0a,#0a4d1a,#1d8a30);}
+.hcard-lock     .hcard-banner{background:linear-gradient(135deg,#12060f,#2a1020);}
+.hcard-geo      .hcard-banner{background:linear-gradient(135deg,#01200d,#054a2a,#0a7a3e);}
+.hcard-space    .hcard-banner{background:linear-gradient(135deg,#050118,#130550,#1a0870);}
+.hcard-sport    .hcard-banner{background:linear-gradient(135deg,#1a0700,#4a1400,#7a2000);}
+.hcard-partisan .hcard-banner{background:linear-gradient(135deg,#1a1000,#3b2200,#5c3800);}
 .hcard-body{padding:14px 16px 12px;flex:1;display:flex;flex-direction:column;gap:6px;}
 .hcard-tag{
   font-size:.6rem;font-weight:800;letter-spacing:.1em;text-transform:uppercase;
@@ -709,6 +711,8 @@ document.addEventListener('DOMContentLoaded',function(){
     <nav class="hub-nav-desktop" style="position:relative">
       <!-- Арктическая одиссея -->
       <a href="arctic-odyssey.html" target="_blank" class="hub-nav-btn" style="border-color:rgba(255,216,77,.6);color:#ffd84d;background:linear-gradient(120deg,rgba(255,216,77,.15),rgba(255,160,30,.08));font-weight:800;letter-spacing:.02em;box-shadow:0 0 10px rgba(255,216,77,.12);">🎲 Арктическая одиссея</a>
+      <!-- Партизан -->
+      <a href="partisan-game.html" target="_blank" class="hub-nav-btn" style="border-color:rgba(180,120,50,.6);color:#c8922a;background:linear-gradient(120deg,rgba(180,120,50,.15),rgba(120,70,10,.08));font-weight:800;letter-spacing:.02em;box-shadow:0 0 10px rgba(180,120,50,.12);">🪖 Партизан</a>
       <button class="hub-nav-btn" onclick="document.getElementById('ov-about').classList.add('active')" style="border-color:rgba(79,223,255,.35);color:#a8f0ff;background:linear-gradient(120deg,rgba(79,223,255,.1),rgba(107,122,255,.07));">🚀 О платформе</button>
       <!-- Мини-игры — отдельная кнопка -->
       <button class="hub-nav-btn" id="hubGamesBtn" onclick="var m=document.getElementById('hubGamesMenu');m.style.display=m.style.display==='flex'?'none':'flex';event.stopPropagation()" style="border-color:rgba(97,255,178,.4);color:#61ffb2;background:rgba(97,255,178,.07);">🎮 Мини-игры</button>
@@ -758,6 +762,7 @@ document.addEventListener('DOMContentLoaded',function(){
         </div>
         <div class="hub-mob-section">Платформа</div>
         <a href="arctic-odyssey.html" target="_blank" class="hub-mob-item" style="color:#ffd84d;font-weight:800;">🎲 Арктическая одиссея</a>
+        <a href="partisan-game.html" target="_blank" class="hub-mob-item" style="color:#c8922a;font-weight:800;">🪖 Партизан</a>
         <span class="hub-mob-item" style="color:#a8f0ff;" onclick="document.getElementById('ov-about').classList.add('active');hubCloseMobileMenu()">🚀 О платформе</span>
         <a href="facts.html" target="_blank" class="hub-mob-item" style="color:#c4b5fd">🌍 Факты об Арктике</a>
         <div class="hub-mob-section">🎮 Мини-игры</div>
@@ -842,6 +847,25 @@ document.addEventListener('DOMContentLoaded',function(){
         <button class="hcard-btn" onclick="event.stopPropagation();hubSelectQuiz('arctic')" style="background:linear-gradient(120deg,#38bdf8,#0284c7);color:#fff">👥 С ведущим</button>
         <button class="hcard-btn hcard-btn-solo-std" onclick="event.stopPropagation();openSoloQuiz('arctic')">👤 Соло</button>
       </div>
+      </div>
+    </div>
+
+    <!-- Партизан -->
+    <div class="hcard hcard-partisan" onclick="window.open('partisan-game.html','_blank')">
+      <div class="hcard-banner">🪖</div>
+      <div class="hcard-body">
+        <div class="hcard-tag" style="background:rgba(180,120,50,.12);border-color:rgba(180,120,50,.35);color:#c8922a;">🎮 Аркадная игра</div>
+        <div class="hcard-name">Партизан · 1942</div>
+        <div class="hcard-desc">Аркадный шутер о советских партизанах. Выживай, уничтожай врага, прокачивай отряд.</div>
+        <div class="hcard-meta">
+          <span class="hcard-chip">🎯 Бесконечные волны</span>
+          <span class="hcard-chip">⚡ Экшн</span>
+        </div>
+      </div>
+      <div class="hcard-footer">
+        <div style="display:flex;gap:8px;width:100%">
+          <button class="hcard-btn" onclick="event.stopPropagation();window.open('partisan-game.html','_blank')" style="background:linear-gradient(120deg,#b87820,#7a4a08);color:#ffe4a0;flex:1;">🪖 Играть</button>
+        </div>
       </div>
     </div>
 
@@ -2223,7 +2247,7 @@ const _FACTS_SPORT=[
 
 
 let GID="default";
-let QT=25; // обновляется из game_timer
+let QT=30; // обновляется из game_timer (default 30s)
 
 const _SB_CDNS_IDX=["https://unpkg.com/@supabase/supabase-js@2/dist/umd/supabase.js"];
 let _sbFbIdx=0;
@@ -2234,7 +2258,7 @@ function loadSbFallback(){
 }
 
 let sb=window.supabase?.createClient?window.supabase.createClient(SURL,SKEY):null;
-function pts(d){return d<=1?1:d===2?2:3;}
+function pts(d){return !d||d<=1?1:d===2?2:3;}
 
 // ── ФИЛЬТР МАТА ───────────────────────────────────────────────
 // Нормализуем: латиница/цифры → кириллица, убираем не-буквы
@@ -2556,7 +2580,7 @@ window.addEventListener('DOMContentLoaded', function(){
         try{await sb.from("quiz_players").upsert({game_id:GID,student_name:pName,team_name:pTeam,institution_name:pInst,extra_info:pExtra,mode:pMode,joined_at:new Date().toISOString(),last_seen:new Date().toISOString(),chat_blocked:false},{onConflict:"game_id,team_name,student_name"});}catch(e){}
       }
       if(syncInt) clearInterval(syncInt);
-      syncInt=setInterval(syncLoop,2000);
+      syncInt=setInterval(syncLoop,1000);
       syncLoop();
     }, 1200);
   } else {
@@ -2801,7 +2825,7 @@ function hideHiddenQuestionScreen(){
   if(el) el.style.display="none";
 }
 
-// Антиспойлер: 2 сек задержка перед показом (очный режим)
+// Антиспойлер: 5 сек задержка перед показом (очный режим)
 function showAntiSpoilerDelay(cb){
   let overlay=$("antiSpoilerOverlay");
   if(!overlay){
@@ -2809,13 +2833,13 @@ function showAntiSpoilerDelay(cb){
     overlay.id="antiSpoilerOverlay";
     overlay.style.cssText="position:fixed;inset:0;z-index:120;display:flex;align-items:center;justify-content:center;background:rgba(5,8,22,.92);backdrop-filter:blur(6px)";
     overlay.innerHTML=`<div style="text-align:center">
-      <div style="font-size:3.5rem;font-weight:900;color:#4fdfff;font-variant-numeric:tabular-nums" id="antiSpoilerNum">3</div>
-      <div style="font-size:.85rem;color:var(--muted);margin-top:8px">Вопрос появится через…</div>
+      <div style="font-size:3.5rem;font-weight:900;color:#4fdfff;font-variant-numeric:tabular-nums" id="antiSpoilerNum">5</div>
+      <div style="font-size:.85rem;color:var(--muted);margin-top:8px">Читайте вопрос на экране…</div>
     </div>`;
     document.body.appendChild(overlay);
   }
   overlay.style.display="flex";
-  let t=2;
+  let t=4;
   document.getElementById("antiSpoilerNum").textContent=t+1;
   const intv=setInterval(()=>{
     t--;
@@ -3012,13 +3036,31 @@ function onOpt(e){
   stopTimer();
   const used=QT-Math.max(timeLeft,0);totalTime+=used;
   qAnswered++;
-  UA[curIdx]={sel:si,ci:q.ci,ok:(i===q.ci),t:used,changed:0};
-  optsEl.querySelectorAll(".opt").forEach(b=>b.disabled=false); // пока ответ не раскрыт — можно менять
+  const isOk=(i===q.ci);
+  UA[curIdx]={sel:si,ci:q.ci,ok:isOk,t:used,changed:0};
+  // Оптимистичное начисление очков при правильном ответе
+  if(isOk && !REVEALED.has(curIdx)){
+    const p=pts(q.dif);
+    const earned=Math.max(0,p-penalty);
+    streak++;
+    let streakBonus=0;
+    if(streak>=3&&streak%3===0) streakBonus=0.5;
+    if(streak%5===0) setTimeout(()=>tryStealFromTop(),700);
+    const total=earned+streakBonus;
+    score+=total;
+    const scoreDisp=score%1===0?score:score.toFixed(1);
+    scoreEl.textContent=scoreDisp;score2El.textContent=scoreDisp;
+    REVEALED.add(curIdx);
+    popPts(total,btn);playOk();
+    optsEl.querySelectorAll(".opt").forEach(b=>b.disabled=true); // заблокировать после верного ответа
+  } else if(!isOk){
+    optsEl.querySelectorAll(".opt").forEach(b=>b.disabled=false); // пока ответ не раскрыт — можно менять
+  }
   btn.classList.add("selected");
   waitRevealEl.classList.add("show");
   changeCount=0;
-  // Показываем подсказку о перевыборе
-  showChangeHint();
+  // Показываем подсказку о перевыборе (только при неверном)
+  if(!isOk) showChangeHint();
   pushScore();
 }
 
@@ -3327,6 +3369,7 @@ function applyState(s){
       if(lastRoundType.startsWith("blitz")){
         ovBlitz.classList.remove("active");
         // Принудительно останавливаем таймер блица
+        if(_blitzTimerHandle){clearInterval(_blitzTimerHandle);_blitzTimerHandle=null;}
         if(blitzState&&blitzState.timerInt){clearInterval(blitzState.timerInt);blitzState.timerInt=null;}
         blitzState.answered=true; // предотвращаем дальнейший ввод
       }
@@ -3447,7 +3490,9 @@ function applyState(s){
     shuffledCorrectIdx = -1; // сброс при новом вопросе
     if(doDelay){
       showAntiSpoilerDelay(()=>{ renderQ(); if(at){
-        startTimer(at); // синхронизируем с ведущим — таймер идёт от question_started_at
+        const READING_MS=5000;
+        const shiftedAt=new Date(parseIso(at)+READING_MS).toISOString();
+        startTimer(shiftedAt); // синхронизируем с ведущим, сдвигаем на 5 сек чтения
       }});
     } else {
       renderQ();
@@ -3648,7 +3693,7 @@ async function register(){
     // Блокировка чата проверяется в syncLoop каждые 2 сек
   });
   if(syncInt)clearInterval(syncInt);
-  syncInt=setInterval(syncLoop,2000);
+  syncInt=setInterval(syncLoop,1000);
   syncLoop();
 }
 
@@ -3666,7 +3711,7 @@ function showResult(){
 function resetQuiz(){
   stopTimer();
   curIdx=0;score=0;scoreEl.textContent="0";score2El.textContent="0";
-  totalTime=0;qAnswered=0;answered=false;selIdx=-1;
+  totalTime=0;qAnswered=0;answered=false;selIdx=-1;streak=0;
   lastIdx=-1;lastAt="";lastShow=false;lastPhase="";
   changeCount=0;penalty=0;
   REVEALED.clear();
@@ -3857,6 +3902,7 @@ try{if(localStorage.getItem("hub_chat_hidden")){_chatHidden=true;/* примен
 let betStake = -1;
 let betPhase = "chips"; // chips | question | result
 let blitzState = {qi:0, timeLeft:10, answered:false, results:[], timerInt:null};
+let _blitzTimerHandle = null; // глобальный ID таймера блица — независим от blitzState
 
 function getBetQByMode(idx){
   const mode = currentMode||"spo";
@@ -4092,23 +4138,27 @@ function renderPlayerBlitz(){
   if(tn){tn.textContent=10;tn.style.color="#f97316";}
   if(tb)tb.style.width="100%";
 
-  if(s.timerInt)clearInterval(s.timerInt);
-  s.timerInt=setInterval(()=>{
+  // Всегда чистим предыдущий таймер через глобальный handle (не через s.timerInt)
+  if(_blitzTimerHandle){clearInterval(_blitzTimerHandle);_blitzTimerHandle=null;}
+  if(s.timerInt){clearInterval(s.timerInt);s.timerInt=null;}
+  const _tid=setInterval(()=>{
     s.timeLeft--;
     if(tn)tn.textContent=s.timeLeft;
     if(tb)tb.style.width=(s.timeLeft/10*100)+"%";
     if(s.timeLeft<=3&&tn)tn.style.color="#ff5f7a";
     if(s.timeLeft<=0){
-      clearInterval(s.timerInt);s.timerInt=null;
+      clearInterval(_tid);_blitzTimerHandle=null;s.timerInt=null;
       if(!s.answered){s.results[s.qi]=false;autoNextBlitz();}
     }
   },1000);
+  s.timerInt=_tid;_blitzTimerHandle=_tid;
 }
 
 function onBlitzAnswer(i){
   const s=blitzState;
   if(s.answered)return;
   s.answered=true;
+  if(_blitzTimerHandle){clearInterval(_blitzTimerHandle);_blitzTimerHandle=null;}
   if(s.timerInt){clearInterval(s.timerInt);s.timerInt=null;}
   const mode=currentMode||"spo";
   const _blitzMapAns={
@@ -4646,7 +4696,7 @@ document.addEventListener("keydown", e => {
   </div>
 </div>
 
-<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+<script>
 // ══════════════════════
 // HUB PROFILE SYSTEM
 // ══════════════════════
