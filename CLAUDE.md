@@ -25,13 +25,14 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Architecture
 
-```
+```text
 Игроки (hub.html) ──────────────┐
 Проектор (projector.html) ──────┼── Supabase quiz_state ◄── Ведущий (presenter.html)
 Наблюдатель (observer.html) ────┘
 ```
 
 Ведущий пишет в `quiz_state` через `ups({...})`. Остальные читают:
+
 - `hub.html`, `observer.html` — Supabase Realtime-подписки
 - `projector.html` — polling `getState()` каждые 1–2 с
 
@@ -39,7 +40,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 | Файл | Роль |
 |------|------|
-| `hub.html` | Игрок: регистрация, ответы, скоринг, чат (~4700 строк) |
+| `hub.html` | Игрок: регистрация, ответы, скоринг, чат (~4800 строк) |
 | `presenter.html` | Ведущий PWA: управление игрой, таймер, раунды |
 | `projector.html` | Большой экран: вопрос + таймер + анимации |
 | `observer.html` | Пассивный просмотр |
@@ -54,6 +55,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 `SURL` и `SKEY` (anon key) прописаны в начале каждого из трёх главных файлов (`hub.html` ~строка 1433, `presenter.html`, `projector.html`). Все три должны содержать одинаковые значения.
 
 Таблицы:
+
 - **`quiz_state`** — текущее состояние: `phase`, `current_index`, `show_answer`, `round_type`, `quiz_id`, `shuffle_seed`, `question_visible`, `game_timer`, `question_started_at`, `session_code`
 - **`quiz_scores`** — `game_id, student_name, team_name, score numeric(5,1), questions_answered, avg_answer_time`
 - **`quiz_chat`** — чат и свободные ответы в режиме 100к1
@@ -99,21 +101,47 @@ function pts(d){ return !d||d<=1 ? 1 : d===2 ? 2 : 3; }
 ## Special Rounds
 
 ### Блиц (`round_type = "blitz_start"`)
+
 Ведущий устанавливает `round_type = "blitz_start"` один раз — дальше всё идёт **только на клиенте** (hub.html). Суть:
-- `startPlayerBlitz(0)` → 12-секундный анонс → `blitzState = {qi:0,...}` → `renderPlayerBlitz()`
+
+- `startPlayerBlitz(0)` → `playBlitzStart()` + `showAnnounce("blitz", cb)` → 12-секундный анонс с частицами ⚡ → `blitzState = {qi:0,...}` → `renderPlayerBlitz()`
 - Каждый вопрос: 10 сек таймер, `onBlitzAnswer()` → `autoNextBlitz()` через 1.8 с
 - По окончании: `score += correct * 0.5`, `pushScore()`, обновляются `scoreEl`/`score2El`
 - `lastRoundType` не сбрасывается пока `round_type` остаётся "blitz_start" → повторного запуска не будет
+- Guard: `if(!ovBlitz.classList.contains("active"))startPlayerBlitz(0)` — защита от перезапуска при повторном `applyState()`
 
 ### Ставки (`betting_chips → betting_open → betting_reveal`)
-Аналогично — управление через `round_type`, логика на клиенте в `hub.html`. Ставка 0–3 очка; выигрыш/проигрыш = ±ставка.
+
+Управление через `round_type`, логика на клиенте в `hub.html`. Ставка 0–3 очка; выигрыш/проигрыш = ±ставка.
+
+- Анонс: `playBetStart()` + `showAnnounce("betting", cb)` — 12 с с частицами 💎🃏🎲
+
+### Анонс раунда (`showAnnounce(type, cb)`)
+
+Оверлей `#ov-announce` используется для обоих раундов. Для перезапуска анимации карточки: `card.style.animation="none"; void card.offsetWidth; card.style.animation=""`. Частицы инжектируются в `#announce-particles` и очищаются при закрытии.
+
+## Sound System (hub.html)
+
+Все звуки — MP3-файлы из корня проекта, лениво создаются через `_playSnd(key)`:
+
+- `playOk()` → `respuesta-correcta.mp3` — правильный ответ
+- `playErr()` → `wrong-1.mp3` — неправильный ответ
+- `playDone()` → `jbs-correct-clap.mp3` — конец игры
+- `playBlitzStart()` → `respuesta-correcta.mp3` — начало блица
+- `playBetStart()` → `01-pokemon-new-item-correct.mp3` — начало ставок
+
+Тики таймера и системные сигналы (`playTick`, `playAlert`, `playTimeUp`) — Web Audio API.
+
+Фоновая музыка: `_bgAudio = new Audio("Mike_Oldfield_-_Amarok_1990_66104094.mp3")` — авто-загрузка, loop. Управление: `startBg()` / `stopBg()` / `setBgVolume(val)` / `bgVolDown()` / `bgVolUp()`. Кнопки −/+ в шапке, слайдер `#bgVolSlider` отображается только при активной музыке.
 
 ## Presenter Answer Bar
 
 `refreshAnswered()` в `presenter.html` — поллинг каждые 2 с. Считает ответивших через:
+
 ```js
 scores.filter(s => s.questions_answered > current_index)
 ```
+
 `questions_answered` в `quiz_scores` = `Math.max(qAnswered, curIdx + 1)` когда игрок ответил — чтобы корректно работало после перезагрузки страницы (переменная `qAnswered` сбрасывается в 0, а `curIdx` — нет).
 
 ## Projector Animations
