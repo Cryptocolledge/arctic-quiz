@@ -3232,7 +3232,7 @@ async function pushScore(){
   try{
     const{error}=await sb.from("quiz_scores").upsert(
       {game_id:GID,student_name:pName,team_name:pTeam,institution_name:pInst,
-       score:Number(score)||0,questions_answered:qAnswered,avg_answer_time:avgTime,updated_at:new Date().toISOString()},
+       score:Number(score)||0,questions_answered:answered?Math.max(qAnswered,curIdx+1):qAnswered,avg_answer_time:avgTime,updated_at:new Date().toISOString()},
       {onConflict:"game_id,student_name,team_name"}
     );
     if(error){
@@ -3343,7 +3343,7 @@ function applyState(s){
     if(roundType==="blitz_start"&&lastRoundType!=="blitz_start"){
       lastRoundType="blitz_start";
       stopTimer();
-      startPlayerBlitz(0);
+      if(!ovBlitz.classList.contains("active"))startPlayerBlitz(0);
     }
     if(!roundType&&lastRoundType){
       if(lastRoundType.startsWith("bet")){ovBetting.classList.remove("active");}
@@ -4205,6 +4205,8 @@ function autoNextBlitz(){
     const blitzPts = parseFloat((correct * 0.5).toFixed(1));
     score = (score||0) + blitzPts;
     qAnswered = (qAnswered||0) + Qb.length;
+    const _bDisp=score%1===0?score:score.toFixed(1);
+    if(scoreEl)scoreEl.textContent=_bDisp;if(score2El)score2El.textContent=_bDisp;
     pushScore(); // сохраняем в quiz_scores
     if(stEl){
       stEl.style.cssText="text-align:center;padding:14px;font-size:.95rem";

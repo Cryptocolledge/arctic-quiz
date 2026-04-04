@@ -14,6 +14,15 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 При изменении функций `pts()`, `onOpt()`, `revealAnswer()` или `resetQuiz()` в `hub.html` — обязательно синхронизируй копию `pts()` в `test.html` и перепрогони тесты.
 
+## Array Sync (hub ↔ presenter)
+
+**Оба файла** (`hub.html` и `presenter.html`) содержат одинаковые массивы вопросов. Несовпадение индексов ломает игру. Синхронизировать нужно **два типа массивов**:
+
+- **Основные вопросы**: `Q_SCHOOL`, `Q_SPO`, `Q_ECO_SCHOOL`, `Q_ECO_SPO`, ... (Arctic использует `Q_SCHOOL`/`Q_SPO`, остальные — с префиксом квиза)
+- **Блиц-массивы**: `Q_BLITZ_SPO`, `Q_BLITZ_SCHOOL`, `Q_ECO_BLITZ`, `Q_HISTORY_BLITZ`, ... (по 10 вопросов)
+
+При добавлении вопросов в любой из массивов — внести то же изменение в оба файла.
+
 ## Architecture
 
 ```
@@ -86,6 +95,26 @@ function pts(d){ return !d||d<=1 ? 1 : d===2 ? 2 : 3; }
 ## Question Types
 
 `text` — 4 варианта | `svg` — с иллюстрацией | `rebus` — ребус | `survey` — 100к1 со свободным ответом
+
+## Special Rounds
+
+### Блиц (`round_type = "blitz_start"`)
+Ведущий устанавливает `round_type = "blitz_start"` один раз — дальше всё идёт **только на клиенте** (hub.html). Суть:
+- `startPlayerBlitz(0)` → 12-секундный анонс → `blitzState = {qi:0,...}` → `renderPlayerBlitz()`
+- Каждый вопрос: 10 сек таймер, `onBlitzAnswer()` → `autoNextBlitz()` через 1.8 с
+- По окончании: `score += correct * 0.5`, `pushScore()`, обновляются `scoreEl`/`score2El`
+- `lastRoundType` не сбрасывается пока `round_type` остаётся "blitz_start" → повторного запуска не будет
+
+### Ставки (`betting_chips → betting_open → betting_reveal`)
+Аналогично — управление через `round_type`, логика на клиенте в `hub.html`. Ставка 0–3 очка; выигрыш/проигрыш = ±ставка.
+
+## Presenter Answer Bar
+
+`refreshAnswered()` в `presenter.html` — поллинг каждые 2 с. Считает ответивших через:
+```js
+scores.filter(s => s.questions_answered > current_index)
+```
+`questions_answered` в `quiz_scores` = `Math.max(qAnswered, curIdx + 1)` когда игрок ответил — чтобы корректно работало после перезагрузки страницы (переменная `qAnswered` сбрасывается в 0, а `curIdx` — нет).
 
 ## Projector Animations
 
