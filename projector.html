@@ -174,6 +174,25 @@ body{
 #scoreboardOv::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 75% 55% at 20% 25%,rgba(139,92,246,.35) 0%,transparent 60%),radial-gradient(ellipse 60% 70% at 80% 75%,rgba(34,211,238,.28) 0%,transparent 60%),radial-gradient(ellipse 45% 45% at 55% 45%,rgba(255,200,60,.1) 0%,transparent 65%);animation:sbAurora 7s ease-in-out infinite alternate;pointer-events:none;z-index:0;}
 @keyframes sbAurora{0%{opacity:.75;transform:scale(1) rotate(0deg)}100%{opacity:1;transform:scale(1.08) rotate(3deg)}}
 @keyframes sbOvIn{from{opacity:0;transform:scale(.96)}to{opacity:1;transform:scale(1)}}
+
+/* ── INTRO OVERLAY ── */
+#ov-intro{position:fixed;inset:0;z-index:100;display:none;align-items:center;justify-content:center;flex-direction:column;background:radial-gradient(ellipse 120% 80% at 50% 70%,#0c0830 0%,#050218 55%,#000 100%);overflow:hidden;text-align:center;cursor:pointer;}
+#intro-particles{position:absolute;inset:0;pointer-events:none;overflow:hidden;}
+#intro-content{position:relative;z-index:2;display:flex;flex-direction:column;align-items:center;gap:20px;padding:0 40px;}
+#intro-pre{font-size:clamp(.9rem,1.8vw,1.35rem);font-weight:800;letter-spacing:.4em;text-transform:uppercase;color:rgba(79,223,255,.75);animation:introPreReveal .7s .3s ease both;}
+#intro-title{font-size:clamp(3.5rem,9vw,8rem);font-weight:900;letter-spacing:.05em;text-transform:uppercase;background:linear-gradient(135deg,#4fdfff 0%,#b0ffee 35%,#61ffb2 60%,#4fdfff 100%);background-size:300% 100%;-webkit-background-clip:text;-webkit-text-fill-color:transparent;filter:drop-shadow(0 0 50px rgba(79,223,255,.7));animation:introTitleReveal 1s .6s cubic-bezier(.22,1,.36,1) both,introTitleShimmer 3s 1.6s linear infinite;}
+#intro-line{height:3px;border-radius:999px;background:linear-gradient(90deg,transparent,#4fdfff 30%,#61ffb2 70%,transparent);animation:introLineExpand .8s 1.4s ease both;}
+#intro-sub{font-size:clamp(1.1rem,2.5vw,2rem);font-weight:700;letter-spacing:.15em;text-transform:uppercase;color:rgba(255,255,255,.88);animation:introSubReveal .7s 1.6s ease both;}
+#intro-hint{position:absolute;bottom:32px;left:50%;transform:translateX(-50%);font-size:.75rem;color:rgba(79,223,255,.4);letter-spacing:.12em;text-transform:uppercase;animation:introPulse 2s 2.5s ease-in-out infinite both;}
+@keyframes introPreReveal{from{opacity:0;transform:translateY(-18px)}to{opacity:1;transform:translateY(0)}}
+@keyframes introTitleReveal{from{opacity:0;transform:scale(.55) translateY(30px)}60%{transform:scale(1.07) translateY(-8px)}to{opacity:1;transform:scale(1) translateY(0)}}
+@keyframes introTitleShimmer{0%{background-position:0% 50%}100%{background-position:300% 50%}}
+@keyframes introLineExpand{from{width:0;opacity:0}to{width:min(520px,65vw);opacity:1}}
+@keyframes introSubReveal{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:translateY(0)}}
+@keyframes introParticle{0%{transform:translateY(0) rotate(0deg) scale(1);opacity:0}8%{opacity:1}88%{opacity:.7}100%{transform:translateY(-95vh) rotate(600deg) scale(.3);opacity:0}}
+@keyframes introStarPulse{0%,100%{opacity:.25;transform:scale(1)}50%{opacity:.9;transform:scale(1.5)}}
+@keyframes introFadeOut{0%{opacity:1;transform:scale(1)}100%{opacity:0;transform:scale(1.06)}}
+@keyframes introPulse{0%,100%{opacity:.3}50%{opacity:.75}}
 .sb-trophy{font-size:3.2rem;margin-bottom:8px;position:relative;z-index:1;animation:sbTrophyFloat 2.8s ease-in-out infinite;}
 @keyframes sbTrophyFloat{0%,100%{transform:translateY(0) scale(1);filter:drop-shadow(0 0 20px rgba(255,211,107,.7))}50%{transform:translateY(-9px) scale(1.1);filter:drop-shadow(0 0 36px rgba(255,211,107,1));}}
 .sb-title{position:relative;z-index:1;font-size:clamp(1.2rem,2.5vw,2rem);font-weight:900;letter-spacing:.08em;text-transform:uppercase;background:linear-gradient(90deg,#ffd36b 0%,#ffb300 25%,#ffe680 50%,#ffb300 75%,#ffd36b 100%);background-size:300%;-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:6px;text-align:center;animation:sbTitleShimmer 3s linear infinite;}
@@ -234,6 +253,20 @@ body{
     <div class="leader-chip" id="leaderChip" style="display:none">🏆 <span id="leaderName">—</span></div>
     <div style="font-size:.58rem;font-weight:700;color:rgba(79,223,255,.7);letter-spacing:.12em;text-transform:uppercase;padding:4px 9px;border:1px solid rgba(79,223,255,.25);border-radius:7px;background:rgba(79,223,255,.06);flex-shrink:0;">📽</div>
   </div>
+</div>
+
+<!-- INTRO OVERLAY -->
+<div id="ov-intro" onclick="_hideIntroOverlay()">
+  <div id="intro-particles"></div>
+  <div style="position:absolute;top:0;left:0;right:0;height:80px;background:linear-gradient(180deg,rgba(0,0,0,.85),transparent);z-index:1;pointer-events:none;"></div>
+  <div style="position:absolute;bottom:0;left:0;right:0;height:80px;background:linear-gradient(0deg,rgba(0,0,0,.85),transparent);z-index:1;pointer-events:none;"></div>
+  <div id="intro-content">
+    <div id="intro-pre">ДОБРО ПОЖАЛОВАТЬ</div>
+    <div id="intro-title">КвизЦентр</div>
+    <div id="intro-line"></div>
+    <div id="intro-sub">Арктический квиз</div>
+  </div>
+  <div id="intro-hint">нажмите для пропуска</div>
 </div>
 
 <!-- STATUS OVERLAY -->
@@ -952,6 +985,62 @@ async function showProjScoreboard(){
 
 function hideProjScoreboard(){$("scoreboardOv").style.display="none";}
 
+// ── INTRO OVERLAY ────────────────────────────────────────────
+let _introAudio=null,_introShown=false,_introFallback=null;
+
+function showIntroOverlay(qid){
+  const ov=document.getElementById('ov-intro');
+  if(!ov||_introShown)return;
+  _introShown=true;
+  const names={arctic:'Арктический квиз',ecology:'Экология',history:'История России',
+    science:'Наука и технологии',patriot:'Патриотический квиз',
+    geo:'География России',space:'Космос и авиация',sport:'Спорт и ЗОЖ'};
+  const sub=document.getElementById('intro-sub');
+  if(sub)sub.textContent=names[qid]||'КвизЦентр';
+  ov.style.animation='';ov.style.opacity='';
+  ov.style.display='flex';
+  _introSpawnParticles();
+  if(!_introAudio)_introAudio=new Audio('Startgame.mp3');
+  _introAudio.currentTime=0;_introAudio.volume=0.88;
+  _introAudio.play().catch(()=>{});
+  _introAudio.onended=()=>_hideIntroOverlay();
+  _introFallback=setTimeout(()=>_hideIntroOverlay(),20000);
+}
+
+function _hideIntroOverlay(){
+  const ov=document.getElementById('ov-intro');
+  if(!ov||!_introShown)return;
+  if(_introFallback){clearTimeout(_introFallback);_introFallback=null;}
+  ov.style.animation='introFadeOut .9s ease forwards';
+  setTimeout(()=>{
+    ov.style.display='none';ov.style.animation='';
+    _introShown=false;
+    const c=document.getElementById('intro-particles');if(c)c.innerHTML='';
+  },900);
+  if(_introAudio){try{_introAudio.pause();_introAudio.currentTime=0;}catch(e){}}
+}
+
+function _introSpawnParticles(){
+  const c=document.getElementById('intro-particles');if(!c)return;
+  c.innerHTML='';
+  const cols=['#4fdfff','#61ffb2','#ffd36b','#a78bfa','#ff6b9d','#ffffff','#80ffe8'];
+  // Rising particles
+  for(let i=0;i<80;i++){
+    const p=document.createElement('div');
+    const x=Math.random()*100,delay=Math.random()*5,dur=4+Math.random()*6,sz=1.5+Math.random()*4;
+    const col=cols[Math.floor(Math.random()*cols.length)];
+    p.style.cssText=`position:absolute;left:${x}%;bottom:-8px;width:${sz}px;height:${sz}px;border-radius:50%;background:${col};box-shadow:0 0 ${sz*3}px ${col};animation:introParticle ${dur}s ${delay}s ease-in-out infinite;`;
+    c.appendChild(p);
+  }
+  // Background star field
+  for(let i=0;i<60;i++){
+    const s=document.createElement('div');
+    const x=Math.random()*100,y=Math.random()*100,sz=.4+Math.random()*1.4,delay=Math.random()*4;
+    s.style.cssText=`position:absolute;left:${x}%;top:${y}%;width:${sz}px;height:${sz}px;border-radius:50%;background:#fff;animation:introStarPulse ${1.2+Math.random()*2.5}s ${delay}s ease-in-out infinite;`;
+    c.appendChild(s);
+  }
+}
+
 // ── APPLY STATE ───────────────────────────────────────────────
 let lastShow=false;
 let lastSurveyPhase="";
@@ -996,6 +1085,7 @@ function applyState(s){
   const show=s.show_answer===true;
   const rt=s.round_type||"";
 
+  if(phase==="intro"){showIntroOverlay(s.quiz_id||"arctic");stopTimer();return;}
   if(phase==="waiting"){hideProjScoreboard();showStatusScreen("⏳","Ожидание","Ждём старта игры…");stopTimer();return;}
   if(phase==="ended"){hideProjScoreboard();showStatusScreen("🏆","Игра завершена","Благодарим за участие!");stopTimer();return;}
   if(phase==="scoreboard"){
