@@ -3086,6 +3086,9 @@ function openBetting(){
 
     document.getElementById("betBtnSkipTimer")?.addEventListener("click",()=>{
       clearInterval(bettingTimerInt);bettingTimerInt=null;
+      betTime=0;
+      const _tn=document.getElementById("betTnum"),_tb=document.getElementById("betTbar");
+      if(_tn)_tn.textContent="0";if(_tb)_tb.style.width="0%";
     });
 
     document.getElementById("betBtnOpen")?.addEventListener("click",()=>{

@@ -68,7 +68,7 @@ body{font-family:system-ui,-apple-system,"Segoe UI",sans-serif;color:var(--text)
 .otop{display:flex;align-items:center;justify-content:space-between;}
 .otitle{font-size:.7rem;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);}
 .spill{font-size:.82rem;padding:3px 8px;border-radius:999px;background:rgba(255,211,107,.1);border:1px solid rgba(255,211,107,.4);color:var(--gold);font-weight:700;}
-.opts{display:flex;flex-direction:column;gap:5px;}
+.opts{display:grid;grid-template-columns:1fr 1fr;gap:7px;}
 .opt{width:100%;text-align:left;padding:9px 11px;border-radius:11px;border:1px solid rgba(122,142,255,.2);background:rgba(5,12,30,.95);color:var(--text);cursor:pointer;font-size:.84rem;display:flex;align-items:center;gap:7px;transition:border-color .15s,transform .12s;min-height:40px;}
 .opt:hover:not(:disabled){transform:translateY(-1px);border-color:rgba(79,223,255,.7);}
 .opt:disabled{cursor:default;opacity:.7;}
@@ -194,6 +194,13 @@ body{font-family:system-ui,-apple-system,"Segoe UI",sans-serif;color:var(--text)
 .snow{pointer-events:none;position:fixed;inset:0;overflow:hidden;z-index:0;opacity:.3;}
 .flake{position:absolute;top:-10px;width:2px;height:6px;border-radius:999px;background:rgba(255,255,255,.85);animation:sf 14s linear infinite;}
 @keyframes sf{0%{opacity:0;transform:translate(0,-10px)}8%{opacity:1}100%{opacity:0;transform:translate(28px,105vh)}}
+/* Announce overlay animations */
+@keyframes annTitleShimmer{0%{background-position:0% 50%}100%{background-position:200% 50%}}
+@keyframes annPulse{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(1.12);opacity:.85}}
+@keyframes annParticle{0%{opacity:0;transform:translateY(0) scale(0) rotate(0deg)}15%{opacity:1;transform:translateY(-15px) scale(1.2) rotate(20deg)}100%{opacity:0;transform:translateY(-180px) scale(.4) rotate(360deg)}}
+@keyframes annCardIn{from{opacity:0;transform:scale(.82) translateY(24px)}to{opacity:1;transform:none}}
+.ann-particle{position:absolute;bottom:10%;font-size:1.4rem;animation:annParticle 2s ease-out infinite;}
+#announce-card{animation:annCardIn .45s cubic-bezier(.22,.68,0,1.2) both;}
 
 /* ── АДАПТИВНОСТЬ ── */
 @media(max-width:600px){
@@ -201,7 +208,7 @@ body{font-family:system-ui,-apple-system,"Segoe UI",sans-serif;color:var(--text)
   .shell{gap:7px;}
   .hdr{padding:10px 12px;gap:8px;}
   .htitle{font-size:.9rem;}
-  .opts{grid-template-columns:1fr!important;}
+  .opts{grid-template-columns:1fr!important;gap:5px!important;}
   .opt{padding:10px 12px;font-size:.82rem;}
   .obadge{width:24px;height:24px;font-size:.72rem;}
   .card{padding:10px 12px;}
@@ -1214,18 +1221,17 @@ document.addEventListener('DOMContentLoaded',function(){
 </div>
 
 <!-- OV: АНОНС РАУНДА -->
-<div class="ov-special" id="ov-announce">
-<div class="sp-card" id="announce-card" style="background:rgba(10,5,35,.99);border:2px solid rgba(249,115,22,.5);max-width:420px;text-align:center;gap:16px;">
-  <div id="announce-icon" style="font-size:3rem;animation:pulse 1s infinite">⚡</div>
-  <div id="announce-title" style="font-size:1.3rem;font-weight:900;letter-spacing:.07em;text-transform:uppercase;background:linear-gradient(90deg,#f97316,#fbbf24);-webkit-background-clip:text;-webkit-text-fill-color:transparent">БЛИЦ-РАУНД</div>
-  <div id="announce-rules" style="font-size:.85rem;color:rgba(255,255,255,.8);line-height:1.6;background:rgba(255,255,255,.04);border-radius:10px;padding:12px 14px;text-align:left"></div>
-  <div id="announce-countdown" style="font-size:2rem;font-weight:900;color:#f97316">3</div>
-  <div style="font-size:.72rem;color:var(--muted)">Игра начнётся автоматически через <span id="announceCountdown2"></span> сек.</div>
-  <button onclick="
-    const el=document.getElementById('ov-announce');
-    if(el){el.classList.remove('active');}
-    if(window._announceCallback){window._announceCallback();window._announceCallback=null;}
-  " style="padding:7px 20px;border-radius:999px;border:1px solid rgba(255,255,255,.2);background:rgba(255,255,255,.06);color:var(--muted);cursor:pointer;font-size:.75rem;margin-top:2px">▶ Начать сейчас</button>
+<div class="ov-special" id="ov-announce" style="backdrop-filter:blur(6px);">
+<div class="sp-card" id="announce-card" style="background:rgba(10,5,35,.97);border:2px solid rgba(249,115,22,.6);max-width:440px;text-align:center;gap:14px;position:relative;overflow:hidden;padding:28px 22px;">
+  <div id="announce-bg-glow" style="position:absolute;inset:0;pointer-events:none;opacity:.18;background:radial-gradient(ellipse at 50% 0%,#f97316 0%,transparent 70%);"></div>
+  <div id="announce-particles" style="position:absolute;inset:0;pointer-events:none;overflow:hidden;"></div>
+  <div id="announce-icon" style="font-size:4rem;position:relative;z-index:1;filter:drop-shadow(0 0 18px rgba(249,115,22,.7))">⚡</div>
+  <div id="announce-title" style="font-size:1.6rem;font-weight:900;letter-spacing:.1em;text-transform:uppercase;background:linear-gradient(90deg,#f97316,#fbbf24,#f97316);background-size:200%;-webkit-background-clip:text;-webkit-text-fill-color:transparent;animation:annTitleShimmer 2s linear infinite;position:relative;z-index:1;">БЛИЦ-РАУНД</div>
+  <div id="announce-subtitle" style="font-size:.78rem;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:rgba(255,180,50,.6);margin-top:-8px;position:relative;z-index:1;">ПРИГОТОВЬТЕСЬ!</div>
+  <div id="announce-rules" style="font-size:.82rem;color:rgba(255,255,255,.85);line-height:1.65;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);border-radius:12px;padding:12px 14px;text-align:left;position:relative;z-index:1;"></div>
+  <div id="announce-countdown" style="font-size:3.5rem;font-weight:900;color:#f97316;line-height:1;animation:annPulse .9s ease-in-out infinite;position:relative;z-index:1;text-shadow:0 0 30px rgba(249,115,22,.8);">12</div>
+  <div style="font-size:.7rem;color:var(--muted);position:relative;z-index:1;">Игра начнётся автоматически через <span id="announceCountdown2"></span> сек.</div>
+  <button onclick="const el=document.getElementById('ov-announce');if(el){el.classList.remove('active');}if(window._announceCallback){window._announceCallback();window._announceCallback=null;}" style="padding:8px 24px;border-radius:999px;border:1px solid rgba(255,255,255,.25);background:rgba(255,255,255,.08);color:#fff;cursor:pointer;font-size:.78rem;font-weight:700;letter-spacing:.05em;position:relative;z-index:1;transition:background .15s;">▶ Начать сейчас</button>
 </div>
 </div>
 
@@ -1253,13 +1259,11 @@ document.addEventListener('DOMContentLoaded',function(){
       <div class="hrow">
         <div class="chip"><span class="dot"></span><span id="meta-diff">Уровень: средний</span></div>
         <div class="chip" id="qcount-chip">— вопросов · 25 сек</div>
-        <div style="display:flex;align-items:center;gap:5px;">
-          <button class="btn btn-g" id="music-btn" style="min-height:28px;padding:3px 9px;font-size:.71rem;">🎵 Музыка</button>
-
-          <input id="bgVolSlider" type="range" min="0" max="100" value="30" style="width:60px;accent-color:#4fdfff;cursor:pointer;display:none;" title="Громкость" oninput="setBgVolume(this.value)">
-          <label title="Загрузить свою музыку (mp3, ogg)" style="cursor:pointer;min-height:28px;padding:3px 9px;border-radius:999px;border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.04);color:var(--muted);font-size:.68rem;white-space:nowrap;display:inline-flex;align-items:center;gap:4px;" id="customMusicLbl">
-            📂<input type="file" accept="audio/*" style="display:none" onchange="loadCustomMusic(this)"/>
-          </label>
+        <div style="display:flex;align-items:center;gap:4px;">
+          <button class="btn btn-g" id="music-btn" style="min-height:28px;padding:3px 9px;font-size:.71rem;">▶ Музыка</button>
+          <button onclick="bgVolDown()" title="Тише" style="min-height:28px;padding:2px 7px;border-radius:999px;border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.04);color:var(--muted);cursor:pointer;font-size:.8rem;line-height:1;">−</button>
+          <input id="bgVolSlider" type="range" min="0" max="100" value="30" style="width:54px;accent-color:#4fdfff;cursor:pointer;display:none;" title="Громкость" oninput="setBgVolume(this.value)">
+          <button onclick="bgVolUp()" title="Громче" style="min-height:28px;padding:2px 7px;border-radius:999px;border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.04);color:var(--muted);cursor:pointer;font-size:.8rem;line-height:1;">+</button>
         </div>
       </div>
       <div class="hrow" style="margin-top:4px;">
@@ -2643,34 +2647,26 @@ function tone(f,dur,type,vol,delay,detune){
 }
 function chord(freqs,dur,type,vol,delay){freqs.forEach((f,i)=>tone(f,dur,type,vol*(1-i*.07),delay,i*3));}
 
-// Правильный ответ — восходящая мажорная пентатоника с реверберацией
-function playOk(){
-  const c=ac();if(!c)return;
-  // Нота: До-Ми-Соль-До (мажорное трезвучие + октава)
-  [[523.25,0],[659.25,.1],[783.99,.2],[1046.5,.33]].forEach(([f,d])=>{
-    tone(f,.35+d,"sine",.22,d);
-    tone(f*2,.18,"sine",.06,d+.01); // мягкий обертон
-  });
-  // Финальный аккорд
-  chord([523.25,659.25,783.99],.5,"sine",.1,.45);
+// ── MP3 звуки ─────────────────────────────────────────────────
+const _sndFiles={ok:'respuesta-correcta.mp3',err:'wrong-1.mp3',done:'jbs-correct-clap.mp3',blitz:'respuesta-correcta.mp3',bet:'01-pokemon-new-item-correct.mp3'};
+const _sndAudio={};
+function _playSnd(key){
+  if(!_sndAudio[key]){
+    const a=new Audio(_sndFiles[key]);
+    a.volume=key==='done'?0.85:0.75;
+    _sndAudio[key]=a;
+  }
+  const a=_sndAudio[key];
+  a.currentTime=0;
+  a.play().catch(()=>{});
 }
+function playOk(){_playSnd('ok');}
+function playErr(){_playSnd('err');}
+function playDone(){_playSnd('done');}
+function playBlitzStart(){_playSnd('blitz');}
+function playBetStart(){_playSnd('bet');}
 
-// Неправильный ответ — диссонанс с затуханием
-function playErr(){
-  const c=ac();if(!c)return;
-  tone(220,.45,"sawtooth",.18,0);
-  tone(233.08,.35,"sawtooth",.14,.05); // малая секунда
-  tone(174.61,.55,"sine",.12,.1);      // нисходящий тон
-  // Низкий удар
-  const t=c.currentTime;
-  const o=c.createOscillator(),g=c.createGain();
-  o.type="sine";o.frequency.setValueAtTime(120,t);
-  o.frequency.exponentialRampToValueAtTime(50,t+.3);
-  g.gain.setValueAtTime(.3,t);g.gain.exponentialRampToValueAtTime(.001,t+.35);
-  o.connect(g).connect(c.destination);o.start(t);o.stop(t+.4);
-}
-
-// Тик таймера — мягкий щелчок
+// Тик таймера — мягкий щелчок (Web Audio)
 function _playTick(){
   const c=ac();if(!c)return;
   const t=c.currentTime;
@@ -2679,51 +2675,42 @@ function _playTick(){
   g.gain.setValueAtTime(.08,t);g.gain.exponentialRampToValueAtTime(.001,t+.04);
   o.connect(g).connect(c.destination);o.start(t);o.stop(t+.05);
 }
-// Переопределяем tickSound
 const _origPlayTick=window.playTick;
 window.playTick=()=>_playTick();
-function playDone(){[523,659,784,880,988,1047].forEach((f,i)=>tone(f,.2,"triangle",.2,i*.14));}
 function playAlert(){tone(880,.08,"square",.25,0);tone(880,.08,"square",.25,.12);tone(1100,.15,"square",.2,.26);}
-function playTick(){tone(1200,.05,"square",.12,0);}  // тик при последних 5 сек
+function playTick(){tone(1200,.05,"square",.12,0);}
 function playTimeUp(){tone(220,.3,"sawtooth",.3,0);tone(180,.4,"sawtooth",.25,.2);}
 
-// ── МУЗЫКА ────────────────────────────────────────────────────
-let bgOn=false,bgMaster=null,bgOscs=[],bgLfos=[],bgInt=null;
-function loadCustomMusic(input){
-  const file=input.files[0];
-  if(!file)return;
-  const url=URL.createObjectURL(file);
-  if(window._customAudio){window._customAudio.pause();URL.revokeObjectURL(window._customAudio.src);}
-  const a=new Audio(url);
-  a.loop=true;a.volume=0.3;
-  window._customAudio=a;
-  // Останавливаем генеративную музыку
-  stopBg();
-  a.play().catch(()=>{});
-  musicBtn.textContent="🔇 Музыка";
-  bgOn=true; // флаг что музыка играет
-  // Перехватываем toggleBg
-  window._usingCustom=true;
-  const lbl=input.parentElement;
-  lbl.style.borderColor="rgba(97,255,178,.5)";
-  lbl.style.color="var(--ok)";
-  lbl.title="🎵 "+file.name.slice(0,25);
-}
+// ── ФОНОВАЯ МУЗЫКА (Mike Oldfield — Amarok) ────────────────────
+let bgOn=false;
+const _bgAudio=new Audio("Mike_Oldfield_-_Amarok_1990_66104094.mp3");
+_bgAudio.loop=true;_bgAudio.volume=0.3;
 
 function setBgVolume(val){
-  const v=parseInt(val)/100;
-  if(window._customAudio){ window._customAudio.volume=v; return; }
-  if(bgMaster&&_ac){ bgMaster.gain.setTargetAtTime(v*0.35,_ac.currentTime,.3); }
+  const v=Math.max(0,Math.min(1,parseInt(val)/100));
+  _bgAudio.volume=v;
+  const sl=document.getElementById('bgVolSlider');
+  if(sl)sl.value=Math.round(v*100);
 }
-function startBg(){const c=ac();if(!c||bgOn)return;bgOn=true;const m=c.createGain();m.gain.value=0;m.connect(c.destination);m.gain.linearRampToValueAtTime(.1,c.currentTime+3);bgMaster=m;[110,138.59,164.81,220,261.63].forEach((f,i)=>{const o=c.createOscillator(),g=c.createGain();o.type="sine";o.frequency.value=f;g.gain.value=.12;const lfo=c.createOscillator(),lg=c.createGain();lfo.type="sine";lfo.frequency.value=.15+i*.04;lg.gain.value=.4;lfo.connect(lg).connect(o.frequency);lfo.start();o.connect(g).connect(m);o.start();bgOscs.push({o,g});bgLfos.push(lfo);});let t=0;bgInt=setInterval(()=>{t++;bgOscs.forEach(({g},i)=>{g.gain.setTargetAtTime(.05+.06*Math.sin(t*.07+i*1.2),_ac.currentTime,.8);});},400);musicBtn.textContent="🔇 Музыка";}
+function bgVolDown(){setBgVolume(Math.round(_bgAudio.volume*100)-10);}
+function bgVolUp(){setBgVolume(Math.round(_bgAudio.volume*100)+10);}
+
+function startBg(){
+  if(bgOn)return;
+  bgOn=true;
+  _bgAudio.play().catch(()=>{});
+  if(musicBtn)musicBtn.textContent="⏸ Музыка";
+  const sl=document.getElementById('bgVolSlider');
+  if(sl)sl.style.display="";
+}
 function stopBg(){
-  if(window._usingCustom&&window._customAudio){
-    window._customAudio.pause();
-    window._usingCustom=false;
-    bgOn=false;
-    if(musicBtn)musicBtn.textContent="🎵 Музыка";
-    return;
-  }if(!bgOn)return;if(bgInt){clearInterval(bgInt);bgInt=null;}if(bgMaster)bgMaster.gain.setTargetAtTime(0,_ac.currentTime,.6);setTimeout(()=>{bgOscs.forEach(({o})=>{try{o.stop();}catch(e){}});bgLfos.forEach(l=>{try{l.stop();}catch(e){}});bgOscs=[];bgLfos=[];bgMaster=null;bgOn=false;},1800);musicBtn.textContent="🎵 Музыка";}
+  if(!bgOn)return;
+  bgOn=false;
+  _bgAudio.pause();
+  if(musicBtn)musicBtn.textContent="▶ Музыка";
+  const sl=document.getElementById('bgVolSlider');
+  if(sl)sl.style.display="none";
+}
 
 // ── ТАЙМЕР ────────────────────────────────────────────────────
 function stopTimer(){timerTok++;if(timerInt){clearInterval(timerInt);timerInt=null;}tnum.textContent="—";tbar.style.transform="scaleX(0)";const tcirc=document.querySelector(".tcirc");if(tcirc)tcirc.classList.remove("urgent");}
@@ -3327,7 +3314,7 @@ function applyState(s){
       $("betPlayerSub").textContent="Сделайте ставку перед тем, как увидеть вопрос!";
       // Показываем анонс перед ставками
       ovBetting.classList.remove("active");
-      showAnnounce("betting",()=>{ ovBetting.classList.add("active"); });
+      playBetStart();showAnnounce("betting",()=>{ ovBetting.classList.add("active"); });
     }
     if(roundType==="betting_open"&&lastRoundType!=="betting_open"){
       lastRoundType="betting_open";
@@ -3380,13 +3367,14 @@ function applyState(s){
   }
   // currentQuizId уже установлен в hubStartGame (до регистрации)
   const newQ=_getQuizQ(currentQuizId,qmode);
-  if(newQ!==Q){Q=newQ;lastIdx=-1;const _qcc=document.getElementById("qcount-chip");if(_qcc)_qcc.textContent=Q.length+" вопросов · "+QT+" сек";
+  if(newQ!==Q){Q=newQ;lastIdx=-1;
     if(registered&&lastFetchedState&&lastFetchedState.quiz_id&&lastFetchedState.quiz_id!==currentQuizId){
       currentQuizId=lastFetchedState.quiz_id;
       const _qn2={arctic:'Арктика',ecology:'Экология',history:'История',science:'Наука',patriot:'Патриотика',geo:'География',space:'Космос',sport:'Спорт'};
       showToast('📢 Квиз переключён: '+(_qn2[currentQuizId]||currentQuizId),'info');
     }
   }
+  const _qcc=document.getElementById("qcount-chip");if(_qcc)_qcc.textContent=Q.length+" вопросов · "+QT+" сек";
   const _qn={arctic:'🧊 Арктика',ecology:'🌿 Экология',history:'📜 История',science:'🔬 Наука',patriot:'🏅 Патриотика',geo:'🌍 География',space:'🚀 Космос',sport:'🏆 Спорт'};
   document.title="Квиз: "+(_qn[currentQuizId]||"Игра");
 
@@ -3844,10 +3832,7 @@ function applySurveyScore(){
   pushScore();
   _surveyQ=null;_surveyAnswer="";_surveyScored=false;
 }
-musicBtn.addEventListener("click",()=>{
-  if(bgOn){stopBg();document.getElementById('bgVolSlider').style.display='none';}
-  else{startBg();document.getElementById('bgVolSlider').style.display='';}
-});
+musicBtn.addEventListener("click",()=>{if(bgOn)stopBg();else startBg();});
 alertBtn.addEventListener("click",()=>{if(!pName||chatBlocked)return;playAlert();sendChat("🚨 Прошу внимания! Есть вопрос или проблема.","alert");alertBtn.disabled=true;alertBtn.textContent="✓ Отправлено";setTimeout(()=>{alertBtn.disabled=false;alertBtn.textContent="🚨 Вопрос!";},10000);});
 chatSendBtn.addEventListener("click",()=>{const t=chatInp.value.trim();if(!t)return;sendChat(t);chatInp.value="";});
 chatInp.addEventListener("keydown",e=>{if(e.key==="Enter"){const t=chatInp.value.trim();if(!t)return;sendChat(t);chatInp.value="";}});
@@ -4019,25 +4004,43 @@ function showAnnounce(type, cb){
   const rules=$("announce-rules");
   const countdown=$("announce-countdown");
   if(!ov)return cb&&cb();
+  const subtitle=$("announce-subtitle");
+  const bgGlow=$("announce-bg-glow");
+  const particlesEl=$("announce-particles");
+  // Reset animation
+  card.style.animation="none";void card.offsetWidth;card.style.animation="";
   if(type==="blitz"){
     icon.textContent="⚡";
+    icon.style.filter="drop-shadow(0 0 18px rgba(249,115,22,.8))";
     title.textContent="БЛИЦ-РАУНД";
-    title.style.background="linear-gradient(90deg,#f97316,#fbbf24)";
+    title.style.background="linear-gradient(90deg,#f97316,#fbbf24,#f97316)";
+    title.style.backgroundSize="200%";
     title.style["-webkit-background-clip"]="text";
     title.style["-webkit-text-fill-color"]="transparent";
-    card.style.border="2px solid rgba(249,115,22,.6)";
-    rules.innerHTML="🎯 <b>10 вопросов</b>, по 10 секунд на каждый<br>✅ Правильный ответ — <b>+0.5 очка</b><br>⏱ Успейте ответить до конца таймера<br>🏃 Темп быстрый — не думайте слишком долго!";
+    if(subtitle){subtitle.textContent="ПРИГОТОВЬТЕСЬ!";subtitle.style.color="rgba(255,180,50,.7)";}
+    card.style.border="2px solid rgba(249,115,22,.7)";
+    card.style.boxShadow="0 0 40px rgba(249,115,22,.25)";
+    if(bgGlow){bgGlow.style.background="radial-gradient(ellipse at 50% 0%,#f97316 0%,transparent 70%)";}
+    rules.innerHTML="⚡ <b>10 вопросов</b> — 10 секунд на каждый<br>✅ Правильный ответ: <b>+0.5 очка</b><br>🏃 Темп максимальный — доверяйте первому импульсу!<br>🔥 Кто быстрее всех — тот чемпион блица!";
+    if(particlesEl){particlesEl.innerHTML=Array.from({length:10},(_,i)=>`<div class="ann-particle" style="left:${8+i*9}%;animation-delay:${i*0.18}s;animation-duration:${1.6+i%3*0.4}s;">⚡</div>`).join("");}
   } else {
     icon.textContent="🎰";
+    icon.style.filter="drop-shadow(0 0 18px rgba(167,139,250,.8))";
     title.textContent="РАУНД СТАВОК";
-    title.style.background="linear-gradient(90deg,#a78bfa,#7c3aed)";
+    title.style.background="linear-gradient(90deg,#a78bfa,#c4b5fd,#a78bfa)";
+    title.style.backgroundSize="200%";
     title.style["-webkit-background-clip"]="text";
     title.style["-webkit-text-fill-color"]="transparent";
-    card.style.border="2px solid rgba(167,139,250,.6)";
-    rules.innerHTML="🎲 Сделайте <b>ставку</b> (0–3 очка) до открытия вопроса<br>✅ Угадаете — получите <b>+ставка очков</b><br>❌ Ошибётесь — потеряете <b>−ставка очков</b><br>0️⃣ Ставка 0 — наблюдаете без риска";
+    if(subtitle){subtitle.textContent="СДЕЛАЙТЕ СТАВКУ!";subtitle.style.color="rgba(200,170,255,.7)";}
+    card.style.border="2px solid rgba(167,139,250,.7)";
+    card.style.boxShadow="0 0 40px rgba(139,92,246,.25)";
+    if(bgGlow){bgGlow.style.background="radial-gradient(ellipse at 50% 0%,#7c3aed 0%,transparent 70%)";}
+    rules.innerHTML="🎲 Выберите <b>ставку</b> (0 – 3 очка) ДО открытия вопроса<br>✅ Угадали — получите <b>+ставка очков</b><br>❌ Ошиблись — потеряете <b>−ставка очков</b><br>0️⃣ Ставка 0 — смотрите без риска, но и без выигрыша";
+    if(particlesEl){particlesEl.innerHTML=Array.from({length:10},(_,i)=>`<div class="ann-particle" style="left:${8+i*9}%;animation-delay:${i*0.2}s;animation-duration:${1.8+i%3*0.3}s;">${['💎','🃏','🎲','⭐','💰'][i%5]}</div>`).join("");}
   }
   let t=12;
   countdown.textContent=t;
+  const cd2=$("announceCountdown2");if(cd2)cd2.textContent=t;
   window._announceCallback = cb;
   ov.classList.add("active");
   const intv=setInterval(()=>{
@@ -4045,15 +4048,18 @@ function showAnnounce(type, cb){
     if(t<=0){
       clearInterval(intv);
       ov.classList.remove("active");
+      if(particlesEl)particlesEl.innerHTML="";
       if(cb)cb();
     } else {
       countdown.textContent=t;
+      if(cd2)cd2.textContent=t;
     }
   },1000);
 }
 
 function startPlayerBlitz(startIdx){
   if(!registered)return;
+  playBlitzStart();
   showAnnounce("blitz",()=>{
     ovBlitz.classList.add("active");
     blitzState={qi:startIdx||0,timeLeft:10,answered:false,results:[],timerInt:null};
