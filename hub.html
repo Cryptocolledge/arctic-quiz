@@ -2676,7 +2676,7 @@ function playTick(){tone(1200,.05,"square",.12,0);}
 function playTimeUp(){tone(220,.3,"sawtooth",.3,0);tone(180,.4,"sawtooth",.25,.2);}
 
 // ── ФОНОВАЯ МУЗЫКА (Mike Oldfield — Amarok) ────────────────────
-let bgOn=false;
+let bgOn=false,_lastMusicPlaying=false,_scoreLoaded=false;
 const _bgAudio=new Audio("Mike_Oldfield_-_Amarok_1990_66104094.mp3");
 _bgAudio.loop=true;_bgAudio.volume=0.3;
 
@@ -3028,6 +3028,9 @@ function onOpt(e){
   // Показываем подсказку о перевыборе (только при неверном)
   if(!isOk) showChangeHint();
   pushScore();
+  // Статистика ответов для ведущего
+  if(sb&&pName){sb.from("quiz_chat").insert({game_id:GID,sender_name:pName,team_name:pTeam,
+    message:JSON.stringify({q:curIdx,ok:isOk}),msg_type:"answer_stat"}).then(()=>{}).catch(()=>{});}
 }
 
 function showChangeHint(){
@@ -3210,6 +3213,20 @@ function showToast(msg, type){
   requestAnimationFrame(()=>{t.style.opacity='1';});
   setTimeout(()=>{t.style.opacity='0';setTimeout(()=>t.remove(),300);},3000);
 }
+async function loadSavedScore(){
+  if(!sb||!pName||score>0)return;
+  try{
+    const{data}=await sb.from("quiz_scores").select("score,questions_answered")
+      .eq("game_id",GID).eq("student_name",pName).eq("team_name",pTeam).maybeSingle();
+    if(data&&data.score>0){
+      score=data.score;qAnswered=data.questions_answered||0;
+      const sd=score%1===0?score:score.toFixed(1);
+      scoreEl.textContent=sd;score2El.textContent=sd;
+      showToast("💾 Счёт восстановлен: "+sd+" очков","info");
+    }
+  }catch(e){}
+}
+
 async function pushScore(){
   if(!sb||!pName)return;
   const correct=UA.filter(a=>a&&a.ok);
@@ -3282,6 +3299,9 @@ try{
 
 function applyState(s){
   lastFetchedState=s;
+  // Трансляция музыки от ведущего (очный режим — звук на проекторе)
+  const musicNow=s?.music_playing===true;
+  if(musicNow!==_lastMusicPlaying){_lastMusicPlaying=musicNow;if(musicNow)startBg();else stopBg();}
   if(!registered)return;
   const phase=s?.phase||"waiting";
   const idx=typeof s?.current_index==="number"?s.current_index:0;
@@ -3312,7 +3332,8 @@ function applyState(s){
       $("betPlayerSub").textContent="Сделайте ставку перед тем, как увидеть вопрос!";
       // Показываем анонс перед ставками
       ovBetting.classList.remove("active");
-      playBetStart();showAnnounce("betting",()=>{ ovBetting.classList.add("active"); });
+      if((lastFetchedState?.shuffle_seed||0)===0)playBetStart();
+      showAnnounce("betting",()=>{ ovBetting.classList.add("active"); });
     }
     if(roundType==="betting_open"&&lastRoundType!=="betting_open"){
       lastRoundType="betting_open";
@@ -3509,6 +3530,7 @@ function applyState(s){
 async function syncLoop(){
   const s=await fetchState();if(s!==undefined)applyState(s);
   if(!sb||!pName)return;
+  if(!_scoreLoaded){_scoreLoaded=true;await loadSavedScore();}
   // Обновляем last_seen И проверяем что нас не удалили
   try{
     const{data,error}=await sb.from("quiz_players")
@@ -4057,7 +4079,7 @@ function showAnnounce(type, cb){
 
 function startPlayerBlitz(startIdx){
   if(!registered)return;
-  playBlitzStart();
+  if((lastFetchedState?.shuffle_seed||0)===0)playBlitzStart();
   showAnnounce("blitz",()=>{
     ovBlitz.classList.add("active");
     blitzState={qi:startIdx||0,timeLeft:10,answered:false,results:[],timerInt:null};

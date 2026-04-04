@@ -444,6 +444,7 @@ tr:hover td{background:rgba(79,223,255,.03);}
     <span style="width:1px;background:rgba(255,255,255,.12);align-self:stretch;margin:0 2px"></span>
     <button class="btn bg" id="btnPdfReport" style="border-color:rgba(97,255,178,.4);color:var(--ok);" title="Скачать PDF протокол">📄 PDF</button>
     <button class="btn bg" id="btnMusicPanel" onclick="toggleMusicPanel()" style="border-color:rgba(97,255,178,.3);color:#61ffb2;font-size:.7rem;padding:5px 10px;" title="Плейлист и управление музыкой">🎵 Музыка</button>
+    <button id="btnMusicPlayPause" onclick="presTogglePlay();updatePresPlayerUI();" style="font-size:.7rem;padding:5px 8px;border-radius:8px;border:1px solid rgba(97,255,178,.3);background:rgba(97,255,178,.08);color:#61ffb2;cursor:pointer;" title="Пауза / воспроизведение">⏸</button>
     <button class="btn bg" id="btnHelp" style="border-color:rgba(255,211,107,.4);color:var(--gold);" title="Справка ведущего">❓ Справка</button>
     <button class="btn" id="btnProjector" style="background:rgba(255,211,107,.08);border-color:rgba(255,211,107,.5);color:var(--gold);" title="Открыть проектор на втором экране">🖥 Проектор</button>
     <button class="btn bg" id="btnCopyProjUrl" style="border-color:rgba(255,211,107,.4);color:var(--gold);font-size:.7rem;padding:5px 10px;" title="Скопировать ссылку проектора для другого устройства">📋 Ссылка проектора</button>
@@ -1539,10 +1540,25 @@ function esc(s){return String(s??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').
 // ── РЕНДЕР ВОПРОСА ────────────────────────────────────────────
 function renderQ(idx){
   const q=Q[Math.max(0,Math.min(Q.length-1,idx))];if(!q)return;
-  qChipType.textContent=q.tp==="survey"?"100к1":q.tp==="rebus"?"Ребус":"Вопрос";
+  qChipType.textContent=q.tp==="survey"?"🎲 100к1":q.tp==="rebus"?"Ребус":"Вопрос";
   const p=pts(q.dif);qChipPts.textContent="+"+p+" очк"+(p===1?"о":p<5?"а":"ов");
   qChipDiff.textContent=q.dif<=1?"★☆☆":q.dif===2?"★★☆":"★★★";
   qtextEl.textContent=q.q;
+  // 100к1 маркировка — следующий вопрос
+  let survWarn=$("survey-next-warn");
+  const nextQ=Q[idx+1];
+  if(!survWarn){survWarn=document.createElement("div");survWarn.id="survey-next-warn";
+    survWarn.style.cssText="font-size:.72rem;padding:4px 10px;border-radius:7px;background:rgba(255,211,107,.1);border:1px solid rgba(255,211,107,.35);color:var(--gold);margin-bottom:6px;display:none;";
+    qtextEl.parentNode.insertBefore(survWarn,qtextEl);}
+  if(nextQ?.tp==="survey"){survWarn.style.display="";survWarn.textContent="⚡ Следующий: РАУНД 100к1 — «"+nextQ.q+"»";}
+  else{survWarn.style.display="none";}
+  // Текущий — 100к1
+  let curWarn=$("survey-cur-warn");
+  if(!curWarn){curWarn=document.createElement("div");curWarn.id="survey-cur-warn";
+    curWarn.style.cssText="font-size:.78rem;padding:6px 12px;border-radius:8px;background:rgba(255,211,107,.15);border:2px solid rgba(255,211,107,.5);color:var(--gold);font-weight:700;margin-bottom:8px;display:none;";
+    qtextEl.parentNode.insertBefore(curWarn,qtextEl);}
+  if(q.tp==="survey"){curWarn.style.display="";curWarn.textContent="🎲 РАУНД 100 к 1 — игроки вводят свободные ответы. Нажмите «Начать 100к1».";}
+  else{curWarn.style.display="none";}
   ansGrid.innerHTML="";
   if(q.tp==="survey"){
     const ansList=q.answers||[];
@@ -1819,15 +1835,30 @@ async function refreshAnswered(){
   if(!sb)return;
   const idx=lastState?.current_index;if(typeof idx!=="number")return;
   try{
-    const{data:scores}=await sb.from("quiz_scores").select("student_name,team_name,questions_answered").eq("game_id",GID);
+    const[{data:scores},{data:players},{data:ansStats}]=await Promise.all([
+      sb.from("quiz_scores").select("student_name,team_name,questions_answered").eq("game_id",GID),
+      sb.from("quiz_players").select("student_name,team_name").eq("game_id",GID),
+      sb.from("quiz_chat").select("sender_name,team_name,message").eq("game_id",GID).eq("msg_type","answer_stat")
+    ]);
     if(!scores)return;
-    const{data:players}=await sb.from("quiz_players").select("student_name,team_name").eq("game_id",GID);
     const total=players?.length||0;
     const answered=scores.filter(s=>s.questions_answered>idx);
     const notAnswered=(players||[]).filter(p=>!answered.find(a=>a.student_name===p.student_name&&a.team_name===p.team_name));
     ansBarLbl.textContent=answered.length+" / "+total;
     ansBarFill.style.width=(total>0?Math.min(100,answered.length/total*100):0)+"%";
     stAnswered.textContent=answered.length+" / "+total;
+    // Статистика правильных/неправильных для текущего вопроса
+    const qStats=(ansStats||[]).filter(m=>{try{return JSON.parse(m.message).q===idx;}catch(e){return false;}});
+    // Дедупликация по игроку — берём последний ответ
+    const byPlayer={};qStats.forEach(m=>{byPlayer[m.sender_name+"_"+m.team_name]=m;});
+    const uniq=Object.values(byPlayer);
+    const cntOk=uniq.filter(m=>{try{return JSON.parse(m.message).ok===true;}catch(e){return false;}}).length;
+    const cntErr=uniq.length-cntOk;
+    let statEl=$("ans-qstats");
+    if(!statEl){statEl=document.createElement("div");statEl.id="ans-qstats";statEl.style.cssText="font-size:.72rem;margin-top:4px;display:flex;gap:8px;";ansBarWrap.appendChild(statEl);}
+    if(uniq.length>0){
+      statEl.innerHTML=`<span style="color:var(--ok);font-weight:700;">✅ ${cntOk} верно</span><span style="color:var(--err);font-weight:700;">❌ ${cntErr} неверно</span>`;
+    }else{statEl.innerHTML="";}
     // Детали кто ответил
     let det=$("ans-detail");
     if(!det){det=document.createElement("div");det.id="ans-detail";det.style.cssText="font-size:.72rem;margin-top:5px;display:flex;flex-wrap:wrap;gap:3px;";ansBarWrap.appendChild(det);}
@@ -3589,6 +3620,8 @@ function presBroadcastToggle(){
 function updatePresPlayerUI(){
   const btn=document.getElementById('presPlayPauseBtn');
   if(btn)btn.textContent=_presPlaying?'⏸ Пауза':'▶ Играть';
+  const tbBtn=document.getElementById('btnMusicPlayPause');
+  if(tbBtn)tbBtn.textContent=_presPlaying?'⏸':'▶';
   const np=document.getElementById('presNowPlaying');
   if(np)np.textContent=_presPlaylist[_presTrackIdx]?'♪ '+_presPlaylist[_presTrackIdx].name:'';
   const panelBtn=document.getElementById('btnMusicPanel');

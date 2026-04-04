@@ -1015,6 +1015,11 @@ function applyState(s){
     stopTimer(); return;
   }
   const wasSpecialRound = lastRoundType==="blitz_start"||lastRoundType.startsWith("betting");
+  // ── Ambient звук для очного режима ──
+  if(rt==="blitz_start"&&lastRoundType!=="blitz_start")_projFanfare("blitz");
+  if(rt==="betting_chips"&&lastRoundType!=="betting_chips")_projFanfare("bet");
+  if(phase==="running"&&!_projBgOn)_projBgStart();
+  if(phase==="waiting"||phase==="ended")_projBgStop();
   lastRoundType = rt;
 
   if(rt==="blitz_start"||rt==="betting_chips"||rt==="betting_open"||rt==="betting_reveal"){
@@ -1163,6 +1168,20 @@ init();
   document.addEventListener('touchend', stopDrag);
 })();
 
+// ── ЗВУК ДЛЯ ОЧНОГО РЕЖИМА (проектор) ─────────────────────────
+let _projBg=null,_projBgOn=false;
+function _projBgStart(){
+  if(_projBgOn)return;
+  if(!_projBg){_projBg=new Audio("Mike_Oldfield_-_Amarok_1990_66104094.mp3");_projBg.loop=true;_projBg.volume=0.35;}
+  _projBgOn=true;_projBg.play().catch(()=>{});
+}
+function _projBgStop(){if(!_projBgOn)return;_projBgOn=false;if(_projBg)_projBg.pause();}
+function _projFanfare(type){
+  const f=new Audio(type==="blitz"?"respuesta-correcta.mp3":"01-pokemon-new-item-correct.mp3");
+  f.volume=0.85;f.play().catch(()=>{});
+}
+// Разблокировка аудио по первому клику (браузерная политика)
+document.addEventListener("click",()=>{if(_projBg)_projBg.play().then(()=>{if(!_projBgOn)_projBg.pause();}).catch(()=>{});},{once:true});
 </script>
 
 <!-- ПРОМЕЖУТОЧНЫЙ СКОРБОРД -->
