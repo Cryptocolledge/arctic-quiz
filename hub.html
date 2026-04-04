@@ -48,7 +48,7 @@ body{font-family:system-ui,-apple-system,"Segoe UI",sans-serif;color:var(--text)
 .qtag{font-size:.68rem;padding:2px 7px;border-radius:999px;background:rgba(4,16,44,.9);border:1px solid rgba(79,223,255,.7);color:#cff6ff;display:inline-flex;align-items:center;gap:4px;}
 .qdiff{font-size:.68rem;padding:2px 6px;border-radius:999px;border:1px solid rgba(255,255,255,.13);color:var(--muted);}
 .qpts{font-size:.68rem;padding:2px 7px;border-radius:999px;border:1px solid rgba(255,211,107,.5);background:rgba(255,211,107,.1);color:var(--gold);font-weight:700;}
-.qtext{font-size:.97rem;font-weight:650;line-height:1.4;}
+.qtext{font-size:clamp(.78rem,2.4vw,.97rem);font-weight:650;line-height:1.4;}
 .qextra{font-size:.8rem;color:var(--muted);}
 .qillus{border-radius:12px;overflow:hidden;border:1px solid rgba(79,223,255,.25);background:linear-gradient(135deg,#0a1a30,#061020);display:flex;flex-direction:column;align-items:center;min-height:140px;}
 .qillus svg{width:100%;max-height:190px;}
@@ -68,7 +68,7 @@ body{font-family:system-ui,-apple-system,"Segoe UI",sans-serif;color:var(--text)
 .otop{display:flex;align-items:center;justify-content:space-between;}
 .otitle{font-size:.7rem;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);}
 .spill{font-size:.82rem;padding:3px 8px;border-radius:999px;background:rgba(255,211,107,.1);border:1px solid rgba(255,211,107,.4);color:var(--gold);font-weight:700;}
-.opts{display:grid;grid-template-columns:1fr 1fr;gap:7px;}
+.opts{display:flex;flex-direction:column;gap:7px;}
 .opt{width:100%;text-align:left;padding:9px 11px;border-radius:11px;border:1px solid rgba(122,142,255,.2);background:rgba(5,12,30,.95);color:var(--text);cursor:pointer;font-size:.84rem;display:flex;align-items:center;gap:7px;transition:border-color .15s,transform .12s;min-height:40px;}
 .opt:hover:not(:disabled){transform:translateY(-1px);border-color:rgba(79,223,255,.7);}
 .opt:disabled{cursor:default;opacity:.7;}
@@ -208,7 +208,7 @@ body{font-family:system-ui,-apple-system,"Segoe UI",sans-serif;color:var(--text)
   .shell{gap:7px;}
   .hdr{padding:10px 12px;gap:8px;}
   .htitle{font-size:.9rem;}
-  .opts{grid-template-columns:1fr!important;gap:5px!important;}
+  .opts{gap:5px!important;}
   .opt{padding:10px 12px;font-size:.82rem;}
   .obadge{width:24px;height:24px;font-size:.72rem;}
   .card{padding:10px 12px;}
@@ -1259,12 +1259,6 @@ document.addEventListener('DOMContentLoaded',function(){
       <div class="hrow">
         <div class="chip"><span class="dot"></span><span id="meta-diff">Уровень: средний</span></div>
         <div class="chip" id="qcount-chip">— вопросов · 25 сек</div>
-        <div style="display:flex;align-items:center;gap:4px;">
-          <button class="btn btn-g" id="music-btn" style="min-height:28px;padding:3px 9px;font-size:.71rem;">▶ Музыка</button>
-          <button onclick="bgVolDown()" title="Тише" style="min-height:28px;padding:2px 7px;border-radius:999px;border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.04);color:var(--muted);cursor:pointer;font-size:.8rem;line-height:1;">−</button>
-          <input id="bgVolSlider" type="range" min="0" max="100" value="30" style="width:54px;accent-color:#4fdfff;cursor:pointer;display:none;" title="Громкость" oninput="setBgVolume(this.value)">
-          <button onclick="bgVolUp()" title="Громче" style="min-height:28px;padding:2px 7px;border-radius:999px;border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.04);color:var(--muted);cursor:pointer;font-size:.8rem;line-height:1;">+</button>
-        </div>
       </div>
       <div class="hrow" style="margin-top:4px;">
         <span style="font-size:.71rem;color:var(--muted)">Участник:</span><span class="nval" id="h-name">—</span>
@@ -2367,7 +2361,7 @@ const Q_SCHOOL=[
   {tp:"text",dif:2,q:"Чем питается белый медведь в основном?",opts:["Рыбой и тюленями","Ягодами и мхом","Только снегом","Птицами"],ci:0},
   {tp:"text",dif:1,q:"Как называется маршрут для кораблей вдоль берегов России на севере?",opts:["Великий шёлковый путь","Северный морской путь","Транссибирская магистраль","Путь из варяг в греки"],ci:1},
   {tp:"text",dif:2,q:"Какая страна имеет самое длинное арктическое побережье?",opts:["США","Норвегия","Россия","Канада"],ci:2},
-  {tp:"svg",dif:1,q:"Что изображено на картинке?",svg:"walrus",cap:"Семейство моржовых",opts:["Тюлень","Дельфин","Морж","Котик"],ci:2},
+  {tp:"svg",dif:1,q:"Что изображено на картинке?",svg:"walrus",cap:"Арктическое ластоногое",opts:["Тюлень","Дельфин","Морж","Котик"],ci:2},
   {tp:"text",dif:2,q:"Почему в Арктике так холодно?",opts:["Там нет солнца вообще","Солнечные лучи падают под маленьким углом и слабо греют","Там дует особый холодный ветер","Там живут ледяные великаны"],ci:1},
   {tp:"rebus",dif:2,q:"Подводный хребет цепных гор на дне океана:",rp:["МА","ТЕРИК"],rh:"Континент Антарктида — единственный полностью покрытый льдом",opts:["Остров","Материк","Плато","Шельф"],ci:1},
   {tp:"text",dif:2,q:"Что происходит с льдами Арктики из-за глобального потепления?",opts:["Они растут","Они тают и уменьшаются","Они становятся крепче","Ничего не происходит"],ci:1},
@@ -2383,7 +2377,7 @@ const Q_SPO=[
   {tp:"svg",dif:1,q:"Крупнейший наземный хищник планеты и символ Арктики:",svg:"polar_bear",cap:"Единственный полностью морской медведь",opts:["Бурый медведь","Белый медведь","Гризли","Барибал"],ci:1},
   {tp:"text",dif:2,q:"Мхи, лишайники и карликовые кустарники — типичная растительность…",opts:["Тропического леса","Пустыни","Арктической тундры","Широколиственного леса"],ci:2},
   {tp:"text",dif:2,q:"Вечная мерзлота — это…",opts:["Сезонный промерзающий слой","Грунт, не оттаивающий тысячелетиями","Ледяной покров океана","Криоосадки высокогорий"],ci:1},
-  {tp:"text",dif:3,q:"«Арктическое усиление» (Arctic Amplification) — это…",opts:["Рост магнитного поля у полюса","Потепление в Арктике в 2–4 раза быстрее среднепланетарного","Увеличение льда зимой","Рост давления над полярными широтами"],ci:1},
+  {tp:"text",dif:3,q:"«Арктическое усиление» — это…",opts:["Рост магнитного поля у полюса","Потепление в Арктике в 2–4 раза быстрее среднепланетарного","Увеличение льда зимой","Рост давления над полярными широтами"],ci:1},
   {tp:"text",dif:2,q:"Какое из перечисленных морей НЕ относится к Северному Ледовитому океану?",opts:["Баренцево","Карское","Красное","Чукотское"],ci:2},
   {tp:"text",dif:2,q:"Какая из стран не имеет выхода к Арктике?",opts:["Россия","Канада","Норвегия","Германия"],ci:3},
   {tp:"text",dif:3,q:"Многолетний дрейфующий морской лёд толщиной 3–4 м называется…",opts:["Паковый лёд","Глетчер","Шельфовый лёд","Торос"],ci:0},
@@ -2393,7 +2387,7 @@ const Q_SPO=[
   {tp:"text",dif:2,q:"Граница Арктики условно проводится по…",opts:["Экватору","Северному полярному кругу (66°33′ с.ш.)","Тропику Рака","Меридиану 0°"],ci:1},
   {tp:"rebus",dif:2,q:"Ледяная оболочка Земли: ледники, снег, вечная мерзлота:",rp:["КРИ","ОСФЕРА"],rh:"От греч. κρύος — мороз, холод",opts:["Биосфера","Литосфера","Криосфера","Атмосфера"],ci:2},
   {tp:"text",dif:3,q:"Главная угроза таяния арктических льдов для человечества — это…",opts:["Исчезновение туристических маршрутов","Подъём уровня Мирового океана и дестабилизация климата","Сокращение пляжей","Снижение солёности рек"],ci:1},
-  {tp:"svg",dif:2,q:"Ластоногое с парой длинных клыков, обитатель арктических льдин:",svg:"walrus",cap:"Единственный вид семейства моржовых",opts:["Тюлень","Морж","Морской котик","Касатка"],ci:1},
+  {tp:"svg",dif:2,q:"Ластоногое с парой длинных клыков, обитатель арктических льдин:",svg:"walrus",cap:"Крупное ластоногое арктических льдин",opts:["Тюлень","Морж","Морской котик","Касатка"],ci:1},
   {tp:"survey",dif:2,q:"Назовите природные ресурсы Арктики:",hint:"Топ-5 самых ценных богатств",
    answers:[{text:"нефть",pts:5},{text:"газ",pts:4},{text:"лёд",pts:3},{text:"рыба",pts:2},{text:"уголь",pts:1}]},
   {tp:"text",dif:2,q:"Коренные малочисленные народы российской Арктики — это…",opts:["Казаки и поморы","Ненцы, чукчи, эвенки, эскимосы","Скандинавы и финны","Казахи и буряты"],ci:1},
@@ -3006,8 +3000,9 @@ function onOpt(e){
   qAnswered++;
   const isOk=(i===q.ci);
   UA[curIdx]={sel:si,ci:q.ci,ok:isOk,t:used,changed:0};
-  // Оптимистичное начисление очков при правильном ответе
-  if(isOk && !REVEALED.has(curIdx)){
+  const isOchny=(lastFetchedState?.shuffle_seed||0)>0;
+  // Оптимистичное начисление очков при правильном ответе (только онлайн-режим)
+  if(!isOchny && isOk && !REVEALED.has(curIdx)){
     const p=pts(q.dif);
     const earned=Math.max(0,p-penalty);
     streak++;
@@ -3021,8 +3016,11 @@ function onOpt(e){
     REVEALED.add(curIdx);
     popPts(total,btn);playOk();
     optsEl.querySelectorAll(".opt").forEach(b=>b.disabled=true); // заблокировать после верного ответа
-  } else if(!isOk){
+  } else if(!isOchny && !isOk){
     optsEl.querySelectorAll(".opt").forEach(b=>b.disabled=false); // пока ответ не раскрыт — можно менять
+  } else if(isOchny){
+    // Очный режим: блокируем все кнопки, ждём ведущего
+    optsEl.querySelectorAll(".opt").forEach(b=>b.disabled=true);
   }
   btn.classList.add("selected");
   waitRevealEl.classList.add("show");
