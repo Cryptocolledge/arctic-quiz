@@ -758,7 +758,7 @@ function loadSupabaseFallback(){
 loadSupabaseFallback();
 
 let sb=window.supabase?.createClient?window.supabase.createClient(SURL,SKEY):null;
-function pts(d){return d<=1?1:d===2?2:3;}
+function pts(d){return !d||d<=1?1:d===2?2:3;}
 
 // Два набора — краткие версии для presenter (только q, opts, ci, dif)
 const Q_SPO=[  {tp:"text",dif:2,q:"Назовите единственный океан, центральная часть которого совпадает с географическим Северным полюсом.",opts:["Атлантический","Северный Ледовитый","Тихий","Южный"],ci:1},
@@ -1483,13 +1483,13 @@ const Q_BLITZ_SPO = [
   {q:"Как называется самый маленький по площади океан?",opts:["Тихий","Индийский","Северный Ледовитый","Южный"],ci:2},
   {q:"Столица Норвегии — арктической страны?",opts:["Хельсинки","Копенгаген","Осло","Стокгольм"],ci:2},
   {q:"Как называется лёд, образующийся из морской воды?",opts:["Ледник","Морской лёд","Айсберг","Торос"],ci:1},
-  {q:"Сколько государств являются «арктической восьмёркой» в Арктическом совете?",opts:["5","6","8","10"],ci:2},
+  {q:"Сколько государств в Арктическом совете?",opts:["5","6","8","10"],ci:2},
   {q:"Какое животное называют «нарвал»?",opts:["Рыба","Кит с бивнем","Морской котик","Тюлень"],ci:1},
   {q:"Полярная ночь длится в Арктике примерно…",opts:["3 дня","1 месяц","До 6 месяцев","Весь год"],ci:2},
   {q:"Северный морской путь соединяет…",opts:["Европу и Африку","Европу и Азию","Азию и Америку","Россию и Антарктиду"],ci:1},
   {q:"Что такое «торос»?",opts:["Вид тюленя","Нагромождение льда","Арктический ветер","Снежная пещера"],ci:1},
   {q:"Россия занимает первое место в мире по…",opts:["Добыче золота","Протяжённости арктического побережья","Числу ледоколов","Всё перечисленное"],ci:1},
-  {q:"Как называется слой подземного льда в тундре?",opts:["Пермафрост","Вечная мерзлота","Криолит","Оба первых варианта верны"],ci:3},
+  {q:"Как называется слой подземного льда в тундре?",opts:["Пермафрост","Вечная мерзлота","Криолит","Оба первых верны"],ci:3},
 ];
 const Q_BLITZ_SCHOOL = [
   {q:"Белый медведь живёт в Арктике или Антарктиде?",opts:["В Антарктиде","В Арктике","И там, и там","Нигде"],ci:1},
@@ -1499,7 +1499,7 @@ const Q_BLITZ_SCHOOL = [
   {q:"Как называют людей, которые исследуют Арктику?",opts:["Туристы","Полярники","Моряки","Охотники"],ci:1},
   {q:"Что такое полярное сияние?",opts:["Закат","Свечение газов в небе","Молния","Отражение льда"],ci:1},
   {q:"Самое холодное время суток в Арктике — это…",opts:["Утро","Полдень","Ночь","Вечер"],ci:2},
-  {q:"Северный олень — животное тундры. Его другое название?",opts:["Карибу","Лось","Яков","Зубр"],ci:0},
+  {q:"Северный олень — его другое название?",opts:["Карибу","Лось","Яков","Зубр"],ci:0},
   {q:"Чем покрыта большая часть Северного Ледовитого океана?",opts:["Песком","Льдом","Водой без льда","Травой"],ci:1},
   {q:"Как называется снежный домик эскимосов?",opts:["Юрта","Вигвам","Иглу","Чум"],ci:2},
 ];
@@ -1865,13 +1865,12 @@ async function refreshAnswered(){
       sb.from("quiz_players").select("student_name,team_name").eq("game_id",GID),
       sb.from("quiz_chat").select("sender_name,team_name,message").eq("game_id",GID).eq("msg_type","answer_stat")
     ]);
+    // Stale guard: question may have changed while we were awaiting
+    if(lastState?.current_index!==idx)return;
     if(!scores)return;
     const total=players?.length||0;
     const answered=scores.filter(s=>s.questions_answered>idx);
     const notAnswered=(players||[]).filter(p=>!answered.find(a=>a.student_name===p.student_name&&a.team_name===p.team_name));
-    ansBarLbl.textContent=answered.length+" / "+total;
-    ansBarFill.style.width=(total>0?Math.min(100,answered.length/total*100):0)+"%";
-    stAnswered.textContent=answered.length+" / "+total;
     // Статистика правильных/неправильных для текущего вопроса
     const qStats=(ansStats||[]).filter(m=>{try{return JSON.parse(m.message).q===idx;}catch(e){return false;}});
     // Дедупликация по игроку — берём последний ответ
@@ -3591,7 +3590,7 @@ function presPlayTrack(idx){
   _presAudio.play().catch(e=>console.warn('play:',e));
   _presPlaying=true;
   if(_presBroadcasting && sb){
-    sb.from('quiz_state').update({music_broadcast:_presPlaylist[idx].name,music_playing:true}).eq('game_id',GID).then(()=>{});
+    sb.from('quiz_state').update({music_broadcast:_presPlaylist[idx].name}).eq('game_id',GID).then(()=>{});
   }
   updatePresPlayerUI();
 }
@@ -3601,8 +3600,8 @@ function presTogglePlay(){
     if(_presPlaylist.length>0)presPlayTrack(_presTrackIdx);
     return;
   }
-  if(_presPlaying){_presAudio.pause();_presPlaying=false;if(_presBroadcasting&&sb)sb.from('quiz_state').update({music_playing:false}).eq('game_id',GID).then(()=>{});}
-  else{_presAudio.play().catch(()=>{});_presPlaying=true;if(_presBroadcasting&&sb)sb.from('quiz_state').update({music_playing:true}).eq('game_id',GID).then(()=>{});}
+  if(_presPlaying){_presAudio.pause();_presPlaying=false;if(_presBroadcasting&&sb)sb.from('quiz_state').update({music_broadcast:null}).eq('game_id',GID).then(()=>{});}
+  else{_presAudio.play().catch(()=>{});_presPlaying=true;if(_presBroadcasting&&sb&&_presPlaylist[_presTrackIdx])sb.from('quiz_state').update({music_broadcast:_presPlaylist[_presTrackIdx].name}).eq('game_id',GID).then(()=>{});}
   updatePresPlayerUI();
 }
 
@@ -3645,8 +3644,7 @@ function presStopTrack(){
   _presAudio.pause();
   _presAudio.currentTime=0;
   _presPlaying=false;
-  // Clear broadcast
-  if(_presBroadcasting) presBroadcastToggle();
+  if(sb) sb.from('quiz_state').update({music_broadcast:null}).eq('game_id',GID).then(()=>{});
   updatePresPlayerUI();
 }
 
@@ -3658,13 +3656,9 @@ function presBroadcastToggle(){
   if(tog) tog.style.background=_presBroadcasting?'#61ffb2':'rgba(255,255,255,.1)';
   if(thumb) thumb.style.left=_presBroadcasting?'18px':'2px';
   if(_presBroadcasting && _presPlaying && _presPlaylist[_presTrackIdx]){
-    // Signal to hub via DB: music_broadcast field
-    if(sb) sb.from('quiz_state').update({
-      music_broadcast: _presPlaylist[_presTrackIdx].name,
-      music_playing: true
-    }).eq('game_id', GID).then(()=>{});
+    if(sb) sb.from('quiz_state').update({music_broadcast: _presPlaylist[_presTrackIdx].name}).eq('game_id', GID).then(()=>{});
   } else {
-    if(sb) sb.from('quiz_state').update({music_broadcast: null, music_playing: false}).eq('game_id', GID).then(()=>{});
+    if(sb) sb.from('quiz_state').update({music_broadcast: null}).eq('game_id', GID).then(()=>{});
   }
 }
 
@@ -3707,6 +3701,8 @@ function updatePresPlayerUI(){
       <div id="presBroadcastThumb" style="width:16px;height:16px;border-radius:50%;background:#fff;position:absolute;top:2px;left:2px;transition:left .2s;"></div>
     </div>
   </div>
+  <!-- Сейчас играет -->
+  <div id="presNowPlaying" style="font-size:.68rem;color:#61ffb2;padding:4px 8px;margin-bottom:6px;min-height:18px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;"></div>
   <!-- Список треков -->
   <div id="presPlaylist" style="max-height:180px;overflow-y:auto;display:flex;flex-direction:column;gap:4px;">
     <div style="font-size:.72rem;color:var(--muted);text-align:center;padding:10px;">Треки не загружены</div>
@@ -3717,6 +3713,7 @@ function updatePresPlayerUI(){
     <button onclick="presStopTrack()" style="flex:1;padding:5px;border-radius:7px;border:1px solid rgba(255,95,122,.3);background:rgba(255,95,122,.06);color:#ff5f7a;cursor:pointer;font-size:.8rem;" title="Стоп">⏹</button>
     <button id="presPlayPauseBtn" onclick="presTogglePlay()" style="flex:2;padding:5px;border-radius:7px;border:1px solid rgba(97,255,178,.3);background:rgba(97,255,178,.08);color:#61ffb2;cursor:pointer;font-size:.8rem;">▶ Играть</button>
     <button onclick="presNextTrack()" style="flex:1;padding:5px;border-radius:7px;border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.04);color:var(--text);cursor:pointer;font-size:.8rem;" title="Следующий">⏭</button>
+    <button id="presShuffleBtn" onclick="presShufflePlaylist()" style="flex:1;padding:5px;border-radius:7px;border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.04);color:var(--muted);cursor:pointer;font-size:.8rem;" title="Случайный порядок">🔀</button>
   </div>
 </div>
 </body>

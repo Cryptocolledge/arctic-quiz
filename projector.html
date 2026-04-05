@@ -918,7 +918,7 @@ const SVG_URLS={
 
 let Q=Q_SPO;
 
-function pts(d){return d<=1?1:d===2?2:3;}
+function pts(d){return !d||d<=1?1:d===2?2:3;}
 
 // ── ТАЙМЕР ────────────────────────────────────────────────────
 function parseTs(iso){if(!iso)return NaN;let s=String(iso).trim();s=s.replace(" ","T");s=s.replace(/\+00:00$/,"Z");s=s.replace(/\+00$/,"Z");s=s.replace(/(\.\d+)\+00$/,"$1Z");s=s.replace(/(\.\d+)\+00:00$/,"$1Z");const t=Date.parse(s);return isNaN(t)?Date.parse(iso):t;}
@@ -1057,11 +1057,17 @@ function _projMuteAll(){
   _projAudioMuted=true;
   if(_projBg)_projBg.volume=0;
   if(_idleAudio)_idleAudio.volume=0;
+  if(_introAudio)_introAudio.volume=0;
+  if(_howToPlayAudio)_howToPlayAudio.volume=0;
+  if(_projEndgameAudio)_projEndgameAudio.volume=0;
 }
 function _projUnmuteAll(){
   _projAudioMuted=false;
-  if(_projBg)_projBg.volume=0.35;
-  if(_idleAudio)_idleAudio.volume=0.45;
+  if(_projBg){_projBg.volume=0.35;if(_projBgOn&&_projBg.paused)_projBg.play().catch(()=>{});}
+  if(_idleAudio){_idleAudio.volume=0.45;if(_idleActive&&_idleAudio.paused)_idleAudio.play().catch(()=>{});}
+  if(_introAudio)_introAudio.volume=0.9;
+  if(_howToPlayAudio)_howToPlayAudio.volume=0.92;
+  if(_projEndgameAudio)_projEndgameAudio.volume=0.85;
 }
 
 // ── IDLE OVERLAY + DRIVE MUSIC ───────────────────────────────
