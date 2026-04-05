@@ -68,7 +68,7 @@ body{min-height:100vh;font-family:system-ui,-apple-system,"Segoe UI",sans-serif;
 .qtext{font-size:clamp(.85rem,1.1vw,1.3rem);line-height:1.22;font-weight:720;margin-bottom:6px;}
 .ans-grid{display:grid;grid-template-columns:1fr 1fr;gap:4px;margin-top:6px;}
 .ans-row{display:flex;align-items:center;gap:5px;padding:5px 8px;border-radius:9px;background:rgba(8,20,45,.8);border:1px solid rgba(79,223,255,.08);font-size:.79rem;overflow:hidden;}
-.ans-ltr{width:19px;height:19px;border-radius:6px;border:1px solid rgba(175,195,255,.55);font-size:.68rem;display:flex;align-items:center;background:rgba(6,14,38,.9);flex-shrink:0;}
+.ans-ltr{width:19px;height:19px;border-radius:6px;border:1px solid rgba(175,195,255,.55);font-size:.68rem;display:flex;align-items:center;justify-content:center;background:rgba(6,14,38,.9);flex-shrink:0;}
 .ans-row.correct{border-color:rgba(97,255,178,.5);background:rgba(6,28,26,.8);}
 .ans-row.correct .ans-ltr{border-color:rgba(97,255,178,.9);color:var(--ok);}
 /* timer */
@@ -524,6 +524,51 @@ tr:hover td{background:rgba(79,223,255,.03);}
         <button class="btn bg btn-sm" id="btnClearAlerts">✕ Все</button>
       </div>
       <div id="alertList"><div style="font-size:.75rem;color:var(--muted)">Нет вызовов</div></div>
+    </div>
+
+    <!-- Статистика игры -->
+    <div class="card" id="statsPanel">
+      <div class="ctitle" style="cursor:pointer;user-select:none;" onclick="toggleStatsPanel()">
+        <span>📊 Статистика игры</span>
+        <span id="statsPanelChevron" style="font-size:.7rem;opacity:.6;transition:transform .2s;">▼</span>
+      </div>
+      <div id="statsPanelBody" style="display:none;margin-top:4px;">
+        <!-- Текущий вопрос -->
+        <div style="font-size:.62rem;color:var(--muted);text-transform:uppercase;letter-spacing:.09em;margin-bottom:5px;">Текущий вопрос</div>
+        <div id="statsQRow" style="display:flex;gap:5px;margin-bottom:8px;flex-wrap:wrap;">
+          <div style="flex:1;min-width:70px;padding:6px 8px;border-radius:8px;background:rgba(97,255,178,.07);border:1px solid rgba(97,255,178,.2);text-align:center;">
+            <div style="font-size:1.1rem;font-weight:800;color:var(--ok);" id="statsQOk">—</div>
+            <div style="font-size:.6rem;color:var(--muted);">верно</div>
+          </div>
+          <div style="flex:1;min-width:70px;padding:6px 8px;border-radius:8px;background:rgba(255,95,122,.07);border:1px solid rgba(255,95,122,.2);text-align:center;">
+            <div style="font-size:1.1rem;font-weight:800;color:var(--err);" id="statsQErr">—</div>
+            <div style="font-size:.6rem;color:var(--muted);">неверно</div>
+          </div>
+          <div style="flex:1;min-width:70px;padding:6px 8px;border-radius:8px;background:rgba(79,223,255,.07);border:1px solid rgba(79,223,255,.18);text-align:center;">
+            <div style="font-size:1.1rem;font-weight:800;color:var(--accent);" id="statsQPct">—</div>
+            <div style="font-size:.6rem;color:var(--muted);">% верно</div>
+          </div>
+        </div>
+        <!-- Топ игроков -->
+        <div style="font-size:.62rem;color:var(--muted);text-transform:uppercase;letter-spacing:.09em;margin-bottom:5px;">Топ игроков</div>
+        <div id="statsTopList" style="display:flex;flex-direction:column;gap:3px;max-height:130px;overflow-y:auto;"></div>
+        <!-- Общая активность -->
+        <div style="font-size:.62rem;color:var(--muted);text-transform:uppercase;letter-spacing:.09em;margin:8px 0 5px;">Общая активность</div>
+        <div style="display:flex;gap:5px;flex-wrap:wrap;">
+          <div style="flex:1;min-width:60px;padding:5px 7px;border-radius:7px;background:rgba(255,211,107,.07);border:1px solid rgba(255,211,107,.18);text-align:center;">
+            <div style="font-size:1rem;font-weight:800;color:var(--gold);" id="statsAvgScore">—</div>
+            <div style="font-size:.58rem;color:var(--muted);">сред. очки</div>
+          </div>
+          <div style="flex:1;min-width:60px;padding:5px 7px;border-radius:7px;background:rgba(167,139,250,.07);border:1px solid rgba(167,139,250,.18);text-align:center;">
+            <div style="font-size:1rem;font-weight:800;color:#c4b5fd;" id="statsAvgAns">—</div>
+            <div style="font-size:.58rem;color:var(--muted);">сред. ответов</div>
+          </div>
+          <div style="flex:1;min-width:60px;padding:5px 7px;border-radius:7px;background:rgba(79,223,255,.07);border:1px solid rgba(79,223,255,.18);text-align:center;">
+            <div style="font-size:1rem;font-weight:800;color:var(--accent);" id="statsTotal">—</div>
+            <div style="font-size:.58rem;color:var(--muted);">игроков</div>
+          </div>
+        </div>
+      </div>
     </div>
 
     <!-- Чат -->
@@ -1846,6 +1891,60 @@ if(_btnSE)_btnSE.addEventListener("click",async()=>{
   if(!vis)showRevealQBtn(true);else showRevealQBtn(false);
 });
 
+// ── ПАНЕЛЬ СТАТИСТИКИ ───────────────────────────────────────
+let _statsPanelOpen=false;
+function toggleStatsPanel(){
+  _statsPanelOpen=!_statsPanelOpen;
+  const body=document.getElementById('statsPanelBody');
+  const chev=document.getElementById('statsPanelChevron');
+  if(body)body.style.display=_statsPanelOpen?'':'none';
+  if(chev)chev.style.transform=_statsPanelOpen?'rotate(180deg)':'';
+  if(_statsPanelOpen)refreshStats();
+}
+
+async function refreshStats(){
+  if(!_statsPanelOpen||!sb)return;
+  try{
+    const idx=lastState?.current_index;
+    const[{data:scores},{data:ansStats}]=await Promise.all([
+      sb.from("quiz_scores").select("student_name,score,questions_answered").eq("game_id",GID).order("score",{ascending:false}).limit(10),
+      typeof idx==="number"
+        ?sb.from("quiz_chat").select("sender_name,message").eq("game_id",GID).eq("msg_type","answer_stat")
+        :{data:[]}
+    ]);
+    // Топ игроков
+    const topEl=document.getElementById('statsTopList');
+    if(topEl&&scores){
+      const medals=["🥇","🥈","🥉"];
+      topEl.innerHTML=scores.slice(0,5).map((s,i)=>`
+        <div style="display:flex;align-items:center;gap:6px;padding:3px 6px;border-radius:6px;background:rgba(255,255,255,.03);">
+          <span style="font-size:.8rem;min-width:18px;">${medals[i]||`${i+1}.`}</span>
+          <span style="flex:1;font-size:.73rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${esc(s.student_name)}</span>
+          <span style="font-size:.78rem;font-weight:800;color:var(--gold);">${s.score}</span>
+        </div>`).join('');
+    }
+    // Статистика текущего вопроса
+    if(typeof idx==="number"&&ansStats){
+      const byPlayer={};ansStats.forEach(m=>{byPlayer[m.sender_name]=m;});
+      const uniq=Object.values(byPlayer);
+      const ok=uniq.filter(m=>{try{return JSON.parse(m.message).q===idx&&JSON.parse(m.message).ok===true;}catch(e){return false;}}).length;
+      const err=uniq.filter(m=>{try{return JSON.parse(m.message).q===idx&&JSON.parse(m.message).ok===false;}catch(e){return false;}}).length;
+      const tot=ok+err;
+      const pct=tot>0?Math.round(ok/tot*100):0;
+      const okEl=document.getElementById('statsQOk');const errEl=document.getElementById('statsQErr');const pctEl=document.getElementById('statsQPct');
+      if(okEl)okEl.textContent=ok;if(errEl)errEl.textContent=err;if(pctEl)pctEl.textContent=tot>0?pct+'%':'—';
+    }
+    // Общая активность
+    if(scores){
+      const n=scores.length;
+      const avg=n>0?(scores.reduce((s,r)=>s+parseFloat(r.score||0),0)/n).toFixed(1):'—';
+      const avgAns=n>0?Math.round(scores.reduce((s,r)=>s+(r.questions_answered||0),0)/n):'—';
+      const avEl=document.getElementById('statsAvgScore');const aaEl=document.getElementById('statsAvgAns');const totEl=document.getElementById('statsTotal');
+      if(avEl)avEl.textContent=avg;if(aaEl)aaEl.textContent=avgAns;if(totEl)totEl.textContent=n;
+    }
+  }catch(e){}
+}
+
 // Показать вопрос (онлайн-режим)
 function showRevealQBtn(show){
   const b=$("btnShowQ"); if(b) b.style.display=show?"":"none";
@@ -2370,7 +2469,7 @@ function enterPresenter(){
   _presTimerIds.forEach(id=>clearInterval(id));
   _presTimerIds=[];
   _presTimerIds.push(setInterval(()=>getState().then(applyState).catch(()=>{}),1000));
-  _presTimerIds.push(setInterval(()=>{refreshUnified();refreshAnswered();},2000));
+  _presTimerIds.push(setInterval(()=>{refreshUnified();refreshAnswered();refreshStats();},2000));
   // Realtime: мгновенное уведомление о новых игроках
   if(sb){
     try{
@@ -3687,11 +3786,13 @@ function updatePresPlayerUI(){
     ➕ Добавить треки (mp3, ogg, wav)
     <input type="file" accept="audio/*" multiple style="display:none" onchange="presAddTracks(this)">
   </label>
-  <!-- Громкость -->
-  <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;">
-    <span style="font-size:.68rem;color:var(--muted);min-width:28px;">🔊</span>
-    <input type="range" id="presMusicVol" min="0" max="100" value="35" style="flex:1;accent-color:#61ffb2;cursor:pointer;" oninput="presSetVolume(this.value)">
-    <span id="presMusicVolNum" style="font-size:.68rem;color:var(--muted);min-width:28px;text-align:right;">35%</span>
+  <!-- Громкость (только ведущий) -->
+  <div style="margin-bottom:10px;">
+    <div style="font-size:.6rem;color:var(--muted);margin-bottom:4px;">🎧 Громкость (только у вас, не на проекторе)</div>
+    <div style="display:flex;align-items:center;gap:8px;">
+      <input type="range" id="presMusicVol" min="0" max="100" value="35" style="flex:1;accent-color:#61ffb2;cursor:pointer;" oninput="presSetVolume(this.value)">
+      <span id="presMusicVolNum" style="font-size:.68rem;color:var(--muted);min-width:28px;text-align:right;">35%</span>
+    </div>
   </div>
   <!-- Трансляция игрокам -->
   <div style="display:flex;align-items:center;justify-content:space-between;padding:7px 10px;border-radius:9px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.07);margin-bottom:8px;">

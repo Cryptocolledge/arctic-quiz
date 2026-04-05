@@ -3673,6 +3673,8 @@ function showKicked(){
 
 // ── ЧАТ ───────────────────────────────────────────────────────
 function renderMsg(m,mine){
+  // Скрываем служебные сообщения из чата игрока
+  if(m.msg_type==="answer_stat"||m.msg_type==="ready"||m.msg_type==="bet")return null;
   const isHost=m.sender_name==="ВЕДУЩИЙ";
   const isAlert=m.msg_type==="alert";
   const isWarn=m.msg_type==="warning";
@@ -3701,7 +3703,7 @@ function showWarningPopup(msg){
 }
 async function loadChat(){
   if(!sb)return;
-  try{const{data}=await sb.from("quiz_chat").select("*").eq("game_id",GID).order("created_at",{ascending:true}).limit(60);if(!data)return;chatMsgs.innerHTML="";data.forEach(m=>chatMsgs.appendChild(renderMsg(m,m.sender_name===pName)));chatMsgs.scrollTop=chatMsgs.scrollHeight;lastChatId=data.reduce((max,m)=>Math.max(max,m.id||0),0);}catch(e){}
+  try{const{data}=await sb.from("quiz_chat").select("*").eq("game_id",GID).order("created_at",{ascending:true}).limit(60);if(!data)return;chatMsgs.innerHTML="";data.forEach(m=>{const el=renderMsg(m,m.sender_name===pName);if(el)chatMsgs.appendChild(el);});chatMsgs.scrollTop=chatMsgs.scrollHeight;lastChatId=data.reduce((max,m)=>Math.max(max,m.id||0),0);}catch(e){}
   chatReady=true;
 }
 async function sendChat(msg,type){
@@ -3770,8 +3772,9 @@ async function register(){
       const m=payload.new;if(!m||m.id<=lastChatId)return;
       if(m.target_team&&m.target_team!==pTeam)return;
       if(m.target_player&&m.target_player!==pName)return;
-      chatMsgs.appendChild(renderMsg(m,m.sender_name===pName));if(m.id>lastChatId)lastChatId=m.id;chatMsgs.scrollTop=chatMsgs.scrollHeight;
-      if(m.sender_name!==pName){chatBadge.classList.add("show");playAlert();}
+      const _cmEl=renderMsg(m,m.sender_name===pName);
+      if(_cmEl){chatMsgs.appendChild(_cmEl);chatMsgs.scrollTop=chatMsgs.scrollHeight;if(m.sender_name!==pName){chatBadge.classList.add("show");playAlert();}}
+      if(m.id>lastChatId)lastChatId=m.id;
     }).subscribe();
     // Блокировка чата проверяется в syncLoop каждые 2 сек
   });
