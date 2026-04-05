@@ -170,7 +170,7 @@ hub.html скипает ambient-звуки в очном режиме (`shuffle_
 ### Кнопки управления (топбар)
 
 - `🎬 Шоу!` (`btnIntro`) → `triggerIntro()` → `ups({phase:"intro"})` — запускает вступление на проекторе
-- `🎵 Музыка` / `⏸` — панель и пауза плейлиста ведущего
+- `🎵 Музыка` (`btnMusicPanel`) → `toggleMusicPanel()` — открывает панель плейлиста; все кнопки управления (▶/⏸, ⏹, ⏮, ⏭) находятся **внутри панели**, отдельной кнопки в топбаре нет
 - `🖥 ОЧНО` (`btnMode`) — переключает режим (очный/онлайн)
 
 ### Статистика ответов
@@ -191,4 +191,8 @@ hub.html скипает ambient-звуки в очном режиме (`shuffle_
 
 `@keyframes`: `shimmer`, `dragPulse`, `qEntrance`, `optReveal`. Вход вопроса — `q-entrance` класс на `#qBlock`, сбрасывается через `void offsetWidth` для перезапуска. Варианты ответа появляются с stagger 0/60 мс.
 
-Intro-анимации: `introTitleReveal`, `introTitleShimmer`, `introParticle`, `introStarPulse`, `introFadeOut`, `introBurstPulse`, `introScan`.
+Intro-анимации CSS: `introTitleReveal`, `introTitleShimmer`, `introLineExpand`, `introSubReveal`, `introFadeOut`, `introBurstPulse`, `introScan`, `introPreReveal`, `introPulse`.
+
+**Частицы intro** — реализованы через `<canvas>` + `requestAnimationFrame` (функция `_introSpawnParticles`). RAF-хэндл хранится в `_introCanvasRAF` и отменяется в `_hideIntroOverlay()`. Не использовать DOM-элементы с CSS-анимациями для частиц — это создаёт 90+ анимированных слоёв и тормозит проектор.
+
+`introParticle` и `introStarPulse` keyframes оставлены только для **idle-частиц** (emoji + dots в `_spawnIdleParticles`).
