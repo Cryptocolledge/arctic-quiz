@@ -3297,7 +3297,14 @@ async function loadSavedScore(){
   }catch(e){}
 }
 
-async function pushScore(){
+// Дебаунс pushScore: быстрые последовательные вызовы (бонус+кража и т.д.)
+// схлопываются в один — в БД попадает актуальный score
+let _pushScoreTimer=null;
+function pushScore(){
+  clearTimeout(_pushScoreTimer);
+  _pushScoreTimer=setTimeout(_pushScoreNow,350);
+}
+async function _pushScoreNow(){
   if(!sb||!pName)return;
   const correct=UA.filter(a=>a&&a.ok);
   const avgTime=correct.length>0?Math.round(correct.reduce((s,a)=>s+(a.t||QT),0)/correct.length*10)/10:QT;
@@ -3309,7 +3316,6 @@ async function pushScore(){
     );
     if(error){
       console.error("pushScore error:",error.message,error.code);
-      // Показываем тост с ошибкой для диагностики
       showToast("⚠️ Очки не сохранились: "+error.message, "err");
     }
   }catch(e){
