@@ -3525,6 +3525,12 @@ function applyState(s){
     hideOv(ovWait);lastPhase="paused";return;
   }
 
+  // INTRO / HOWTOPLAY — трактуем как ожидание (игра ещё не началась)
+  if(phase==="intro"||phase==="howtoplay"){
+    stopTimer();showWaitPanel();showOv(ovWait);hideOv(ovRes);
+    lastPhase=phase;return;
+  }
+
   // RUNNING — скрываем overlay ожидания
   // Онлайн шоув-вступление: показываем только при первом вопросе в онлайн-режиме
   if((s?.shuffle_seed||0)===0&&idx===0&&lastPhase==="waiting"&&!_hubIntroShown){

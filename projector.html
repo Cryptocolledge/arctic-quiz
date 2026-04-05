@@ -332,6 +332,11 @@ body{
     <div class="htp-step"><div class="htp-num">4</div><div class="htp-step-text">3 правильных ответа подряд → <b>бонус +0.5</b> к каждому следующему</div></div>
     <div class="htp-step"><div class="htp-num">5</div><div class="htp-step-text">Сменить ответ можно 1 раз бесплатно — каждая следующая смена <b>−0.5 очка</b></div></div>
   </div>
+  <div id="htp-code-block" style="display:none;margin-top:28px;background:rgba(79,223,255,.07);border:2px solid rgba(79,223,255,.3);border-radius:20px;padding:18px 40px;text-align:center;">
+    <div style="font-size:.72rem;color:rgba(79,223,255,.7);text-transform:uppercase;letter-spacing:.2em;margin-bottom:8px;">Код игры для участников</div>
+    <div id="htp-code-num" style="font-size:clamp(3rem,7vw,5.5rem);font-weight:900;color:#4fdfff;letter-spacing:.3em;font-variant-numeric:tabular-nums;text-shadow:0 0 40px rgba(79,223,255,.6),0 0 80px rgba(79,223,255,.3);line-height:1;">—</div>
+    <div style="font-size:.72rem;color:rgba(255,255,255,.4);margin-top:6px;">Введите на hub.html</div>
+  </div>
   <div class="htp-footer">Ведущий начнёт игру, когда все будут готовы</div>
 </div>
 
@@ -1095,9 +1100,11 @@ function showIdleOverlay(qid,code){
     geo:'География России',space:'Космос и авиация',sport:'Спорт и ЗОЖ'};
   const logo=document.getElementById('idle-logo');if(logo)logo.textContent='КвизЦентр';
   const sub2=document.getElementById('idle-sub');if(sub2)sub2.textContent=names[qid]||'Скоро начнём';
-  // Код игры — скрыт на idle (показывается только когда ведущий готов)
+  // Код игры — показываем если передан (после howtoplay), скрываем до интро
   const cblock=document.getElementById('idle-code-block');
-  if(cblock)cblock.style.display='none';
+  const cnum=document.getElementById('idle-code-num');
+  if(cblock&&cnum&&code){cnum.textContent=code;cblock.style.display='flex';}
+  else if(cblock){cblock.style.display='none';}
   ov.style.display='flex';
   _spawnIdleParticles();
   _idleAudioStart();
@@ -1458,6 +1465,12 @@ function _showHowToPlay(){
   _howToPlayShown=true;
   const ov=document.getElementById('ov-howtoplay');
   if(ov)ov.style.display='flex';
+  // Показываем код игры если есть
+  const code=lastState?.session_code||'';
+  const hcb=document.getElementById('htp-code-block');
+  const hcn=document.getElementById('htp-code-num');
+  if(hcb&&hcn&&code){hcn.textContent=code;hcb.style.display='block';}
+  else if(hcb){hcb.style.display='none';}
   if(!_howToPlayAudio){
     _howToPlayAudio=new Audio('Rulesgame.mp3');
     _howToPlayAudio.volume=0.92;
@@ -1466,9 +1479,9 @@ function _showHowToPlay(){
       _howToPlayShown=false;
       const o=document.getElementById('ov-howtoplay');
       if(o)o.style.display='none';
-      // Возвращаем idle-экран — фаза в БД всё ещё howtoplay, ведущий сам переключит
+      // Возвращаем idle-экран с кодом — фаза в БД всё ещё howtoplay, ведущий сам переключит
       _idleActive=false;
-      showIdleOverlay(lastState?.quiz_id||'arctic','');
+      showIdleOverlay(lastState?.quiz_id||'arctic',lastState?.session_code||'');
     };
   }
   _howToPlayAudio.currentTime=0;
