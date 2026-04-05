@@ -3928,7 +3928,7 @@ function applySurveyScore(){
   pushScore();
   _surveyQ=null;_surveyAnswer="";_surveyScored=false;
 }
-musicBtn.addEventListener("click",()=>{if(bgOn)stopBg();else startBg();});
+if(musicBtn)musicBtn.addEventListener("click",()=>{if(bgOn)stopBg();else startBg();});
 alertBtn.addEventListener("click",()=>{if(!pName||chatBlocked)return;playAlert();sendChat("🚨 Прошу внимания! Есть вопрос или проблема.","alert");alertBtn.disabled=true;alertBtn.textContent="✓ Отправлено";setTimeout(()=>{alertBtn.disabled=false;alertBtn.textContent="🚨 Вопрос!";},10000);});
 chatSendBtn.addEventListener("click",()=>{const t=chatInp.value.trim();if(!t)return;sendChat(t);chatInp.value="";});
 chatInp.addEventListener("keydown",e=>{if(e.key==="Enter"){const t=chatInp.value.trim();if(!t)return;sendChat(t);chatInp.value="";}});

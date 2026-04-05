@@ -206,8 +206,8 @@ body{
 @keyframes introTitleShimmer{0%{background-position:0% 50%}100%{background-position:400% 50%}}
 @keyframes introLineExpand{from{width:0;opacity:0}to{width:min(640px,70vw);opacity:1}}
 @keyframes introSubReveal{from{opacity:0;transform:translateY(22px)}to{opacity:1;transform:translateY(0)}}
-@keyframes introParticle{0%{transform:translateY(0) rotate(0deg) scale(1);opacity:0}8%{opacity:1}88%{opacity:.6}100%{transform:translateY(-98vh) rotate(720deg) scale(.2);opacity:0}}
-@keyframes introStarPulse{0%,100%{opacity:.15;transform:scale(1)}50%{opacity:1;transform:scale(1.8)}}
+@keyframes introParticle{0%{transform:translateY(0) scale(1);opacity:0}8%{opacity:1}88%{opacity:.6}100%{transform:translateY(-95vh) scale(.3);opacity:0}}
+@keyframes introStarPulse{0%,100%{opacity:.15;transform:scale(1)}50%{opacity:.9;transform:scale(1.5)}}
 @keyframes introFadeOut{0%{opacity:1;transform:scale(1)}100%{opacity:0;transform:scale(1.08)}}
 @keyframes introPulse{0%,100%{opacity:.25}50%{opacity:.8}}
 @keyframes introBurstPulse{from{opacity:.6;transform:scale(.9)}to{opacity:1;transform:scale(1.15)}}
@@ -1076,14 +1076,14 @@ function _spawnIdleParticles(){
     const p=document.createElement('div');
     const x=Math.random()*100,delay=Math.random()*8,dur=6+Math.random()*8;
     const em=emojis[Math.floor(Math.random()*emojis.length)];
-    p.style.cssText=`position:absolute;left:${x}%;bottom:-5%;font-size:${1+Math.random()*1.5}rem;animation:introParticle ${dur}s ${delay}s ease-in-out infinite;opacity:.6;`;
+    p.style.cssText=`position:absolute;left:${x}%;bottom:-5%;font-size:${1+Math.random()*1.5}rem;will-change:transform,opacity;animation:introParticle ${dur}s ${delay}s ease-in-out infinite;opacity:.6;`;
     p.textContent=em;c.appendChild(p);
   }
   // Dots
-  for(let i=0;i<50;i++){
+  for(let i=0;i<35;i++){
     const s=document.createElement('div');
     const x=Math.random()*100,y=Math.random()*100,sz=.5+Math.random()*1.5;
-    s.style.cssText=`position:absolute;left:${x}%;top:${y}%;width:${sz}px;height:${sz}px;border-radius:50%;background:#4fdfff;animation:introStarPulse ${1.5+Math.random()*3}s ${Math.random()*5}s ease-in-out infinite;`;
+    s.style.cssText=`position:absolute;left:${x}%;top:${y}%;width:${sz}px;height:${sz}px;border-radius:50%;background:#4fdfff;will-change:transform,opacity;animation:introStarPulse ${1.5+Math.random()*3}s ${Math.random()*5}s ease-in-out infinite;`;
     c.appendChild(s);
   }
 }
@@ -1131,20 +1131,20 @@ function _introSpawnParticles(){
   const c=document.getElementById('intro-particles');if(!c)return;c.innerHTML='';
   const cols=['#4fdfff','#61ffb2','#ffd36b','#a78bfa','#ff6b9d','#ffffff','#80ffe8','#c4b5fd','#34d399'];
   // Rising burst particles
-  for(let i=0;i<120;i++){
+  for(let i=0;i<55;i++){
     const p=document.createElement('div');
-    const x=Math.random()*100,delay=Math.random()*6,dur=3+Math.random()*7,sz=1+Math.random()*5;
+    const x=Math.random()*100,delay=Math.random()*5,dur=3.5+Math.random()*5,sz=2+Math.random()*5;
     const col=cols[Math.floor(Math.random()*cols.length)];
-    const shape=Math.random()>.7?'5px':'50%';
-    p.style.cssText=`position:absolute;left:${x}%;bottom:-8px;width:${sz}px;height:${sz}px;border-radius:${shape};background:${col};box-shadow:0 0 ${sz*4}px ${col};animation:introParticle ${dur}s ${delay}s ease-in-out infinite;`;
+    const shape=Math.random()>.7?'4px':'50%';
+    p.style.cssText=`position:absolute;left:${x}%;bottom:-8px;width:${sz}px;height:${sz}px;border-radius:${shape};background:${col};will-change:transform,opacity;animation:introParticle ${dur}s ${delay}s linear infinite;`;
     c.appendChild(p);
   }
   // Stars
-  for(let i=0;i<80;i++){
+  for(let i=0;i<35;i++){
     const s=document.createElement('div');
-    const x=Math.random()*100,y=Math.random()*100,sz=.3+Math.random()*2;
+    const x=Math.random()*100,y=Math.random()*100,sz=.5+Math.random()*2.5;
     const col=cols[Math.floor(Math.random()*cols.length)];
-    s.style.cssText=`position:absolute;left:${x}%;top:${y}%;width:${sz}px;height:${sz}px;border-radius:50%;background:${col};animation:introStarPulse ${.8+Math.random()*2.5}s ${Math.random()*5}s ease-in-out infinite;`;
+    s.style.cssText=`position:absolute;left:${x}%;top:${y}%;width:${sz}px;height:${sz}px;border-radius:50%;background:${col};will-change:transform,opacity;animation:introStarPulse ${1+Math.random()*2.5}s ${Math.random()*4}s ease-in-out infinite;`;
     c.appendChild(s);
   }
 }
