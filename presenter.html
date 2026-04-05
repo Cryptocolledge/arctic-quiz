@@ -444,7 +444,6 @@ tr:hover td{background:rgba(79,223,255,.03);}
     <span style="width:1px;background:rgba(255,255,255,.12);align-self:stretch;margin:0 2px"></span>
     <button class="btn bg" id="btnPdfReport" style="border-color:rgba(97,255,178,.4);color:var(--ok);" title="Скачать PDF протокол">📄 PDF</button>
     <button class="btn bg" id="btnMusicPanel" onclick="toggleMusicPanel()" style="border-color:rgba(97,255,178,.3);color:#61ffb2;font-size:.7rem;padding:5px 10px;" title="Плейлист и управление музыкой">🎵 Музыка</button>
-    <button id="btnMusicPlayPause" onclick="presTogglePlay();updatePresPlayerUI();" style="font-size:.7rem;padding:5px 8px;border-radius:8px;border:1px solid rgba(97,255,178,.3);background:rgba(97,255,178,.08);color:#61ffb2;cursor:pointer;" title="Пауза / воспроизведение">⏸</button>
     <button class="btn bg" id="btnHelp" style="border-color:rgba(255,211,107,.4);color:var(--gold);" title="Справка ведущего">❓ Справка</button>
     <button class="btn" id="btnProjector" style="background:rgba(255,211,107,.08);border-color:rgba(255,211,107,.5);color:var(--gold);" title="Открыть проектор на втором экране">🖥 Проектор</button>
     <button class="btn bg" id="btnCopyProjUrl" style="border-color:rgba(255,211,107,.4);color:var(--gold);font-size:.7rem;padding:5px 10px;" title="Скопировать ссылку проектора для другого устройства">📋 Ссылка проектора</button>
@@ -660,13 +659,14 @@ tr:hover td{background:rgba(79,223,255,.03);}
     </div>
   </div>
 
-  <!-- 4.5 Музыка -->
+  <!-- 4.5 Шоу и музыка -->
   <div class="help-section">
-    <div class="help-sec-title" onclick="toggleHelp('h45')">🎵 Музыка и звуки <span style="margin-left:auto;font-size:.8rem;opacity:.6">▼</span></div>
+    <div class="help-sec-title" onclick="toggleHelp('h45')">🎬 Шоу и музыка <span style="margin-left:auto;font-size:.8rem;opacity:.6">▼</span></div>
     <div class="help-sec-body" id="h45">
-      <div class="help-step"><div class="help-num">🎵</div><div class="help-step-text"><b>Фоновая музыка</b> — игроки нажимают кнопку <span class="help-btn-chip">🎵 Музыка</span> в шапке страницы. Включается атмосферное звуковое оформление.</div></div>
-      <div class="help-step"><div class="help-num">📂</div><div class="help-step-text"><b>Своя музыка</b> — рядом кнопка <span class="help-btn-chip">📂 Своя музыка</span>. Игрок может загрузить mp3 или ogg-файл с телефона/планшета/ПК — он заменит стандартный звук.</div></div>
-      <div class="help-step"><div class="help-num">🔔</div><div class="help-step-text"><b>Звуки ответов</b> — правильный ответ: мелодичный мажорный аккорд; неправильный: диссонанс с затуханием. Генерируются прямо в браузере.</div></div>
+      <div class="help-step"><div class="help-num">🎬</div><div class="help-step-text"><b>Кнопка «🎬 Шоу!»</b> — запускает пафосное вступление на проекторе: полноэкранная анимация с музыкой <b>Startgame.mp3</b>. Нажмите перед первым вопросом. После окончания проектор вернётся к экрану ожидания.</div></div>
+      <div class="help-step"><div class="help-num">🖥</div><div class="help-step-text"><b>Проектор (очный режим)</b> — до нажатия «Шоу!» проектор показывает <b>экран ожидания</b> с кодом игры и играет фоновую музыку <b>DRIVE</b>. Во время игры — фоновый <b>Amarok</b>. Блиц запускает <b>Blic new</b>, ставки — <b>Stavki new</b>, конец игры — <b>Endgame</b>.</div></div>
+      <div class="help-step"><div class="help-num">🎵</div><div class="help-step-text"><b>Плейлист ведущего</b> — нажмите <span class="help-btn-chip">🎵 Музыка</span> в топбаре. Загрузите mp3-файлы с компьютера, управляйте воспроизведением внутри панели. Включите <b>📡 Транслировать игрокам</b> — и они услышат музыку на своих устройствах.</div></div>
+      <div class="help-step"><div class="help-num">🔔</div><div class="help-step-text"><b>Звуки ответов у игроков</b> — правильный ответ: <b>respuesta-correcta.mp3</b>; неправильный: <b>wrong-1.mp3</b>. Тики таймера и сигналы генерируются через Web Audio API — без файлов.</div></div>
     </div>
   </div>
 
@@ -2572,6 +2572,13 @@ async function generatePdfReport(){
   .footer{margin-top:12px;padding-top:10px;border-top:1px solid #e0e8f4;display:flex;justify-content:space-between;align-items:center;font-size:9px;color:#aaa;}
   .footer-logo{display:flex;align-items:center;gap:6px;}
   .footer-icon{font-size:14px;}
+  /* ПОДПИСИ */
+  .sign-block{margin-top:28px;padding:18px 20px 14px;background:#fff;border-radius:10px;border:1px solid #e0e8f4;}
+  .sign-title{font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:.1em;color:#888;margin-bottom:18px;}
+  .sign-row{display:flex;gap:32px;margin-bottom:20px;}
+  .sign-col{flex:1;display:flex;flex-direction:column;gap:4px;}
+  .sign-line{border-bottom:1px solid #b0b8c8;height:28px;}
+  .sign-label{font-size:8px;color:#aaa;}
 
   @media print{
     body{background:#fff;}
@@ -2635,6 +2642,25 @@ ${topBlock}
       <div class="pcteam">${p.team_name||p.institution_name||"—"}</div>
     </div>`;
   }).join("")||"<div style='color:#bbb;font-size:11px'>Нет данных</div>"}</div>
+</div>
+
+<div class="sign-block">
+  <div class="sign-title">Подписи</div>
+  <div class="sign-row">
+    <div class="sign-col"><div class="sign-line"></div><div class="sign-label">ФИО ведущего</div></div>
+    <div class="sign-col"><div class="sign-line"></div><div class="sign-label">Подпись</div></div>
+    <div class="sign-col"><div class="sign-line"></div><div class="sign-label">Дата</div></div>
+  </div>
+  <div class="sign-row">
+    <div class="sign-col"><div class="sign-line"></div><div class="sign-label">ФИО ответственного</div></div>
+    <div class="sign-col"><div class="sign-line"></div><div class="sign-label">Подпись</div></div>
+    <div class="sign-col"><div class="sign-line"></div><div class="sign-label">Должность</div></div>
+  </div>
+  <div class="sign-row" style="margin-bottom:0">
+    <div class="sign-col"><div class="sign-line"></div><div class="sign-label">Место проведения</div></div>
+    <div class="sign-col"><div class="sign-line"></div><div class="sign-label">Количество участников (подпись)</div></div>
+    <div class="sign-col"><div class="sign-line"></div><div class="sign-label">Печать / отметка</div></div>
+  </div>
 </div>
 
 <div class="footer">

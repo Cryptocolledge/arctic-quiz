@@ -1089,7 +1089,7 @@ function _spawnIdleParticles(){
 }
 
 // ── INTRO OVERLAY ────────────────────────────────────────────
-let _introAudio=null,_introShown=false,_introFallback=null,_lastProjPhaseWasIntro=false;
+let _introAudio=null,_introShown=false,_introFallback=null,_lastProjPhaseWasIntro=false,_introCanvasRAF=null;
 
 function showIntroOverlay(qid){
   const ov=document.getElementById('ov-intro');
@@ -1118,6 +1118,7 @@ function _hideIntroOverlay(){
   if(_introFallback){clearTimeout(_introFallback);_introFallback=null;}
   ov.style.animation='introFadeOut .9s ease forwards';
   setTimeout(()=>{
+    if(_introCanvasRAF){cancelAnimationFrame(_introCanvasRAF);_introCanvasRAF=null;}
     ov.style.display='none';ov.style.animation='';
     const c=document.getElementById('intro-particles');if(c)c.innerHTML='';
     // Показываем idle до старта игры
@@ -1129,24 +1130,34 @@ function _hideIntroOverlay(){
 
 function _introSpawnParticles(){
   const c=document.getElementById('intro-particles');if(!c)return;c.innerHTML='';
-  const cols=['#4fdfff','#61ffb2','#ffd36b','#a78bfa','#ff6b9d','#ffffff','#80ffe8','#c4b5fd','#34d399'];
-  // Rising burst particles
-  for(let i=0;i<55;i++){
-    const p=document.createElement('div');
-    const x=Math.random()*100,delay=Math.random()*5,dur=3.5+Math.random()*5,sz=2+Math.random()*5;
-    const col=cols[Math.floor(Math.random()*cols.length)];
-    const shape=Math.random()>.7?'4px':'50%';
-    p.style.cssText=`position:absolute;left:${x}%;bottom:-8px;width:${sz}px;height:${sz}px;border-radius:${shape};background:${col};will-change:transform,opacity;animation:introParticle ${dur}s ${delay}s linear infinite;`;
-    c.appendChild(p);
+  if(_introCanvasRAF){cancelAnimationFrame(_introCanvasRAF);_introCanvasRAF=null;}
+  const canvas=document.createElement('canvas');
+  canvas.style.cssText='position:absolute;inset:0;width:100%;height:100%;pointer-events:none;';
+  c.appendChild(canvas);
+  canvas.width=window.innerWidth;canvas.height=window.innerHeight;
+  const W=canvas.width,H=canvas.height,ctx=canvas.getContext('2d');
+  const cols=['#4fdfff','#61ffb2','#ffd36b','#a78bfa','#ff6b9d','#fff','#80ffe8','#c4b5fd','#34d399'];
+  const rnd=()=>Math.random();
+  const parts=Array.from({length:55},()=>({x:rnd()*W,y:H*(0.2+rnd()*0.8),vy:0.5+rnd()*2,r:1.5+rnd()*4,col:cols[Math.floor(rnd()*9)],sq:rnd()>.75,delay:rnd()*4000}));
+  const stars=Array.from({length:40},()=>({x:rnd()*W,y:rnd()*H,r:0.5+rnd()*2,col:cols[Math.floor(rnd()*9)],ph:rnd()*6.28,sp:0.4+rnd()*1.5}));
+  let t0=null;
+  function frame(ts){
+    if(!t0)t0=ts;const t=ts-t0;
+    ctx.clearRect(0,0,W,H);
+    for(const s of stars){const v=(Math.sin(t*.001*s.sp+s.ph)+1)*.5;ctx.globalAlpha=.1+v*.7;ctx.fillStyle=s.col;ctx.beginPath();ctx.arc(s.x,s.y,s.r*(.8+v*.3),0,6.28);ctx.fill();}
+    for(const p of parts){
+      if(t<p.delay)continue;
+      p.y-=p.vy;if(p.y<-10){p.y=H+5;p.x=rnd()*W;}
+      const yp=1-(p.y+10)/(H+15);
+      const a=yp<.06?yp/.06:yp>.9?(1-yp)/.1:.65;
+      ctx.globalAlpha=Math.max(0,a);ctx.fillStyle=p.col;
+      if(p.sq)ctx.fillRect(p.x-p.r,p.y-p.r,p.r*2,p.r*2);
+      else{ctx.beginPath();ctx.arc(p.x,p.y,p.r,0,6.28);ctx.fill();}
+    }
+    ctx.globalAlpha=1;
+    _introCanvasRAF=requestAnimationFrame(frame);
   }
-  // Stars
-  for(let i=0;i<35;i++){
-    const s=document.createElement('div');
-    const x=Math.random()*100,y=Math.random()*100,sz=.5+Math.random()*2.5;
-    const col=cols[Math.floor(Math.random()*cols.length)];
-    s.style.cssText=`position:absolute;left:${x}%;top:${y}%;width:${sz}px;height:${sz}px;border-radius:50%;background:${col};will-change:transform,opacity;animation:introStarPulse ${1+Math.random()*2.5}s ${Math.random()*4}s ease-in-out infinite;`;
-    c.appendChild(s);
-  }
+  _introCanvasRAF=requestAnimationFrame(frame);
 }
 
 // ── APPLY STATE ───────────────────────────────────────────────
