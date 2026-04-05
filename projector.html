@@ -425,7 +425,7 @@ function loadSupabaseFallback(){_sbIdx++;if(_sbIdx>=_SB_CDNS.length)return;const
 
 const $=id=>document.getElementById(id);
 let sb=null;
-let lastState=null,timerInt=null,lastIdx=-1,QT=25,lastRoundType="";
+let lastState=null,timerInt=null,lastIdx=-1,lastStartedAt=null,QT=25,lastRoundType="";
 
 // ─ Вопросы (те же что у ведущего) ─────────────────────────────
 // ══ ВОПРОСЫ ВСЕХ КВИЗОВ ══
@@ -1299,9 +1299,10 @@ function applyState(s){
   // Возврат из ставок/блица — принудительно перерисовать вопрос
   if(wasSpecialRound) lastIdx=-1;
 
-  // Новый вопрос
-  if(idx!==lastIdx||(show!==lastShow)){
-    lastIdx=idx; lastShow=show;
+  // Новый вопрос — или тот же вопрос, но новый старт (сброс/перезапуск)
+  const startedAt=s.question_started_at||null;
+  if(idx!==lastIdx||(show!==lastShow)||(startedAt&&startedAt!==lastStartedAt)){
+    lastIdx=idx; lastShow=show; lastStartedAt=startedAt;
     // Сбрасываем бар сразу — чтобы не показывать данные предыдущего вопроса
     const bar=$("answeredBar");if(bar){bar.style.display="none";$("answeredFill").style.width="0%";$("answeredNum").textContent="0/0";}
     renderQ(s);
@@ -1330,8 +1331,11 @@ async function refreshAnsweredCount(){
     const idx=lastState?.current_index;if(typeof idx!=="number")return;
     const {data:scores}=await sb.from("quiz_scores").select("questions_answered").eq("game_id",GID);
     const {data:players}=await sb.from("quiz_players").select("student_name").eq("game_id",GID);
+    // Отбрасываем устаревший ответ если вопрос сменился пока ждали
+    if(lastState?.current_index!==idx)return;
     const total=players?.length||0;
     const answered=(scores||[]).filter(r=>r.questions_answered>idx).length;
+    if(lastState?.phase!=="running")return;
     const bar=$("answeredBar"); bar.style.display="";
     $("answeredNum").textContent=answered+"/"+total;
     $("answeredFill").style.width=(total>0?answered/total*100:0)+"%";
