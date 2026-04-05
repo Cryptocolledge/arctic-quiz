@@ -101,7 +101,7 @@ body{
 .opt-row:nth-child(3){animation-delay:120ms}
 .opt-row:nth-child(4){animation-delay:180ms}
 .opt-row.correct{border-color:var(--ok);background:rgba(97,255,178,.14);color:var(--ok);box-shadow:0 0 30px rgba(97,255,178,.18),inset 0 0 20px rgba(97,255,178,.06);}
-.opt-letter{width:36px;height:36px;border-radius:10px;border:2px solid rgba(79,223,255,.45);display:flex;align-items:center;justify-content:center;font-size:1rem;color:var(--accent);flex-shrink:0;font-weight:900;background:rgba(79,223,255,.06);}
+.opt-letter{width:36px;height:36px;border-radius:10px;border:2px solid rgba(79,223,255,.45);display:flex;align-items:center;justify-content:center;text-align:center;line-height:1;font-size:1rem;color:var(--accent);flex-shrink:0;font-weight:900;background:rgba(79,223,255,.06);}
 .opt-row.correct .opt-letter{border-color:var(--ok);color:var(--ok);background:rgba(97,255,178,.18);box-shadow:0 0 14px rgba(97,255,178,.4);}
 
 /* ТАЙМЕР */
@@ -175,24 +175,43 @@ body{
 @keyframes sbAurora{0%{opacity:.75;transform:scale(1) rotate(0deg)}100%{opacity:1;transform:scale(1.08) rotate(3deg)}}
 @keyframes sbOvIn{from{opacity:0;transform:scale(.96)}to{opacity:1;transform:scale(1)}}
 
+/* ── IDLE OVERLAY (pre-show) ── */
+#ov-idle{position:fixed;inset:0;z-index:40;display:none;align-items:center;justify-content:center;flex-direction:column;gap:0;background:linear-gradient(160deg,#040d25 0%,#081430 35%,#0a1d40 55%,#060f28 100%);overflow:hidden;text-align:center;}
+#idle-particles{position:absolute;inset:0;pointer-events:none;overflow:hidden;}
+#idle-aurora{position:absolute;inset:0;pointer-events:none;overflow:hidden;}
+#idle-content{position:relative;z-index:2;display:flex;flex-direction:column;align-items:center;gap:18px;padding:0 40px;}
+#idle-logo{font-size:clamp(2rem,5vw,4.5rem);font-weight:900;letter-spacing:.08em;text-transform:uppercase;background:linear-gradient(90deg,#4fdfff 0%,#a8ffea 40%,#61ffb2 70%,#4fdfff 100%);background-size:300% 100%;-webkit-background-clip:text;-webkit-text-fill-color:transparent;animation:shimmer 5s linear infinite;filter:drop-shadow(0 0 30px rgba(79,223,255,.5));}
+#idle-sub{font-size:clamp(.85rem,2vw,1.5rem);font-weight:700;letter-spacing:.2em;text-transform:uppercase;color:rgba(79,223,255,.7);margin-top:-8px;}
+#idle-dots{font-size:clamp(1rem,2.5vw,1.8rem);color:rgba(97,255,178,.55);letter-spacing:.1em;animation:idleDots 2.4s ease-in-out infinite;}
+#idle-code-block{margin-top:24px;display:none;flex-direction:column;align-items:center;gap:8px;}
+#idle-code-label{font-size:.7rem;color:rgba(79,223,255,.55);letter-spacing:.18em;text-transform:uppercase;}
+#idle-code-num{font-size:clamp(3rem,8vw,6rem);font-weight:900;color:#4fdfff;letter-spacing:.25em;font-variant-numeric:tabular-nums;text-shadow:0 0 40px rgba(79,223,255,.6),0 0 80px rgba(79,223,255,.3);}
+#idle-code-hint{font-size:.72rem;color:rgba(255,255,255,.4);letter-spacing:.08em;}
+@keyframes idleDots{0%,100%{opacity:.4;transform:scale(.97)}50%{opacity:1;transform:scale(1.03)}}
+
 /* ── INTRO OVERLAY ── */
-#ov-intro{position:fixed;inset:0;z-index:100;display:none;align-items:center;justify-content:center;flex-direction:column;background:radial-gradient(ellipse 120% 80% at 50% 70%,#0c0830 0%,#050218 55%,#000 100%);overflow:hidden;text-align:center;cursor:pointer;}
+#ov-intro{position:fixed;inset:0;z-index:100;display:none;align-items:center;justify-content:center;flex-direction:column;background:radial-gradient(ellipse 150% 120% at 50% 80%,#1a0545 0%,#0d1a50 30%,#020420 70%,#000 100%);overflow:hidden;text-align:center;cursor:pointer;}
+#intro-bg-burst{position:absolute;inset:0;pointer-events:none;background:radial-gradient(ellipse 60% 60% at 50% 50%,rgba(120,60,255,.35) 0%,transparent 70%);animation:introBurstPulse 1.5s 0.5s ease-in-out infinite alternate;}
 #intro-particles{position:absolute;inset:0;pointer-events:none;overflow:hidden;}
-#intro-content{position:relative;z-index:2;display:flex;flex-direction:column;align-items:center;gap:20px;padding:0 40px;}
-#intro-pre{font-size:clamp(.9rem,1.8vw,1.35rem);font-weight:800;letter-spacing:.4em;text-transform:uppercase;color:rgba(79,223,255,.75);animation:introPreReveal .7s .3s ease both;}
-#intro-title{font-size:clamp(3.5rem,9vw,8rem);font-weight:900;letter-spacing:.05em;text-transform:uppercase;background:linear-gradient(135deg,#4fdfff 0%,#b0ffee 35%,#61ffb2 60%,#4fdfff 100%);background-size:300% 100%;-webkit-background-clip:text;-webkit-text-fill-color:transparent;filter:drop-shadow(0 0 50px rgba(79,223,255,.7));animation:introTitleReveal 1s .6s cubic-bezier(.22,1,.36,1) both,introTitleShimmer 3s 1.6s linear infinite;}
-#intro-line{height:3px;border-radius:999px;background:linear-gradient(90deg,transparent,#4fdfff 30%,#61ffb2 70%,transparent);animation:introLineExpand .8s 1.4s ease both;}
-#intro-sub{font-size:clamp(1.1rem,2.5vw,2rem);font-weight:700;letter-spacing:.15em;text-transform:uppercase;color:rgba(255,255,255,.88);animation:introSubReveal .7s 1.6s ease both;}
-#intro-hint{position:absolute;bottom:32px;left:50%;transform:translateX(-50%);font-size:.75rem;color:rgba(79,223,255,.4);letter-spacing:.12em;text-transform:uppercase;animation:introPulse 2s 2.5s ease-in-out infinite both;}
-@keyframes introPreReveal{from{opacity:0;transform:translateY(-18px)}to{opacity:1;transform:translateY(0)}}
-@keyframes introTitleReveal{from{opacity:0;transform:scale(.55) translateY(30px)}60%{transform:scale(1.07) translateY(-8px)}to{opacity:1;transform:scale(1) translateY(0)}}
-@keyframes introTitleShimmer{0%{background-position:0% 50%}100%{background-position:300% 50%}}
-@keyframes introLineExpand{from{width:0;opacity:0}to{width:min(520px,65vw);opacity:1}}
-@keyframes introSubReveal{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:translateY(0)}}
-@keyframes introParticle{0%{transform:translateY(0) rotate(0deg) scale(1);opacity:0}8%{opacity:1}88%{opacity:.7}100%{transform:translateY(-95vh) rotate(600deg) scale(.3);opacity:0}}
-@keyframes introStarPulse{0%,100%{opacity:.25;transform:scale(1)}50%{opacity:.9;transform:scale(1.5)}}
-@keyframes introFadeOut{0%{opacity:1;transform:scale(1)}100%{opacity:0;transform:scale(1.06)}}
-@keyframes introPulse{0%,100%{opacity:.3}50%{opacity:.75}}
+#intro-scanline{position:absolute;top:0;left:-100%;width:60%;height:100%;background:linear-gradient(90deg,transparent,rgba(79,223,255,.06),transparent);animation:introScan 3s 1s linear infinite;pointer-events:none;}
+#intro-content{position:relative;z-index:2;display:flex;flex-direction:column;align-items:center;gap:16px;padding:0 40px;}
+#intro-top-label{font-size:clamp(.75rem,1.5vw,1.1rem);font-weight:900;letter-spacing:.55em;text-transform:uppercase;color:rgba(167,139,250,.9);animation:introPreReveal .6s .2s ease both;text-shadow:0 0 20px rgba(167,139,250,.5);}
+#intro-pre{font-size:clamp(1.1rem,2.2vw,1.7rem);font-weight:800;letter-spacing:.35em;text-transform:uppercase;color:rgba(79,223,255,.9);animation:introPreReveal .7s .5s ease both;text-shadow:0 0 16px rgba(79,223,255,.5);}
+#intro-title{font-size:clamp(4rem,11vw,10rem);font-weight:900;letter-spacing:.04em;text-transform:uppercase;background:linear-gradient(135deg,#fff 0%,#4fdfff 20%,#61ffb2 45%,#ffd36b 65%,#a78bfa 80%,#4fdfff 100%);background-size:400% 100%;-webkit-background-clip:text;-webkit-text-fill-color:transparent;filter:drop-shadow(0 0 60px rgba(79,223,255,.8)) drop-shadow(0 0 120px rgba(97,255,178,.4));animation:introTitleReveal 1.1s .8s cubic-bezier(.22,1,.36,1) both,introTitleShimmer 3.5s 1.9s linear infinite;line-height:.95;}
+#intro-line{height:4px;border-radius:999px;background:linear-gradient(90deg,transparent,#a78bfa 10%,#4fdfff 30%,#61ffb2 70%,#ffd36b 90%,transparent);box-shadow:0 0 20px rgba(79,223,255,.5);animation:introLineExpand .9s 1.7s cubic-bezier(.22,1,.36,1) both;}
+#intro-sub{font-size:clamp(1.2rem,2.8vw,2.2rem);font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:rgba(255,255,255,.92);text-shadow:0 0 20px rgba(79,223,255,.3);animation:introSubReveal .8s 1.9s ease both;}
+#intro-hint{position:absolute;bottom:28px;left:50%;transform:translateX(-50%);font-size:.72rem;color:rgba(79,223,255,.35);letter-spacing:.12em;text-transform:uppercase;animation:introPulse 2s 2.8s ease-in-out infinite both;}
+@keyframes introPreReveal{from{opacity:0;transform:translateY(-20px)}to{opacity:1;transform:translateY(0)}}
+@keyframes introTitleReveal{from{opacity:0;transform:scale(.45) translateY(40px)}55%{transform:scale(1.1) translateY(-10px)}80%{transform:scale(.97)}to{opacity:1;transform:scale(1) translateY(0)}}
+@keyframes introTitleShimmer{0%{background-position:0% 50%}100%{background-position:400% 50%}}
+@keyframes introLineExpand{from{width:0;opacity:0}to{width:min(640px,70vw);opacity:1}}
+@keyframes introSubReveal{from{opacity:0;transform:translateY(22px)}to{opacity:1;transform:translateY(0)}}
+@keyframes introParticle{0%{transform:translateY(0) rotate(0deg) scale(1);opacity:0}8%{opacity:1}88%{opacity:.6}100%{transform:translateY(-98vh) rotate(720deg) scale(.2);opacity:0}}
+@keyframes introStarPulse{0%,100%{opacity:.15;transform:scale(1)}50%{opacity:1;transform:scale(1.8)}}
+@keyframes introFadeOut{0%{opacity:1;transform:scale(1)}100%{opacity:0;transform:scale(1.08)}}
+@keyframes introPulse{0%,100%{opacity:.25}50%{opacity:.8}}
+@keyframes introBurstPulse{from{opacity:.6;transform:scale(.9)}to{opacity:1;transform:scale(1.15)}}
+@keyframes introScan{0%{left:-60%}100%{left:110%}}
 .sb-trophy{font-size:3.2rem;margin-bottom:8px;position:relative;z-index:1;animation:sbTrophyFloat 2.8s ease-in-out infinite;}
 @keyframes sbTrophyFloat{0%,100%{transform:translateY(0) scale(1);filter:drop-shadow(0 0 20px rgba(255,211,107,.7))}50%{transform:translateY(-9px) scale(1.1);filter:drop-shadow(0 0 36px rgba(255,211,107,1));}}
 .sb-title{position:relative;z-index:1;font-size:clamp(1.2rem,2.5vw,2rem);font-weight:900;letter-spacing:.08em;text-transform:uppercase;background:linear-gradient(90deg,#ffd36b 0%,#ffb300 25%,#ffe680 50%,#ffb300 75%,#ffd36b 100%);background-size:300%;-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:6px;text-align:center;animation:sbTitleShimmer 3s linear infinite;}
@@ -255,12 +274,35 @@ body{
   </div>
 </div>
 
+<!-- IDLE OVERLAY (pre-show) -->
+<div id="ov-idle">
+  <div id="idle-aurora">
+    <svg viewBox="0 0 1200 600" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg" style="position:absolute;top:0;left:0;width:100%;height:100%;">
+      <g style="animation:aurora1 8s ease-in-out infinite"><path d="M-100 280 Q300 80 700 240 Q1000 370 1300 170 L1300 320 Q1000 510 700 380 Q300 220 -100 420 Z" fill="rgba(79,223,255,.1)"/></g>
+      <g style="animation:aurora2 11s ease-in-out infinite"><path d="M-100 340 Q250 140 680 310 Q980 430 1300 240 L1300 380 Q980 570 680 450 Q250 280 -100 480 Z" fill="rgba(97,255,178,.07)"/></g>
+      <g style="animation:aurora3 14s ease-in-out infinite"><path d="M-100 400 Q350 200 750 360 Q1050 470 1300 300 L1300 440 Q1050 610 750 500 Q350 340 -100 540 Z" fill="rgba(167,139,250,.06)"/></g>
+    </svg>
+  </div>
+  <div id="idle-particles"></div>
+  <div id="idle-content">
+    <div id="idle-logo">КвизЦентр</div>
+    <div id="idle-sub">Скоро начнём</div>
+    <div id="idle-dots">• • •</div>
+    <div id="idle-code-block">
+      <div id="idle-code-label">Код игры для участников</div>
+      <div id="idle-code-num">—</div>
+      <div id="idle-code-hint">Введите на hub.html</div>
+    </div>
+  </div>
+</div>
+
 <!-- INTRO OVERLAY -->
 <div id="ov-intro" onclick="_hideIntroOverlay()">
+  <div id="intro-bg-burst"></div>
+  <div id="intro-scanline"></div>
   <div id="intro-particles"></div>
-  <div style="position:absolute;top:0;left:0;right:0;height:80px;background:linear-gradient(180deg,rgba(0,0,0,.85),transparent);z-index:1;pointer-events:none;"></div>
-  <div style="position:absolute;bottom:0;left:0;right:0;height:80px;background:linear-gradient(0deg,rgba(0,0,0,.85),transparent);z-index:1;pointer-events:none;"></div>
   <div id="intro-content">
+    <div id="intro-top-label">КвизЦентр Presents</div>
     <div id="intro-pre">ДОБРО ПОЖАЛОВАТЬ</div>
     <div id="intro-title">КвизЦентр</div>
     <div id="intro-line"></div>
@@ -985,13 +1027,76 @@ async function showProjScoreboard(){
 
 function hideProjScoreboard(){$("scoreboardOv").style.display="none";}
 
+// ── IDLE OVERLAY + DRIVE MUSIC ───────────────────────────────
+let _idleAudio=null,_idleActive=false,_idleParticlesInt=null;
+
+function _idleAudioStart(){
+  if(_idleAudio&&!_idleAudio.paused)return;
+  if(!_idleAudio){_idleAudio=new Audio('DRIVE(chosic.com).mp3');_idleAudio.loop=true;_idleAudio.volume=0.45;}
+  _idleAudio.play().catch(()=>{});
+}
+function _idleAudioStop(){
+  if(_idleAudio){try{_idleAudio.pause();}catch(e){}}
+}
+
+function showIdleOverlay(qid,code){
+  const ov=document.getElementById('ov-idle');if(!ov)return;
+  if(_idleActive)return;
+  _idleActive=true;
+  // Скрываем status overlay
+  const so=document.getElementById('statusOv');if(so)so.style.display='none';
+  // Обновляем название квиза
+  const names={arctic:'Арктический квиз',ecology:'Экология',history:'История России',
+    science:'Наука и технологии',patriot:'Патриотический квиз',
+    geo:'География России',space:'Космос и авиация',sport:'Спорт и ЗОЖ'};
+  const logo=document.getElementById('idle-logo');if(logo)logo.textContent='КвизЦентр';
+  const sub2=document.getElementById('idle-sub');if(sub2)sub2.textContent=names[qid]||'Скоро начнём';
+  // Код игры
+  const cblock=document.getElementById('idle-code-block');
+  const cnum=document.getElementById('idle-code-num');
+  if(cblock&&cnum&&code){cnum.textContent=code;cblock.style.display='flex';}
+  else if(cblock){cblock.style.display='none';}
+  ov.style.display='flex';
+  _spawnIdleParticles();
+  _idleAudioStart();
+}
+
+function hideIdleOverlay(){
+  const ov=document.getElementById('ov-idle');if(!ov||!_idleActive)return;
+  _idleActive=false;
+  _idleAudioStop();
+  ov.style.display='none';
+  const c=document.getElementById('idle-particles');if(c)c.innerHTML='';
+}
+
+function _spawnIdleParticles(){
+  const c=document.getElementById('idle-particles');if(!c)return;c.innerHTML='';
+  const emojis=['❄','⭐','✨','🧊','💎','⚡'];
+  for(let i=0;i<25;i++){
+    const p=document.createElement('div');
+    const x=Math.random()*100,delay=Math.random()*8,dur=6+Math.random()*8;
+    const em=emojis[Math.floor(Math.random()*emojis.length)];
+    p.style.cssText=`position:absolute;left:${x}%;bottom:-5%;font-size:${1+Math.random()*1.5}rem;animation:introParticle ${dur}s ${delay}s ease-in-out infinite;opacity:.6;`;
+    p.textContent=em;c.appendChild(p);
+  }
+  // Dots
+  for(let i=0;i<50;i++){
+    const s=document.createElement('div');
+    const x=Math.random()*100,y=Math.random()*100,sz=.5+Math.random()*1.5;
+    s.style.cssText=`position:absolute;left:${x}%;top:${y}%;width:${sz}px;height:${sz}px;border-radius:50%;background:#4fdfff;animation:introStarPulse ${1.5+Math.random()*3}s ${Math.random()*5}s ease-in-out infinite;`;
+    c.appendChild(s);
+  }
+}
+
 // ── INTRO OVERLAY ────────────────────────────────────────────
-let _introAudio=null,_introShown=false,_introFallback=null;
+let _introAudio=null,_introShown=false,_introFallback=null,_lastProjPhaseWasIntro=false;
 
 function showIntroOverlay(qid){
   const ov=document.getElementById('ov-intro');
   if(!ov||_introShown)return;
   _introShown=true;
+  // Останавливаем idle
+  hideIdleOverlay();
   const names={arctic:'Арктический квиз',ecology:'Экология',history:'История России',
     science:'Наука и технологии',patriot:'Патриотический квиз',
     geo:'География России',space:'Космос и авиация',sport:'Спорт и ЗОЖ'};
@@ -1001,10 +1106,10 @@ function showIntroOverlay(qid){
   ov.style.display='flex';
   _introSpawnParticles();
   if(!_introAudio)_introAudio=new Audio('Startgame.mp3');
-  _introAudio.currentTime=0;_introAudio.volume=0.88;
+  _introAudio.currentTime=0;_introAudio.volume=0.9;
   _introAudio.play().catch(()=>{});
   _introAudio.onended=()=>_hideIntroOverlay();
-  _introFallback=setTimeout(()=>_hideIntroOverlay(),20000);
+  _introFallback=setTimeout(()=>_hideIntroOverlay(),25000);
 }
 
 function _hideIntroOverlay(){
@@ -1014,29 +1119,32 @@ function _hideIntroOverlay(){
   ov.style.animation='introFadeOut .9s ease forwards';
   setTimeout(()=>{
     ov.style.display='none';ov.style.animation='';
-    _introShown=false;
     const c=document.getElementById('intro-particles');if(c)c.innerHTML='';
+    // Показываем idle до старта игры
+    const st=lastState;
+    showIdleOverlay(st?.quiz_id||'arctic', st?.session_code||'');
   },900);
   if(_introAudio){try{_introAudio.pause();_introAudio.currentTime=0;}catch(e){}}
 }
 
 function _introSpawnParticles(){
-  const c=document.getElementById('intro-particles');if(!c)return;
-  c.innerHTML='';
-  const cols=['#4fdfff','#61ffb2','#ffd36b','#a78bfa','#ff6b9d','#ffffff','#80ffe8'];
-  // Rising particles
-  for(let i=0;i<80;i++){
+  const c=document.getElementById('intro-particles');if(!c)return;c.innerHTML='';
+  const cols=['#4fdfff','#61ffb2','#ffd36b','#a78bfa','#ff6b9d','#ffffff','#80ffe8','#c4b5fd','#34d399'];
+  // Rising burst particles
+  for(let i=0;i<120;i++){
     const p=document.createElement('div');
-    const x=Math.random()*100,delay=Math.random()*5,dur=4+Math.random()*6,sz=1.5+Math.random()*4;
+    const x=Math.random()*100,delay=Math.random()*6,dur=3+Math.random()*7,sz=1+Math.random()*5;
     const col=cols[Math.floor(Math.random()*cols.length)];
-    p.style.cssText=`position:absolute;left:${x}%;bottom:-8px;width:${sz}px;height:${sz}px;border-radius:50%;background:${col};box-shadow:0 0 ${sz*3}px ${col};animation:introParticle ${dur}s ${delay}s ease-in-out infinite;`;
+    const shape=Math.random()>.7?'5px':'50%';
+    p.style.cssText=`position:absolute;left:${x}%;bottom:-8px;width:${sz}px;height:${sz}px;border-radius:${shape};background:${col};box-shadow:0 0 ${sz*4}px ${col};animation:introParticle ${dur}s ${delay}s ease-in-out infinite;`;
     c.appendChild(p);
   }
-  // Background star field
-  for(let i=0;i<60;i++){
+  // Stars
+  for(let i=0;i<80;i++){
     const s=document.createElement('div');
-    const x=Math.random()*100,y=Math.random()*100,sz=.4+Math.random()*1.4,delay=Math.random()*4;
-    s.style.cssText=`position:absolute;left:${x}%;top:${y}%;width:${sz}px;height:${sz}px;border-radius:50%;background:#fff;animation:introStarPulse ${1.2+Math.random()*2.5}s ${delay}s ease-in-out infinite;`;
+    const x=Math.random()*100,y=Math.random()*100,sz=.3+Math.random()*2;
+    const col=cols[Math.floor(Math.random()*cols.length)];
+    s.style.cssText=`position:absolute;left:${x}%;top:${y}%;width:${sz}px;height:${sz}px;border-radius:50%;background:${col};animation:introStarPulse ${.8+Math.random()*2.5}s ${Math.random()*5}s ease-in-out infinite;`;
     c.appendChild(s);
   }
 }
@@ -1085,9 +1193,25 @@ function applyState(s){
   const show=s.show_answer===true;
   const rt=s.round_type||"";
 
-  if(phase==="intro"){showIntroOverlay(s.quiz_id||"arctic");stopTimer();return;}
-  if(phase==="waiting"){hideProjScoreboard();showStatusScreen("⏳","Ожидание","Ждём старта игры…");stopTimer();return;}
-  if(phase==="ended"){hideProjScoreboard();showStatusScreen("🏆","Игра завершена","Благодарим за участие!");stopTimer();return;}
+  // Сброс флага intro при смене фазы
+  if(_lastProjPhaseWasIntro && phase!=="intro"){_introShown=false;_lastProjPhaseWasIntro=false;}
+  if(phase==="intro"){_lastProjPhaseWasIntro=true;showIntroOverlay(s.quiz_id||"arctic");stopTimer();return;}
+  if(phase==="waiting"){
+    hideProjScoreboard();
+    if(!_idleActive)showIdleOverlay(s.quiz_id||"arctic",s.session_code||"");
+    else{
+      // Обновляем код если появился
+      const cnum=document.getElementById('idle-code-num');
+      const cblock=document.getElementById('idle-code-block');
+      if(cnum&&s.session_code){cnum.textContent=s.session_code;if(cblock)cblock.style.display='flex';}
+    }
+    stopTimer();return;
+  }
+  if(phase==="ended"){
+    hideProjScoreboard();hideIdleOverlay();
+    showStatusScreen("🏆","Игра завершена","Благодарим за участие!");
+    _projEndgamePlay();stopTimer();return;
+  }
   if(phase==="scoreboard"){
     if(!_projScoreboardShown){_projScoreboardShown=true;showProjScoreboard();}
     stopTimer();return;
@@ -1108,7 +1232,7 @@ function applyState(s){
   // ── Ambient звук для очного режима ──
   if(rt==="blitz_start"&&lastRoundType!=="blitz_start")_projFanfare("blitz");
   if(rt==="betting_chips"&&lastRoundType!=="betting_chips")_projFanfare("bet");
-  if(phase==="running"&&!_projBgOn)_projBgStart();
+  if(phase==="running"){hideIdleOverlay();if(!_projBgOn)_projBgStart();}
   if(phase==="waiting"||phase==="ended")_projBgStop();
   lastRoundType = rt;
 
@@ -1193,10 +1317,12 @@ async function init(){
   setInterval(()=>{if(lastState?.phase==="running"){refreshAnsweredCount();refreshLeader();}},3000);
 }
 
-// Полноэкранный режим по клику
+// Полноэкранный режим по клику + разблокировка аудио
 document.addEventListener("click",()=>{
   if(!document.fullscreenElement) document.documentElement.requestFullscreen?.();
-});
+  // Разблокируем DRIVE если idle активен
+  if(_idleActive&&_idleAudio&&_idleAudio.paused)_idleAudio.play().catch(()=>{});
+},{capture:true});
 document.addEventListener("keydown",e=>{
   if(e.key==="Escape"&&document.fullscreenElement) document.exitFullscreen?.();
   if(e.key==="f"||e.key==="F") document.documentElement.requestFullscreen?.();
@@ -1267,8 +1393,14 @@ function _projBgStart(){
 }
 function _projBgStop(){if(!_projBgOn)return;_projBgOn=false;if(_projBg)_projBg.pause();}
 function _projFanfare(type){
-  const f=new Audio(type==="blitz"?"respuesta-correcta.mp3":"01-pokemon-new-item-correct.mp3");
-  f.volume=0.85;f.play().catch(()=>{});
+  const f=new Audio(type==="blitz"?"Blic new.mp3":"Stavki new.mp3");
+  f.volume=0.88;f.play().catch(()=>{});
+}
+let _projEndgameAudio=null;
+function _projEndgamePlay(){
+  if(!_projEndgameAudio)_projEndgameAudio=new Audio('Endgame music.mp3');
+  _projEndgameAudio.currentTime=0;_projEndgameAudio.volume=0.85;
+  _projEndgameAudio.play().catch(()=>{});
 }
 // Разблокировка аудио по первому клику (браузерная политика)
 document.addEventListener("click",()=>{if(_projBg)_projBg.play().then(()=>{if(!_projBgOn)_projBg.pause();}).catch(()=>{});},{once:true});

@@ -72,7 +72,7 @@ body{font-family:system-ui,-apple-system,"Segoe UI",sans-serif;color:var(--text)
 .opt{width:100%;text-align:left;padding:9px 11px;border-radius:11px;border:1px solid rgba(122,142,255,.2);background:rgba(5,12,30,.95);color:var(--text);cursor:pointer;font-size:.84rem;display:flex;align-items:center;gap:7px;transition:border-color .15s,transform .12s;min-height:40px;}
 .opt:hover:not(:disabled){transform:translateY(-1px);border-color:rgba(79,223,255,.7);}
 .opt:disabled{cursor:default;opacity:.7;}
-.obadge{width:21px;height:21px;border-radius:7px;border:1px solid rgba(175,195,255,.6);font-size:.7rem;display:flex;align-items:center;justify-content:center;background:rgba(6,14,38,.9);flex-shrink:0;}
+.obadge{width:21px;height:21px;border-radius:7px;border:1px solid rgba(175,195,255,.6);font-size:.7rem;display:flex;align-items:center;justify-content:center;text-align:center;line-height:1;background:rgba(6,14,38,.9);flex-shrink:0;}
 .opt.selected{border-color:rgba(79,223,255,.8);background:rgba(4,18,38,.98);}
 .opt.correct{border-color:rgba(97,255,178,.8);background:rgba(6,28,26,.95);}
 .opt.correct .obadge{border-color:rgba(97,255,178,.9);color:var(--ok);}
@@ -194,6 +194,16 @@ body{font-family:system-ui,-apple-system,"Segoe UI",sans-serif;color:var(--text)
 .snow{pointer-events:none;position:fixed;inset:0;overflow:hidden;z-index:0;opacity:.3;}
 .flake{position:absolute;top:-10px;width:2px;height:6px;border-radius:999px;background:rgba(255,255,255,.85);animation:sf 14s linear infinite;}
 @keyframes sf{0%{opacity:0;transform:translate(0,-10px)}8%{opacity:1}100%{opacity:0;transform:translate(28px,105vh)}}
+/* Intro overlay animations (online show) */
+@keyframes introPreReveal{from{opacity:0;transform:translateY(-14px)}to{opacity:1;transform:translateY(0)}}
+@keyframes introTitleReveal{from{opacity:0;transform:scale(.55) translateY(24px)}60%{transform:scale(1.06) translateY(-6px)}to{opacity:1;transform:scale(1) translateY(0)}}
+@keyframes introTitleShimmer{0%{background-position:0% 50%}100%{background-position:300% 50%}}
+@keyframes introLineExpand{from{width:0;opacity:0}to{width:min(320px,60vw);opacity:1}}
+@keyframes introSubReveal{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+@keyframes introParticle{0%{transform:translateY(0) rotate(0deg) scale(1);opacity:0}8%{opacity:1}88%{opacity:.7}100%{transform:translateY(-95vh) rotate(600deg) scale(.3);opacity:0}}
+@keyframes introStarPulse{0%,100%{opacity:.2;transform:scale(1)}50%{opacity:.9;transform:scale(1.5)}}
+@keyframes introFadeOut{0%{opacity:1;transform:scale(1)}100%{opacity:0;transform:scale(1.04)}}
+@keyframes introPulse{0%,100%{opacity:.3}50%{opacity:.75}}
 /* Announce overlay animations */
 @keyframes annTitleShimmer{0%{background-position:0% 50%}100%{background-position:200% 50%}}
 @keyframes annPulse{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(1.12);opacity:.85}}
@@ -1218,6 +1228,18 @@ document.addEventListener('DOMContentLoaded',function(){
   <div id="betResultPhase" style="display:none;text-align:center;padding:10px"></div>
   <button onclick="document.getElementById('ov-betting').classList.remove('active')" style="margin-top:8px;width:100%;padding:7px;border-radius:999px;border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.04);color:rgba(255,255,255,.35);cursor:pointer;font-size:.7rem">✕ Закрыть</button>
 </div>
+</div>
+
+<!-- OV: ОНЛАЙН ШОУВСТУПЛЕНИЕ -->
+<div id="ov-online-intro" style="position:fixed;inset:0;z-index:200;display:none;align-items:center;justify-content:center;flex-direction:column;background:radial-gradient(ellipse 120% 80% at 50% 70%,#0c0830 0%,#050218 55%,#000 100%);overflow:hidden;text-align:center;cursor:pointer;" onclick="_hubHideIntro()">
+  <div id="hub-intro-particles" style="position:absolute;inset:0;pointer-events:none;overflow:hidden;"></div>
+  <div style="position:relative;z-index:2;display:flex;flex-direction:column;align-items:center;gap:14px;padding:0 32px;">
+    <div style="font-size:clamp(.8rem,3vw,1rem);font-weight:800;letter-spacing:.4em;text-transform:uppercase;color:rgba(79,223,255,.75);animation:introPreReveal .7s .3s ease both;">ИГРА НАЧИНАЕТСЯ</div>
+    <div style="font-size:clamp(2.5rem,12vw,5.5rem);font-weight:900;letter-spacing:.04em;text-transform:uppercase;background:linear-gradient(135deg,#4fdfff 0%,#b0ffee 35%,#61ffb2 60%,#4fdfff 100%);background-size:300% 100%;-webkit-background-clip:text;-webkit-text-fill-color:transparent;filter:drop-shadow(0 0 40px rgba(79,223,255,.7));animation:introTitleReveal 1s .6s cubic-bezier(.22,1,.36,1) both,introTitleShimmer 3s 1.6s linear infinite;" id="hub-intro-title">КвизЦентр</div>
+    <div style="height:2px;border-radius:999px;background:linear-gradient(90deg,transparent,#4fdfff 30%,#61ffb2 70%,transparent);animation:introLineExpand .8s 1.4s ease both;"></div>
+    <div style="font-size:clamp(.9rem,4vw,1.4rem);font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:rgba(255,255,255,.88);animation:introSubReveal .7s 1.6s ease both;" id="hub-intro-sub">Арктический квиз</div>
+  </div>
+  <div style="position:absolute;bottom:24px;left:50%;transform:translateX(-50%);font-size:.7rem;color:rgba(79,223,255,.4);letter-spacing:.1em;text-transform:uppercase;animation:introPulse 2s 2.5s ease-in-out infinite both;">нажмите для пропуска</div>
 </div>
 
 <!-- OV: АНОНС РАУНДА -->
@@ -2641,8 +2663,58 @@ function tone(f,dur,type,vol,delay,detune){
 }
 function chord(freqs,dur,type,vol,delay){freqs.forEach((f,i)=>tone(f,dur,type,vol*(1-i*.07),delay,i*3));}
 
+// ── ОНЛАЙН ШОУВ-ВСТУПЛЕНИЕ ──────────────────────────────────
+let _hubIntroShown=false,_hubIntroAudio=null,_hubIntroFallback=null;
+function _hubShowIntro(qid){
+  if(_hubIntroShown)return;
+  _hubIntroShown=true;
+  const names={arctic:'Арктический квиз',ecology:'Экология',history:'История России',
+    science:'Наука и технологии',patriot:'Патриотический квиз',
+    geo:'География России',space:'Космос и авиация',sport:'Спорт и ЗОЖ'};
+  const ov=document.getElementById('ov-online-intro');
+  const sub=document.getElementById('hub-intro-sub');
+  const title=document.getElementById('hub-intro-title');
+  if(!ov)return;
+  if(sub)sub.textContent=names[qid]||'КвизЦентр';
+  if(title)title.textContent='КвизЦентр';
+  ov.style.display='flex';
+  _hubSpawnIntroParticles();
+  if(!_hubIntroAudio)_hubIntroAudio=new Audio('Startgame.mp3');
+  _hubIntroAudio.currentTime=0;_hubIntroAudio.volume=0.75;
+  _hubIntroAudio.play().catch(()=>{});
+  _hubIntroAudio.onended=()=>_hubHideIntro();
+  _hubIntroFallback=setTimeout(()=>_hubHideIntro(),20000);
+}
+function _hubHideIntro(){
+  const ov=document.getElementById('ov-online-intro');
+  if(!ov||!_hubIntroShown)return;
+  if(_hubIntroFallback){clearTimeout(_hubIntroFallback);_hubIntroFallback=null;}
+  ov.style.animation='introFadeOut .7s ease forwards';
+  setTimeout(()=>{ov.style.display='none';ov.style.animation='';
+    const c=document.getElementById('hub-intro-particles');if(c)c.innerHTML='';
+  },700);
+  if(_hubIntroAudio){try{_hubIntroAudio.pause();_hubIntroAudio.currentTime=0;}catch(e){}}
+}
+function _hubSpawnIntroParticles(){
+  const c=document.getElementById('hub-intro-particles');if(!c)return;c.innerHTML='';
+  const cols=['#4fdfff','#61ffb2','#ffd36b','#a78bfa','#ffffff'];
+  for(let i=0;i<50;i++){
+    const p=document.createElement('div');
+    const x=Math.random()*100,delay=Math.random()*4,dur=3+Math.random()*5,sz=1.5+Math.random()*3.5;
+    const col=cols[Math.floor(Math.random()*cols.length)];
+    p.style.cssText=`position:absolute;left:${x}%;bottom:-6px;width:${sz}px;height:${sz}px;border-radius:50%;background:${col};box-shadow:0 0 ${sz*3}px ${col};animation:introParticle ${dur}s ${delay}s ease-in-out infinite;`;
+    c.appendChild(p);
+  }
+  for(let i=0;i<30;i++){
+    const s=document.createElement('div');
+    const x=Math.random()*100,y=Math.random()*100,sz=.4+Math.random()*1.2;
+    s.style.cssText=`position:absolute;left:${x}%;top:${y}%;width:${sz}px;height:${sz}px;border-radius:50%;background:#fff;animation:introStarPulse ${1.2+Math.random()*2.5}s ${Math.random()*4}s ease-in-out infinite;`;
+    c.appendChild(s);
+  }
+}
+
 // ── MP3 звуки ─────────────────────────────────────────────────
-const _sndFiles={ok:'respuesta-correcta.mp3',err:'wrong-1.mp3',done:'jbs-correct-clap.mp3',blitz:'respuesta-correcta.mp3',bet:'01-pokemon-new-item-correct.mp3'};
+const _sndFiles={ok:'respuesta-correcta.mp3',err:'wrong-1.mp3',done:'Endgame music.mp3',blitz:'Blic new.mp3',bet:'Stavki new.mp3'};
 const _sndAudio={};
 function _playSnd(key){
   if(!_sndAudio[key]){
@@ -3456,6 +3528,10 @@ function applyState(s){
   }
 
   // RUNNING — скрываем overlay ожидания
+  // Онлайн шоув-вступление: показываем только при первом вопросе в онлайн-режиме
+  if((s?.shuffle_seed||0)===0&&idx===0&&lastPhase==="waiting"&&!_hubIntroShown){
+    _hubShowIntro(s?.quiz_id||"arctic");
+  }
   hideOv(ovWait);
 
   // question_visible: false = вопрос ещё скрыт (онлайн-режим)
