@@ -1095,11 +1095,9 @@ function showIdleOverlay(qid,code){
     geo:'География России',space:'Космос и авиация',sport:'Спорт и ЗОЖ'};
   const logo=document.getElementById('idle-logo');if(logo)logo.textContent='КвизЦентр';
   const sub2=document.getElementById('idle-sub');if(sub2)sub2.textContent=names[qid]||'Скоро начнём';
-  // Код игры
+  // Код игры — скрыт на idle (показывается только когда ведущий готов)
   const cblock=document.getElementById('idle-code-block');
-  const cnum=document.getElementById('idle-code-num');
-  if(cblock&&cnum&&code){cnum.textContent=code;cblock.style.display='flex';}
-  else if(cblock){cblock.style.display='none';}
+  if(cblock)cblock.style.display='none';
   ov.style.display='flex';
   _spawnIdleParticles();
   _idleAudioStart();
@@ -1255,17 +1253,11 @@ function applyState(s){
   // Сброс флага intro при смене фазы
   if(_lastProjPhaseWasIntro && phase!=="intro"){_introShown=false;_lastProjPhaseWasIntro=false;}
   if(phase==="intro"){_lastProjPhaseWasIntro=true;showIntroOverlay(s.quiz_id||"arctic");stopTimer();return;}
-  if(phase==="howtoplay"){hideIdleOverlay();_showHowToPlay();stopTimer();return;}
+  if(phase==="howtoplay"){if(!_howToPlayAudioDone)hideIdleOverlay();_showHowToPlay();stopTimer();return;}
   _hideHowToPlay();
   if(phase==="waiting"){
     hideProjScoreboard();
-    if(!_idleActive)showIdleOverlay(s.quiz_id||"arctic",s.session_code||"");
-    else{
-      // Обновляем код если появился
-      const cnum=document.getElementById('idle-code-num');
-      const cblock=document.getElementById('idle-code-block');
-      if(cnum&&s.session_code){cnum.textContent=s.session_code;if(cblock)cblock.style.display='flex';}
-    }
+    if(!_idleActive)showIdleOverlay(s.quiz_id||"arctic","");
     stopTimer();return;
   }
   if(phase==="ended"){
@@ -1474,6 +1466,9 @@ function _showHowToPlay(){
       _howToPlayShown=false;
       const o=document.getElementById('ov-howtoplay');
       if(o)o.style.display='none';
+      // Возвращаем idle-экран — фаза в БД всё ещё howtoplay, ведущий сам переключит
+      _idleActive=false;
+      showIdleOverlay(lastState?.quiz_id||'arctic','');
     };
   }
   _howToPlayAudio.currentTime=0;
