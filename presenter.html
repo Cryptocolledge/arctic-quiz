@@ -449,6 +449,8 @@ tr:hover td{background:rgba(79,223,255,.03);}
     <button class="btn bg" id="btnCopyProjUrl" style="border-color:rgba(255,211,107,.4);color:var(--gold);font-size:.7rem;padding:5px 10px;" title="Скопировать ссылку проектора для другого устройства">📋 Ссылка проектора</button>
     <button id="btnMode" onclick="togglePresenterMode()" title="Режим проведения" style="font-size:.72rem;padding:5px 10px;border-radius:8px;border:1px solid rgba(79,223,255,.5);background:rgba(79,223,255,.1);color:var(--accent);cursor:pointer;font-weight:800;white-space:nowrap">🖥 ОЧНО</button>
     <button class="btn" id="btnIntro" onclick="triggerIntro()" style="background:linear-gradient(120deg,#ff0080,#7928ca);color:#fff;border-color:rgba(255,0,128,.7);font-weight:900;letter-spacing:.05em;" title="Запустить пафосное вступление на проекторе — играет Startgame.mp3 с анимацией">🎬 Шоу!</button>
+    <button class="btn" id="btnHowToPlay" onclick="triggerHowToPlay()" style="background:linear-gradient(120deg,#4fdfff,#0070c8);color:#fff;border-color:rgba(79,223,255,.7);font-weight:900;letter-spacing:.05em;" title="Показать правила игры на проекторе (после шоу, перед стартом)">📖 Правила</button>
+    <button class="btn bg" id="btnProjMute" onclick="toggleProjMute()" style="border-color:rgba(97,255,178,.3);color:#61ffb2;font-size:.7rem;padding:5px 10px;" title="Заглушить/включить звук на проекторе">🔊 Звук проектора</button>
   </div>
 </div>
 
@@ -1706,6 +1708,22 @@ async function triggerIntro(){
   const btn=document.getElementById('btnIntro');
   if(btn){btn.textContent='🎬 Играет…';btn.disabled=true;setTimeout(()=>{btn.textContent='🎬 Шоу!';btn.disabled=false;},20000);}
   await ups({phase:"intro"});
+}
+async function triggerHowToPlay(){
+  const btn=document.getElementById('btnHowToPlay');
+  if(btn){btn.textContent='📖 На экране…';btn.disabled=true;setTimeout(()=>{btn.textContent='📖 Правила';btn.disabled=false;},8000);}
+  await ups({phase:"howtoplay"});
+}
+let _projMuted=false;
+async function toggleProjMute(){
+  _projMuted=!_projMuted;
+  const btn=document.getElementById('btnProjMute');
+  if(btn){
+    btn.textContent=_projMuted?'🔇 Проектор мут':'🔊 Звук проектора';
+    btn.style.color=_projMuted?'#ff6464':'#61ffb2';
+    btn.style.borderColor=_projMuted?'rgba(255,100,100,.4)':'rgba(97,255,178,.3)';
+  }
+  if(sb) await sb.from('quiz_state').update({music_playing:!_projMuted}).eq('game_id',GID);
 }
 
 async function ups(patch){
