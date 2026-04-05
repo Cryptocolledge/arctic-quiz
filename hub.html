@@ -1167,22 +1167,32 @@ document.addEventListener('DOMContentLoaded',function(){
 
 <!-- OV 3: Результат -->
 <div class="ov" id="ov-result">
-<div class="ocard">
-  <div class="rhdr">
-    <div><div class="rtitle">Итоги квиза</div><div style="font-size:.83rem;color:var(--muted)" id="rsub"></div></div>
-    <div class="grade" id="grade">—</div>
+<div class="ocard" style="width:min(540px,100%);max-height:92vh;overflow-y:auto;">
+  <!-- Заголовок -->
+  <div style="text-align:center;padding:10px 0 8px;">
+    <div id="res-trophy" style="font-size:2.5rem;filter:drop-shadow(0 0 18px rgba(255,211,107,.6));animation:scCardIn .5s ease both">🏆</div>
+    <div class="rtitle" style="font-size:1.05rem;letter-spacing:.08em;margin-top:2px">ИГРА ЗАВЕРШЕНА!</div>
+    <div style="font-size:.8rem;color:var(--muted)" id="rsub"></div>
   </div>
+  <!-- Топ-3 / победитель из Supabase -->
+  <div id="res-leaderboard" style="display:none;margin:8px 0;border:1px solid rgba(255,211,107,.25);border-radius:12px;overflow:hidden;"></div>
+  <!-- Личная статистика -->
+  <div style="font-size:.62rem;color:var(--muted);text-transform:uppercase;letter-spacing:.1em;margin:6px 0 4px">Ваш результат</div>
   <div class="rbody">
     <div class="rstat"><span>Участник</span><span id="rpart">—</span></div>
     <div class="rstat"><span>Правильных</span><span id="rcorr">—</span></div>
     <div class="rstat"><span>Очки</span><span id="rfsc">—</span></div>
     <div class="rstat"><span>Процент</span><span id="rpct">—</span></div>
   </div>
-  <div class="rmsg" id="rmsg"></div>
-  <div class="rftr">
-    <span>Можно пройти ещё раз</span>
+  <div class="rmsg" id="rmsg" style="font-size:.82rem;margin:6px 0 2px;"></div>
+  <!-- Просмотр ответов (скрыт по умолчанию) -->
+  <div id="res-review" style="display:none;margin-top:8px;border-top:1px solid rgba(255,255,255,.08);padding-top:8px;max-height:280px;overflow-y:auto;"></div>
+  <!-- Кнопки -->
+  <div class="rftr" style="margin-top:10px;">
+    <div class="grade" id="grade">—</div>
     <div class="ract">
-      <button class="btn btn-p" id="again-btn">Ещё раз</button>
+      <button class="btn" id="review-btn" style="font-size:.75rem;padding:5px 12px;">📖 Мои ответы</button>
+      <button class="btn btn-p" id="menu-btn" style="font-size:.75rem;padding:5px 12px;background:linear-gradient(120deg,#0070c8,#4fdfff);border-color:rgba(79,223,255,.7);">🏠 В меню</button>
     </div>
   </div>
 </div>
@@ -2405,7 +2415,7 @@ const Q_SPO=[
   {tp:"svg",dif:1,q:"Оптическое явление в атмосфере, вызванное взаимодействием солнечного ветра с магнитным полем Земли:",svg:"aurora",cap:"Видно выше 60-й параллели",opts:["Молния","Радуга","Северное сияние","Зарница"],ci:2},
   {tp:"text",dif:2,q:"Арктический зверь, меняющий окраску с бурой (лето) на белую (зима):",opts:["Белый медведь","Северный олень","Песец","Нарвал"],ci:2},
   {tp:"text",dif:2,q:"Граница Арктики условно проводится по…",opts:["Экватору","Северному полярному кругу (66°33′ с.ш.)","Тропику Рака","Меридиану 0°"],ci:1},
-  {tp:"rebus",dif:2,q:"Ледяная оболочка Земли: ледники, снег, вечная мерзлота:",rp:["КРИ","ОСФЕРА"],rh:"От греч. κρύος — мороз, холод",opts:["Биосфера","Литосфера","Криосфера","Атмосфера"],ci:2},
+  {tp:"rebus",dif:3,q:"Английское название вечной мерзлоты, покрывающей 65% территории России:",rp:["ПЕРМА","ФРОСТ"],rh:"Англ. permanent (постоянный) + frost (мороз)",opts:["Криолит","Гляциал","Пермафрост","Торосит"],ci:2},
   {tp:"text",dif:3,q:"Главная угроза таяния арктических льдов для человечества — это…",opts:["Исчезновение туристических маршрутов","Подъём уровня Мирового океана и дестабилизация климата","Сокращение пляжей","Снижение солёности рек"],ci:1},
   {tp:"svg",dif:2,q:"Ластоногое с парой длинных клыков, обитатель арктических льдин:",svg:"walrus",cap:"Крупное ластоногое арктических льдин",opts:["Тюлень","Морж","Морской котик","Касатка"],ci:1},
   {tp:"survey",dif:2,q:"Назовите природные ресурсы Арктики:",hint:"Топ-5 самых ценных богатств",
@@ -2413,13 +2423,13 @@ const Q_SPO=[
   {tp:"text",dif:2,q:"Коренные малочисленные народы российской Арктики — это…",opts:["Казаки и поморы","Ненцы, чукчи, эвенки, эскимосы","Скандинавы и финны","Казахи и буряты"],ci:1},
   {tp:"text",dif:3,q:"Российские дрейфующие станции «Северный полюс» ведут…",opts:["Добычу нефти","Круглогодичные наблюдения: метеорология, океанология, ледовая обстановка","Контроль судоходства","Военные учения"],ci:1},
   {tp:"text",dif:3,q:"Северный Ледовитый океан уникален тем, что он…",opts:["Самый солёный","Почти полностью окружён материками и покрыт льдом круглый год","Наименее изучен","Не имеет течений"],ci:1},
-  {tp:"rebus",dif:2,q:"Самый маленький по площади океан на Земле:",rp:["СЕВ","ЕРНЫЙ"],rh:"Центр — Северный полюс; в основном покрыт льдом",opts:["Индийский","Тихий","Северный Ледовитый","Атлантический"],ci:2},
+  {tp:"rebus",dif:3,q:"Хаотичное нагромождение льдин, сжатых ветром и течениями — смертельная ловушка для кораблей:",rp:["ТО","РОС"],rh:"Высота достигает 15–20 м; первые упоминания — дневники Баренца, 1597 год",opts:["Айсберг","Паковый лёд","Торос","Шуга"],ci:2},
   {tp:"text",dif:3,q:"Атомные ледоколы России обеспечивают работу…",opts:["Рыбопромыслового флота","Круизов","Северного морского пути — кратчайшего маршрута Европа–Азия","Военных баз"],ci:2},
   {tp:"text",dif:3,q:"Почему нефтяные разливы в Арктике особенно опасны?",opts:["Нефть там безвредна","Микроорганизмы почти не работают в холоде — восстановление занимает десятилетия","Там нет организмов","Нефть образует лёд"],ci:1},
   {tp:"svg",dif:2,q:"Единственный кит с прямым спиральным бивнем — «единорог морей»:",svg:"narwhal",cap:"Арктический вид, бивень — увеличенный зуб",opts:["Кашалот","Нарвал","Белуга","Гринда"],ci:1},
   {tp:"text",dif:3,q:"Снежная буря с ветром выше 15 м/с в Арктике — это…",opts:["Муссон","Ураган","Пурга","Смерч"],ci:2},
   {tp:"text",dif:3,q:"Арктическая зима характеризуется…",opts:["Температурой около +5°C","Морозом до −50°C, сильными ветрами, скудными осадками","Частыми грозами","Тёплым течением"],ci:1},
-  {tp:"rebus",dif:3,q:"Маршрут для судов вдоль берегов России в Арктике — стратегическая трасса:",rp:["СЕВА","МОРПУТЬ"],rh:"Сокращает путь из Европы в Азию вдвое по сравнению с Суэцем",opts:["Трансатлантический маршрут","Северный морской путь","Сибирский путь","Полярный коридор"],ci:1},
+  {tp:"rebus",dif:3,q:"Потомственный русский мореход, с XII века покоривший арктические промыслы Белого и Баренцева морей:",rp:["ПО","МОР"],rh:"Первыми освоили Арктику задолго до европейских экспедиций",opts:["Казак","Помор","Стрелец","Ямщик"],ci:1},
   {tp:"text",dif:3,q:"Тёплое атлантическое течение, смягчающее климат Норвегии и Баренцева моря:",opts:["Куросио","Гольфстрим","Северо-Тихоокеанское","Лабрадорское"],ci:1},
   {tp:"text",dif:3,q:"Стратегическая ценность Арктики определяется…",opts:["Пляжами","Запасами нефти, газа, редких металлов и контролем над СМП","Дешёвой гидроэнергией","Отсутствием льда"],ci:1},
   {tp:"text",dif:3,q:"Зимой площадь морского льда в Арктике по сравнению с летом…",opts:["Одинакова","Уменьшается","Увеличивается примерно в 2,5 раза","Полностью исчезает"],ci:2},
@@ -3504,7 +3514,7 @@ function applyState(s){
     hideOv(ovWait);hideOv(ovRes);
     if(idx!==lastIdx||!_lastSurveyPhase){
       lastIdx=idx;curIdx=idx;lastPhase=phase;_lastSurveyPhase=phase;
-      _surveyAnswer="";_surveyBet=3;_surveyScored=false;
+      _surveyAnswer="";_surveyBet=3;_surveyScored=false;_lastSurveyStep=-1;
       renderQ();
     }
     if(step>0&&q)updateSurveyReveal(q,step);
@@ -3772,21 +3782,76 @@ async function register(){
 
 // ── РЕЗУЛЬТАТ ─────────────────────────────────────────────────
 function gradeInfo(pct){if(pct>=90)return{m:"5",t:"Отлично!",d:"Блестящие знания арктического первопроходца!"};if(pct>=75)return{m:"4",t:"Хорошо",d:"Достойный результат. Немного повторить — и идеально."};if(pct>=50)return{m:"3",t:"Удовлетворительно",d:"Базовые знания есть, стоит повторить тему."};return{m:"2",t:"Нужно подтянуть",d:"Используйте квиз как план подготовки к Арктике."};}
-function showResult(){
+
+async function showResult(){
   stopTimer();
   const total=Q.length,correct=UA.filter(a=>a&&a.ok).length,pct=Math.round(correct/total*100),g=gradeInfo(pct);
   grade.textContent=g.m;rsub.textContent=g.t;rmsg.textContent=g.d;
   rcorr.textContent=correct+" из "+total;rfsc.textContent=score+" оч.";rpct.textContent=pct+"%";
   rpart.textContent=(pMode==="solo"?pName:pTeam)+" · "+pInst;
-  showOv(ovRes);playDone();
+  showOv(ovRes);
+  // Музыка: в очном режиме играет проектор, здесь не дублируем
+  const isOchny=(lastFetchedState?.shuffle_seed||0)>0;
+  if(!isOchny) playDone();
+  // Сохраняем результат
   if(sb)try{sb.from("quiz_results").insert({game_id:GID,student_name:pName,team_name:pTeam,institution_name:pInst,score,total_questions:total,percent:pct,duration_sec:Math.round(totalTime),answers:UA,mode:pMode,extra_info:pExtra});}catch(e){}
+  // Загружаем топ-игроков из Supabase
+  if(sb&&GID){
+    try{
+      const{data}=await sb.from("quiz_scores").select("student_name,team_name,score").eq("game_id",GID).order("score",{ascending:false}).limit(5);
+      if(data&&data.length>0){renderEndLeaderboard(data);}
+    }catch(e){}
+  }
 }
+
+function renderEndLeaderboard(rows){
+  const lb=document.getElementById("res-leaderboard");if(!lb)return;
+  const medals=["🥇","🥈","🥉","4️⃣","5️⃣"];
+  lb.style.display="";
+  lb.innerHTML=`<div style="font-size:.65rem;color:rgba(255,211,107,.6);text-transform:uppercase;letter-spacing:.12em;padding:7px 12px 4px;background:rgba(255,211,107,.06)">🏆 Итоговая таблица</div>`
+    +rows.map((r,i)=>{
+      const isMine=r.student_name===pName&&(r.team_name||"")===(pTeam||"");
+      const sc=typeof r.score==="number"?r.score:parseFloat(r.score)||0;
+      return `<div style="display:flex;align-items:center;gap:8px;padding:6px 12px;${isMine?"background:rgba(79,223,255,.1);border-left:3px solid #4fdfff;":"border-left:3px solid transparent;"}border-bottom:1px solid rgba(255,255,255,.05);">
+        <span style="font-size:.95rem;min-width:22px">${medals[i]||"#"+(i+1)}</span>
+        <span style="flex:1;font-size:.82rem;font-weight:${isMine?800:600};color:${isMine?"#4fdfff":"#e8f4ff"}">${r.student_name||r.team_name||"—"}${isMine?" ← вы":""}</span>
+        <span style="font-size:.88rem;font-weight:900;color:#ffd36b;font-family:monospace">${sc%1===0?sc:sc.toFixed(1)}</span>
+      </div>`;
+    }).join("");
+}
+
+let _reviewOpen=false;
+function toggleAnswerReview(){
+  const rev=document.getElementById("res-review");if(!rev)return;
+  _reviewOpen=!_reviewOpen;
+  const btn=document.getElementById("review-btn");
+  if(!_reviewOpen){rev.style.display="none";if(btn)btn.textContent="📖 Мои ответы";return;}
+  if(btn)btn.textContent="✕ Скрыть";
+  rev.style.display="";
+  rev.innerHTML=Q.map((q,i)=>{
+    const ua=UA[i];const ok=ua&&ua.ok;const sel=ua&&ua.sel>=0?q.opts[ua.sel]:"—";const ans=q.opts?q.opts[q.ci]:"—";
+    if(q.tp==="survey"||q.tp==="rebus")return"";
+    return`<div style="padding:5px 0;border-bottom:1px solid rgba(255,255,255,.05);font-size:.78rem;display:flex;gap:6px;align-items:flex-start">
+      <span style="min-width:18px;text-align:center">${ok?"✅":"❌"}</span>
+      <div><div style="color:#e8f4ff;line-height:1.3">${q.q}</div>${!ok?`<div style="font-size:.7rem;color:rgba(97,255,178,.7);margin-top:2px">✓ ${ans}</div>`:""}</div>
+    </div>`;
+  }).join("");
+}
+
+function goToHub(){
+  const base=location.href.replace(/[^/\\]*$/,"");
+  location.href=base+"hub.html";
+}
+
 function resetQuiz(){
   stopTimer();
   curIdx=0;score=0;scoreEl.textContent="0";score2El.textContent="0";
   totalTime=0;qAnswered=0;answered=false;selIdx=-1;streak=0;
   lastIdx=-1;lastAt="";lastShow=false;lastPhase="";
-  changeCount=0;penalty=0;
+  changeCount=0;penalty=0;_reviewOpen=false;
+  const _rv=document.getElementById("res-review");if(_rv){_rv.style.display="none";_rv.innerHTML="";}
+  const _lb=document.getElementById("res-leaderboard");if(_lb){_lb.style.display="none";_lb.innerHTML="";}
+  const _rb=document.getElementById("review-btn");if(_rb)_rb.textContent="📖 Мои ответы";
   REVEALED.clear();
   for(let i=0;i<UA.length;i++)UA[i]=null;
   hideOv(ovRes);showOv(ovWait);showWaitPanel();
@@ -3798,7 +3863,11 @@ function resetQuiz(){
 // ── СОБЫТИЯ ───────────────────────────────────────────────────
 regBtn.addEventListener("click",register);
 restartBtn.addEventListener("click",resetQuiz);
-againBtn.addEventListener("click",()=>{hideOv(ovRes);resetQuiz();});
+if(againBtn)againBtn.addEventListener("click",()=>{hideOv(ovRes);resetQuiz();});
+const reviewBtn=document.getElementById("review-btn");
+if(reviewBtn)reviewBtn.addEventListener("click",toggleAnswerReview);
+const menuBtn=document.getElementById("menu-btn");
+if(menuBtn)menuBtn.addEventListener("click",goToHub);
 
 // ── ПРОМЕЖУТОЧНЫЙ СЧЁТ ──────────────────────────────────────────
 const ovScoreboard=$("ov-scoreboard");
@@ -3906,8 +3975,12 @@ async function submitSurvey(){
 
 function _normStr(s){return (s||'').toLowerCase().replace(/ё/g,'е').trim();}
 
+let _lastSurveyStep=-1;
 function updateSurveyReveal(q,step){
   if(step<=0)return;
+  // Guard: не перерисовывать если шаг не изменился — иначе анимация зацикливается
+  if(step===_lastSurveyStep&&document.getElementById('svr-'+(step-1)))return;
+  _lastSurveyStep=step;
   const ansList=q.answers||[];
   const revealed=ansList.slice(0,step);
   const icons=['🥇','🥈','🥉','4️⃣','5️⃣'];
