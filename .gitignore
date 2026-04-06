@@ -1,0 +1,10 @@
+# Dev tools
+.qwen/
+.claude/
+
+# Performance traces & analysis scripts
+Trace-*.json
+_analyze_trace*.py
+
+# Temp docs
+AUDIT.md
