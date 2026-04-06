@@ -1752,12 +1752,12 @@ async function getState(){
 }
 async function triggerIntro(){
   const btn=document.getElementById('btnIntro');
-  if(btn){btn.textContent='🎬 Играет…';btn.disabled=true;setTimeout(()=>{btn.textContent='🎬 Шоу + правила';btn.disabled=false;},20000);}
+  if(btn){btn.textContent='🎬 Играет…';btn.disabled=true;setTimeout(()=>{btn.textContent='🎬 Шоу + правила';btn.disabled=false;},120000);}
   await ups({phase:"intro"});
 }
 async function triggerHowToPlay(){
   const btn=document.getElementById('btnHowToPlay');
-  if(btn){btn.textContent='📖 На экране…';btn.disabled=true;setTimeout(()=>{btn.textContent='📖 Правила';btn.disabled=false;},8000);}
+  if(btn){btn.textContent='📖 На экране…';btn.disabled=true;setTimeout(()=>{btn.textContent='📖 Правила';btn.disabled=false;},90000);}
   await ups({phase:"howtoplay"});
 }
 let _projMuted=false;
@@ -1867,8 +1867,8 @@ if(_btnContSB)_btnContSB.addEventListener("click",async()=>{
     applyState(await ups({phase:"running",current_index:nxt,question_started_at:vis?nowUtc():null,show_answer:false,question_visible:vis,shuffle_seed:seed,game_timer:QT}));
     if(!vis) showRevealQBtn(true); else showRevealQBtn(false);
   } else {
-    // Manual scoreboard: return to same question
-    applyState(await ups({phase:"running",question_started_at:lastState?.question_started_at||null}));
+    // Manual scoreboard: return to same question, restart timer
+    applyState(await ups({phase:"running",question_started_at:nowUtc()}));
   }
 });
 
@@ -1959,7 +1959,7 @@ $("btnShowQ")?.addEventListener("click",async()=>{
 async function refreshAnswered(){
   if(!sb)return;
   const phase=lastState?.phase;
-  if(!phase||phase==="waiting"||phase==="ended"){ansBarWrap.style.display="none";return;}
+  if(!phase||phase==="waiting"||phase==="ended"||phase==="intro"||phase==="howtoplay"){ansBarWrap.style.display="none";return;}
   const idx=lastState?.current_index;if(typeof idx!=="number")return;
   try{
     const[{data:scores},{data:players},{data:ansStats}]=await Promise.all([
