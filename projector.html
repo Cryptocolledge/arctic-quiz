@@ -1319,14 +1319,9 @@ function _introSpawnParticles(){
 // ── APPLY STATE ───────────────────────────────────────────────
 let lastShow=false;
 let lastSurveyPhase="";
-let _lastApplyHash='';
 
 function applyState(s){
   if(!s){showStatusScreen("⏳","Ожидание","Игра ещё не началась…");return;}
-  // Dirty-check — пропускаем повторный рендер если state не изменился
-  const _h=`${s.phase}|${s.current_index}|${s.show_answer}|${s.round_type}|${s.question_started_at}|${s.question_visible}|${s.music_playing}|${s.session_code}|${s.game_timer}|${s.quiz_id}|${s.quiz_mode}`;
-  if(_h===_lastApplyHash)return;
-  _lastApplyHash=_h;
   lastState=s;
   const qmode=s.quiz_mode||"spo";
   const projQid=s.quiz_id||"arctic";
