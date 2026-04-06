@@ -26,6 +26,21 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 **Соло-массивы** (`Q_SOLO_ARCTIC`, `Q_SOLO_ECO`) — только в `hub.html`, в `<script id="soloQData">` блоке перед основным скриптом. Не синхронизировать с presenter/projector. Эти массивы изолированы от мультиплеерных пулов — намеренно, чтобы игрок не мог запомнить ответы через соло и использовать их в игре с ведущим.
 
+## Квизы
+
+Каждый квиз имеет два уровня сложности: **Школа** (5–9 класс) и **СПО** (колледж). Массивы именуются с суффиксом `_SCHOOL` / `_SPO`.
+
+| Квиз | Префикс массивов | Примечание |
+| ---- | --------------- | ---------- |
+| Арктика | `Q_SCHOOL` / `Q_SPO` | Без префикса — исторический первый квиз |
+| Экология | `Q_ECO_SCHOOL` / `Q_ECO_SPO` | |
+| История | `Q_HISTORY_SCHOOL` / `Q_HISTORY_SPO` | |
+| Патриотика | `Q_PATRIOT_SCHOOL` / `Q_PATRIOT_SPO` | |
+| Наука | `Q_SCIENCE_SCHOOL` / `Q_SCIENCE_SPO` | |
+| География | `Q_GEO_SCHOOL` / `Q_GEO_SPO` | |
+| Космос | `Q_COSMOS_SCHOOL` / `Q_COSMOS_SPO` | |
+| Спорт | `Q_SPORT_SCHOOL` / `Q_SPORT_SPO` | |
+
 ## Architecture
 
 ```text
@@ -200,7 +215,7 @@ hub.html скипает ambient-звуки в очном режиме (`shuffle_
 
 Флаг `_lastProjPhaseWasIntro` предотвращает зацикливание: `_introShown` сбрасывается только при смене phase с `intro` на что-то другое.
 
-**Answered bar в projector** (`#answeredBar`): скрывается только когда меняется `current_index` (`idxChanged`), а не при смене `show_answer` или `question_started_at`. Это предотвращает мерцание при раскрытии ответа. Контент бара не сбрасывается в "0/0" при скрытии — остаётся предыдущее значение, пока не придут новые данные.
+**Answered bar в projector** (`#answeredBar`): при смене `current_index` (`idxChanged`) бар остаётся видимым, но сразу сбрасывается в `0/0` и `width:0%` — без `display:none`. Это убирает мигание, которое возникало при скрытии до завершения async-запроса. Реальные данные появляются после `refreshAnsweredCount()`. Бар скрывается только в `showStatusScreen()` — во время блица/ставок.
 
 ## Presenter Access
 
