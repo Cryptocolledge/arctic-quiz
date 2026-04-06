@@ -1415,7 +1415,7 @@ function applyState(s){
   if(idx!==lastIdx||(show!==lastShow)||(startedAt&&startedAt!==lastStartedAt)){
     const idxChanged=idx!==lastIdx;
     lastIdx=idx; lastShow=show; lastStartedAt=startedAt;
-    if(idxChanged){const bar=$("answeredBar");if(bar)bar.style.display="none";}
+    if(idxChanged){const bar=$("answeredBar");if(bar){bar.style.display="";$("answeredNum").textContent="0/0";$("answeredFill").style.width="0%";}}
     renderQ(s);
     // Обновляем статистику только при смене вопроса
     if(idxChanged){refreshAnsweredCount();refreshLeader();}

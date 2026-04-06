@@ -14,17 +14,17 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 При изменении функций `pts()`, `onOpt()`, `revealAnswer()` или `resetQuiz()` в `hub.html` — обязательно синхронизируй копию `pts()` в `test.html`, `presenter.html` и `projector.html`, перепрогони тесты. Каноническая форма: `function pts(d){return !d||d<=1?1:d===2?2:3;}` (с `!d||` guard).
 
-## Array Sync (hub ↔ presenter)
+## Array Sync (hub ↔ presenter ↔ projector)
 
-**Оба файла** (`hub.html` и `presenter.html`) содержат одинаковые массивы вопросов. Несовпадение индексов ломает игру. Синхронизировать нужно **три типа массивов**:
+**Три файла** (`hub.html`, `presenter.html`, `projector.html`) содержат одинаковые массивы вопросов. Несовпадение индексов ломает игру. Синхронизировать нужно **три типа массивов**:
 
 - **Основные вопросы**: `Q_SCHOOL`, `Q_SPO`, `Q_ECO_SCHOOL`, `Q_ECO_SPO`, ... (Arctic использует `Q_SCHOOL`/`Q_SPO`, остальные — с префиксом квиза)
 - **Блиц-массивы**: `Q_BLITZ_SPO`, `Q_BLITZ_SCHOOL`, `Q_ECO_BLITZ`, `Q_HISTORY_BLITZ`, ... (по 10 вопросов)
 - **Ставки**: `Q_BET_SPO`, `Q_BET_SCHOOL` и аналоги с суффиксом `_BET`
 
-При добавлении вопросов в любой из этих массивов — внести то же изменение в оба файла.
+При добавлении вопросов в любой из этих массивов — внести то же изменение **во все три файла**.
 
-**Соло-массивы** (`Q_SOLO_ARCTIC`, `Q_SOLO_ECO`) — только в `hub.html`, в `<script id="soloQData">` блоке перед основным скриптом. Не синхронизировать с presenter. Эти массивы изолированы от мультиплеерных пулов — намеренно, чтобы игрок не мог запомнить ответы через соло и использовать их в игре с ведущим.
+**Соло-массивы** (`Q_SOLO_ARCTIC`, `Q_SOLO_ECO`) — только в `hub.html`, в `<script id="soloQData">` блоке перед основным скриптом. Не синхронизировать с presenter/projector. Эти массивы изолированы от мультиплеерных пулов — намеренно, чтобы игрок не мог запомнить ответы через соло и использовать их в игре с ведущим.
 
 ## Architecture
 
@@ -61,7 +61,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 - **`quiz_state`** — текущее состояние: `phase`, `current_index`, `show_answer`, `round_type`, `quiz_id`, `shuffle_seed`, `question_visible`, `game_timer`, `question_started_at`, `session_code`, `music_playing`, `music_broadcast`
 - **`quiz_scores`** — `game_id, student_name, team_name, score numeric(5,1), questions_answered, avg_answer_time`
-- **`quiz_chat`** — чат, свободные ответы 100к1, и статистика ответов (`msg_type='answer_stat'`, message=JSON `{q, ok}`)
+- **`quiz_chat`** — чат, свободные ответы 100к1, и статистика ответов (`msg_type='answer_stat'`, message=JSON `{q, ok}`). `msg_type` влияет на видимость: `answer_stat`, `ready`, `bet` — служебные, **не отображаются** в чате игрока (`renderMsg()` в hub.html возвращает `null` для этих типов).
 
 ## Game Phases
 
@@ -107,7 +107,20 @@ function pts(d){ return !d||d<=1 ? 1 : d===2 ? 2 : 3; }
 
 ## Question Types
 
-`text` — 4 варианта | `svg` — с иллюстрацией | `rebus` — ребус | `survey` — 100к1 со свободным ответом
+`text` — 4 варианта | `svg` — с иллюстрацией | `rebus` — анаграмма | `survey` — 100к1 со свободным ответом
+
+### Тип `rebus` — анаграмма
+
+Вопросы с `tp:"rebus"` отображаются как **перемешанные буквы**, из которых нужно сложить слово — НЕ как части слова со знаком `+`.
+
+Поле `rp` (word parts) сохраняется для совместимости, но для рендеринга используется правильный ответ `opts[ci]`. Рендеринг в hub.html и projector.html:
+
+```js
+function _strHash(s){let h=5381;for(const c of s){h=((h*33)+c.charCodeAt(0))|0;}return h>>>0;}
+function _shuffleLetters(word,seed){const a=[...word];let s=seed>>>0;for(let i=a.length-1;i>0;i--){s=(Math.imul(s,1664525)+1013904223)>>>0;const j=s%(i+1);[a[i],a[j]]=[a[j],a[i]];}return a;}
+```
+
+Shuffle детерминирован (seeded по хешу слова) — hub и projector дают одинаковый порядок букв для одного вопроса. CSS-классы: `.anagram-box`, `.anagram-tiles`, `.a-tile` (золотые плитки). Hint из поля `rh` отображается под плитками.
 
 ## Special Rounds
 
@@ -165,18 +178,29 @@ function pts(d){ return !d||d<=1 ? 1 : d===2 ? 2 : 3; }
 
 hub.html скипает ambient-звуки в очном режиме (`shuffle_seed > 0`): `playBetStart()`, `playBlitzStart()` не вызываются.
 
-**Управление звуком из presenter**: два отдельных поля. `music_playing` (boolean) — мутирует/размутирует ambient-звук проектора (`_projBg`, `_idleAudio`) через `_projMuteAll()` / `_projUnmuteAll()`; флаг `_projAudioMuted` хранит состояние. `music_broadcast` (string | null) — имя трека, транслируемого ведущим; hub.html читает его и запускает/останавливает `_bgAudio` в онлайн-режиме.
+**Управление звуком из presenter**:
+
+- `music_playing` (boolean в БД) — мутирует/размутирует ambient-звук проектора через `_projMuteAll()` / `_projUnmuteAll()`; флаг `_projAudioMuted` хранит состояние.
+- `music_broadcast` (string | null в БД) — имя трека, транслируемого ведущим; hub.html читает его и запускает/останавливает `_bgAudio` в онлайн-режиме.
+- **Ползунок громкости проектора** (`#projVolSlider` в presenter) — передаёт значение через `BroadcastChannel('quiz_proj_ctrl')` с сообщением `{type:'proj_volume', value: 0–1}`. Не использует БД. Работает только когда оба окна открыты в одном браузере (same-origin).
+
+**Master volume в projector**: `_projMasterVol` (0–1), константы `_PVOL` (базовые громкости по типу аудио), helper `_pv(base)` = `_projAudioMuted ? 0 : base * _projMasterVol`. Все `.volume =` присваивания в projector должны использовать `_pv()`, а не прямые числа.
 
 ## Projector Overlay System
 
-Проектор имеет четыре полноэкранных оверлея (z-index по приоритету):
+Проектор имеет пять полноэкранных оверлеев (z-index по приоритету):
 
 1. **`#ov-idle`** (z-index 40) — фоновый экран при `phase=waiting`. Показывает лого, название квиза, аврора-анимацию. Код игры (`#idle-code-block`) скрыт до интро; появляется после `howtoplay` когда `showIdleOverlay()` вызывается с session_code. Играет `DRIVE(chosic.com).mp3`.
-2. **`#ov-intro`** (z-index 100) — вступительное шоу по кнопке `🎬 Шоу!` у ведущего (`phase=intro`). Радужный заголовок, частицы, сканлайн. Играет `Startgame.mp3`. После окончания — возвращается к idle.
-3. **`#ov-howtoplay`** (z-index 90) — экран правил игры (`phase=howtoplay`), кнопка `📖 Правила`. При показе автоматически запускает `Rulesgame.mp3` и показывает `session_code` (`#htp-code-block`). Когда аудио заканчивается (`_howToPlayAudioDone=true`): overlay скрывается, проектор возвращается на idle с кодом. Guard: пока `_howToPlayAudioDone=true` и phase ещё `howtoplay`, `hideIdleOverlay()` НЕ вызывается — иначе следующий polling-тик убил бы только что показанный idle.
-4. **`#scoreboardOv`** (z-index 80) — промежуточный скорборд.
+2. **`#ov-intro`** (z-index 100) — вступительное шоу по кнопке `🎬 Шоу + правила` у ведущего (`phase=intro`). Радужный заголовок, частицы, сканлайн. Играет `Startgame.mp3`. После окончания — автоматически переходит к `#ov-attention`.
+3. **`#ov-attention`** (z-index 95) — интерстициал «ВНИМАНИЕ! ПРАВИЛА ИГРЫ» с обратным отсчётом 10 сек. Запускается автоматически после `_hideIntroOverlay()` через `_showAttentionScreen(cb)`. По истечении вызывает `_showHowToPlay()`. Таймеры: `_attnTimer` (setTimeout 10000) и `_attnTick` (setInterval 1000 для countdown). Оба обнуляются при скрытии.
+4. **`#ov-howtoplay`** (z-index 90) — экран правил игры (`phase=howtoplay`), кнопка `📖 Правила`. При показе автоматически запускает `Rulesgame.mp3` и показывает `session_code` (`#htp-code-block`). Когда аудио заканчивается (`_howToPlayAudioDone=true`): overlay скрывается, проектор возвращается на idle с кодом. Guard: пока `_howToPlayAudioDone=true` и phase ещё `howtoplay`, `hideIdleOverlay()` НЕ вызывается — иначе следующий polling-тик убил бы только что показанный idle.
+5. **`#scoreboardOv`** (z-index 80) — промежуточный скорборд.
+
+**Цепочка после нажатия «🎬 Шоу + правила»**: intro (audio+анимация) → `_hideIntroOverlay()` → `_showAttentionScreen()` (10 сек) → `_showHowToPlay()` (audio Rulesgame.mp3) → audio end → idle с кодом.
 
 Флаг `_lastProjPhaseWasIntro` предотвращает зацикливание: `_introShown` сбрасывается только при смене phase с `intro` на что-то другое.
+
+**Answered bar в projector** (`#answeredBar`): скрывается только когда меняется `current_index` (`idxChanged`), а не при смене `show_answer` или `question_started_at`. Это предотвращает мерцание при раскрытии ответа. Контент бара не сбрасывается в "0/0" при скрытии — остаётся предыдущее значение, пока не придут новые данные.
 
 ## Presenter Access
 
@@ -186,17 +210,27 @@ hub.html скипает ambient-звуки в очном режиме (`shuffle_
 
 ### Кнопки управления (топбар)
 
-- `🎬 Шоу!` (`btnIntro`) → `triggerIntro()` → `ups({phase:"intro"})` — запускает вступление на проекторе
-- `📖 Правила` (`btnHowToPlay`) → `triggerHowToPlay()` → `ups({phase:"howtoplay"})` — показывает экран правил с озвучкой
+- `🎬 Шоу + правила` (`btnIntro`) → `triggerIntro()` → `ups({phase:"intro"})` — запускает вступление → автоматически переходит к «Внимание» (10 с) → правилам → idle с кодом
+- `📖 Правила` (`btnHowToPlay`) → `triggerHowToPlay()` → `ups({phase:"howtoplay"})` — показывает экран правил с озвучкой (без шоу)
 - `🔊 Звук проектора` (`btnProjMute`) → `toggleProjMute()` — мутирует/размутирует ambient-звук на проекторе через `music_playing` в БД
-- `🎵 Музыка` (`btnMusicPanel`) → `toggleMusicPanel()` — открывает панель плейлиста; все кнопки управления (▶/⏸, ⏹, ⏮, ⏭) находятся **внутри панели**, отдельной кнопки в топбаре нет
+- `🎵 Музыка` (`btnMusicPanel`) → `toggleMusicPanel()` — открывает панель плейлиста; слайдер громкости внутри панели управляет **только локальным аудио ведущего** (не отправляет данные на проектор); для звука проектора — отдельная кнопка `🔊 Звук проектора`
 - `🖥 ОЧНО` (`btnMode`) — переключает режим (очный/онлайн)
 
 ### Статистика ответов
 
-`refreshAnswered()` — поллинг каждые 2 с. Помимо счётчика ответивших, показывает ✅/❌ статистику текущего вопроса через `quiz_chat` с `msg_type='answer_stat'`. Дедупликация: берётся **последний** ответ каждого игрока на текущий вопрос.
+`refreshAnswered()` — поллинг каждые 2 с. Guard: при `waiting`/`ended` скрывает `ansBarWrap` (`style.display="none"`) и выходит — чтобы не мерцал счётчик. Показывает ✅/❌ статистику текущего вопроса через `quiz_chat` с `msg_type='answer_stat'`. Дедупликация: берётся **последний** ответ каждого игрока на текущий вопрос.
+
+`ansBarWrap` скрывается явно в трёх местах: в `refreshAnswered()` при раннем выходе, в `applyState()` в ветке waiting/else, и при сбросе в `resetQuiz()`. `renderQ()` показывает его — поэтому скрытие должно происходить **после** `renderQ()` для non-running фаз.
 
 `questions_answered` в `quiz_scores` = `Math.max(qAnswered, curIdx + 1)` — чтобы корректно работало после перезагрузки страницы.
+
+### Панель статистики игры
+
+Карточка «📊 Статистика игры» в правой колонке, коллапс по клику (`toggleStatsPanel()`). `refreshStats()` вызывается каждые 2 с когда панель открыта. Показывает:
+
+- Текущий вопрос: кол-во верных/неверных ответов и % верных (из `quiz_chat` `msg_type='answer_stat'`)
+- Топ-5 игроков по очкам (`quiz_scores` ORDER BY score DESC)
+- Общая активность: средние очки, среднее число ответов, кол-во игроков
 
 ### 100к1 маркеры
 
