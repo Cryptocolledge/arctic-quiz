@@ -86,11 +86,12 @@ body{
 .q-svg-wrap svg{max-height:220px;width:auto;}
 .q-caption{font-size:.85rem;color:var(--muted);font-style:italic;}
 
-/* РЕБУС */
-.rebus-box{display:flex;align-items:center;justify-content:center;gap:12px;padding:20px;background:rgba(8,18,40,.8);border:1px solid rgba(255,211,107,.2);border-radius:16px;}
-.rpart{font-size:clamp(1.4rem,3vw,2.4rem);font-weight:900;padding:10px 20px;border-radius:12px;background:rgba(255,211,107,.1);border:2px solid rgba(255,211,107,.4);color:var(--gold);letter-spacing:.05em;}
-.rop{font-size:1.8rem;font-weight:900;color:var(--muted);}
-.r-hint{font-size:.8rem;color:var(--muted);margin-top:4px;text-align:center;}
+/* АНАГРАММА (ребус) */
+.anagram-box{display:flex;flex-direction:column;align-items:center;gap:clamp(10px,2vh,22px);padding:clamp(18px,3vh,36px) clamp(24px,4vw,60px);background:rgba(8,18,40,.85);border:1px solid rgba(255,211,107,.3);border-radius:22px;box-shadow:0 0 50px rgba(255,211,107,.07);}
+.anagram-label{font-size:clamp(.85rem,1.8vw,1.3rem);color:var(--muted);text-transform:uppercase;letter-spacing:.18em;font-weight:600;}
+.anagram-tiles{display:flex;flex-wrap:wrap;justify-content:center;gap:clamp(7px,1.2vw,16px);}
+.a-tile{font-size:clamp(3rem,7.5vw,6.5rem);font-weight:900;width:clamp(3.5rem,9vw,8rem);height:clamp(3.5rem,9vw,8rem);display:flex;align-items:center;justify-content:center;border-radius:clamp(10px,1.5vw,18px);background:rgba(255,211,107,.1);border:2.5px solid rgba(255,211,107,.55);color:var(--gold);text-shadow:0 0 24px rgba(255,211,107,.4);box-shadow:0 4px 20px rgba(0,0,0,.35);}
+.r-hint{font-size:clamp(.8rem,1.5vw,1.1rem);color:var(--muted);margin-top:2px;text-align:center;}
 
 /* ОТВЕТЫ — показываются только после раскрытия */
 .opts-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
@@ -941,6 +942,8 @@ const SVG_URLS={
 let Q=Q_SPO;
 
 function pts(d){return !d||d<=1?1:d===2?2:3;}
+function _strHash(s){let h=5381;for(const c of s){h=((h*33)+c.charCodeAt(0))|0;}return h>>>0;}
+function _shuffleLetters(word,seed){const a=[...word];let s=seed>>>0;for(let i=a.length-1;i>0;i--){s=(Math.imul(s,1664525)+1013904223)>>>0;const j=s%(i+1);[a[i],a[j]]=[a[j],a[i]];}return a;}
 
 // ── ТАЙМЕР ────────────────────────────────────────────────────
 function parseTs(iso){if(!iso)return NaN;let s=String(iso).trim();s=s.replace(" ","T");s=s.replace(/\+00:00$/,"Z");s=s.replace(/\+00$/,"Z");s=s.replace(/(\.\d+)\+00$/,"$1Z");s=s.replace(/(\.\d+)\+00:00$/,"$1Z");const t=Date.parse(s);return isNaN(t)?Date.parse(iso):t;}
@@ -996,7 +999,12 @@ function renderQ(s){
     vis.innerHTML=`<div class="q-illus"><div class="q-svg-wrap">${SVG_URLS[q.svg]}</div>${q.cap?`<div class="q-caption">${q.cap}</div>`:""}</div>`;
   } else if(q.tp==="rebus"&&q.rp){
     vis.style.display="";
-    vis.innerHTML=`<div><div class="rebus-box"><span class="rpart">${q.rp[0]}</span><span class="rop">+</span><span class="rpart">${q.rp[1]}</span></div>${q.rh?`<div class="r-hint">${q.rh}</div>`:""}</div>`;
+    const _w=q.opts[q.ci].toUpperCase().replace(/\s/g,'');
+    const _seed=_strHash(_w);
+    let _letters=_shuffleLetters(_w,_seed);
+    if(_letters.join('')===_w)_letters=_shuffleLetters(_w,_seed+1);
+    const _tiles=_letters.map(l=>`<span class="a-tile">${l}</span>`).join('');
+    vis.innerHTML=`<div class="anagram-box"><div class="anagram-label">Сложи слово из букв</div><div class="anagram-tiles">${_tiles}</div>${q.rh?`<div class="r-hint">${q.rh}</div>`:''}</div>`;
   }
 
   // Survey (100 к 1) — специальный тип
@@ -1358,13 +1366,12 @@ function applyState(s){
   // Новый вопрос — или тот же вопрос, но новый старт (сброс/перезапуск)
   const startedAt=s.question_started_at||null;
   if(idx!==lastIdx||(show!==lastShow)||(startedAt&&startedAt!==lastStartedAt)){
+    const idxChanged=idx!==lastIdx;
     lastIdx=idx; lastShow=show; lastStartedAt=startedAt;
-    // Сбрасываем бар сразу — чтобы не показывать данные предыдущего вопроса
-    const bar=$("answeredBar");if(bar){bar.style.display="none";$("answeredFill").style.width="0%";$("answeredNum").textContent="0/0";}
+    if(idxChanged){const bar=$("answeredBar");if(bar)bar.style.display="none";}
     renderQ(s);
-    // Обновляем статистику
-    refreshAnsweredCount();
-    refreshLeader();
+    // Обновляем статистику только при смене вопроса
+    if(idxChanged){refreshAnsweredCount();refreshLeader();}
   } else if(s.question_visible===true&&lastState?.question_visible===false){
     renderQ(s);
   }

@@ -1725,8 +1725,9 @@ function applyState(s){
   else if(phase==="paused"){chipPhase.textContent="⏸ Пауза";chipPhase.className="chip warn";stPhase.textContent="⏸ Пауза";stopPresTimer();tleft.textContent="⏸";}
   else if(phase==="ended"){chipPhase.textContent="✓ Конец";chipPhase.className="chip";stPhase.textContent="✓ Конец";stopPresTimer();}
   else{chipPhase.textContent="⏳";chipPhase.className="chip";stPhase.textContent="Ожидание";stopPresTimer();
-    // Очищаем панель «Ответили» в режиме ожидания
+    // Очищаем и скрываем панель «Ответили» в режиме ожидания
     ansBarLbl.textContent="0 / 0";ansBarFill.style.width="0%";stAnswered.textContent="0 / 0";
+    ansBarWrap.style.display="none";
     const _d=$("ans-detail");if(_d)_d.innerHTML="";
   }
   if(idx!==null){chipQ.textContent="Вопрос: "+(idx+1)+" / "+Q.length;stQ.textContent=(idx+1)+" из "+Q.length;renderQ(idx);}
@@ -1958,7 +1959,7 @@ $("btnShowQ")?.addEventListener("click",async()=>{
 async function refreshAnswered(){
   if(!sb)return;
   const phase=lastState?.phase;
-  if(!phase||phase==="waiting"||phase==="ended")return;
+  if(!phase||phase==="waiting"||phase==="ended"){ansBarWrap.style.display="none";return;}
   const idx=lastState?.current_index;if(typeof idx!=="number")return;
   try{
     const[{data:scores},{data:players},{data:ansStats}]=await Promise.all([

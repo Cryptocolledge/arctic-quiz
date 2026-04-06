@@ -53,13 +53,11 @@ body{font-family:system-ui,-apple-system,"Segoe UI",sans-serif;color:var(--text)
 .qillus{border-radius:12px;overflow:hidden;border:1px solid rgba(79,223,255,.25);background:linear-gradient(135deg,#0a1a30,#061020);display:flex;flex-direction:column;align-items:center;min-height:140px;}
 .qillus svg{width:100%;max-height:190px;}
 .qillus-cap{font-size:.71rem;color:var(--muted);padding:5px 9px;text-align:center;background:rgba(2,8,24,.7);width:100%;}
-.rebusbox{padding:12px 10px 10px;border-radius:13px;background:linear-gradient(135deg,rgba(2,8,28,.97),rgba(4,12,36,.97));border:1.5px solid rgba(79,223,255,.4);display:flex;flex-direction:column;gap:7px;align-items:center;box-shadow:0 0 20px rgba(79,223,255,.07);}
-.rfig{display:flex;align-items:center;gap:6px;font-weight:800;font-size:1rem;flex-wrap:wrap;justify-content:center;}
-.rpart{padding:6px 12px;border-radius:8px;background:rgba(7,23,60,.95);border:1.5px solid rgba(79,223,255,.6);color:#cff6ff;letter-spacing:.04em;text-shadow:0 0 8px rgba(79,223,255,.4);box-shadow:0 2px 8px rgba(0,0,0,.4);}
-.rpart-q{background:rgba(255,150,50,.12);border-color:rgba(255,180,80,.55);color:#ffda80;font-size:1.15em;text-shadow:0 0 8px rgba(255,200,80,.5);}
-.rop{color:#4fdfff;font-weight:900;font-size:.95em;}
-.ropeq{color:rgba(255,200,80,.8);font-weight:900;font-size:.95em;}
-.rnote{font-size:.7rem;color:rgba(100,200,240,.55);font-style:italic;text-align:center;}
+.rebusbox{padding:12px 10px 10px;border-radius:13px;background:linear-gradient(135deg,rgba(2,8,28,.97),rgba(4,12,36,.97));border:1.5px solid rgba(255,211,107,.35);display:flex;flex-direction:column;gap:10px;align-items:center;box-shadow:0 0 20px rgba(255,211,107,.06);}
+.anagram-label{font-size:.65rem;color:rgba(168,200,232,.6);text-transform:uppercase;letter-spacing:.14em;font-weight:600;}
+.anagram-tiles{display:flex;flex-wrap:wrap;justify-content:center;gap:5px;}
+.a-tile{font-size:1.45rem;font-weight:900;width:2.4rem;height:2.4rem;display:flex;align-items:center;justify-content:center;border-radius:9px;background:rgba(255,211,107,.1);border:1.5px solid rgba(255,211,107,.5);color:#ffd36b;text-shadow:0 0 10px rgba(255,211,107,.35);}
+.rnote{font-size:.68rem;color:rgba(100,200,240,.5);font-style:italic;text-align:center;}
 .qwait{display:flex;flex-direction:column;align-items:center;gap:9px;padding:22px 10px;text-align:center;}
 .qwait-icon{font-size:2rem;animation:pulse 2s ease-in-out infinite;}
 @keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.1)}}
@@ -1335,8 +1333,8 @@ document.addEventListener('DOMContentLoaded',function(){
           <div class="qillus-cap" id="qcap"></div>
         </div>
         <div class="rebusbox" id="rebusbox" style="display:none;margin-top:8px;">
-          <div style="font-size:.64rem;letter-spacing:.13em;text-transform:uppercase;color:#cff6ff;opacity:.8;">Ребус</div>
-          <div class="rfig" id="rfig"></div>
+          <div class="anagram-label">Сложи слово из букв</div>
+          <div class="anagram-tiles" id="rfig"></div>
           <div class="rnote" id="rnote"></div>
         </div>
       </div>
@@ -2268,6 +2266,8 @@ function loadSbFallback(){
 
 let sb=window.supabase?.createClient?window.supabase.createClient(SURL,SKEY):null;
 function pts(d){return !d||d<=1?1:d===2?2:3;}
+function _strHash(s){let h=5381;for(const c of s){h=((h*33)+c.charCodeAt(0))|0;}return h>>>0;}
+function _shuffleLetters(word,seed){const a=[...word];let s=seed>>>0;for(let i=a.length-1;i>0;i--){s=(Math.imul(s,1664525)+1013904223)>>>0;const j=s%(i+1);[a[i],a[j]]=[a[j],a[i]];}return a;}
 
 // ── ФИЛЬТР МАТА ───────────────────────────────────────────────
 // Нормализуем: латиница/цифры → кириллица, убираем не-буквы
@@ -2927,8 +2927,11 @@ function renderQ(){
   else qillusEl.style.display="none";
   if(q.tp==="rebus"&&q.rp){
     rebusboxEl.style.display="";
-    const parts=q.rp.map(p=>`<span class="rpart">${p}</span>`).join('<span class="rop"> + </span>');
-    rfigEl.innerHTML=parts+'<span class="ropeq"> = </span><span class="rpart rpart-q">?</span>';
+    const _w=q.opts[q.ci].toUpperCase().replace(/\s/g,'');
+    const _seed=_strHash(_w);
+    let _letters=_shuffleLetters(_w,_seed);
+    if(_letters.join('')===_w)_letters=_shuffleLetters(_w,_seed+1);
+    rfigEl.innerHTML=_letters.map(l=>`<span class="a-tile">${l}</span>`).join('');
     rnoteEl.textContent=q.rh||"";
   }
   else rebusboxEl.style.display="none";
