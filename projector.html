@@ -19,6 +19,7 @@ body{
 
 /* ТОП-BAR */
 @keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
+@keyframes shimmerSlide{from{transform:translateX(-100%)}to{transform:translateX(300%)}}
 @keyframes dragPulse{0%,100%{opacity:.7;transform:scale(1)}50%{opacity:1;transform:scale(1.05)}}
 @keyframes scanline{0%{transform:translateX(-100%)}100%{transform:translateX(100vw)}}
 .topbar{
@@ -30,9 +31,9 @@ body{
   flex-shrink:0;cursor:grab;user-select:none;position:relative;z-index:51;overflow:hidden;
 }
 .topbar::before{
-  content:'';position:absolute;inset:0;
-  background:linear-gradient(90deg,transparent 0%,rgba(79,223,255,.06) 20%,rgba(97,255,178,.05) 50%,rgba(79,223,255,.06) 80%,transparent 100%);
-  background-size:200% 100%;animation:shimmer 6s linear infinite;pointer-events:none;
+  content:'';position:absolute;top:0;bottom:0;left:0;width:50%;
+  background:linear-gradient(90deg,transparent,rgba(79,223,255,.09),rgba(97,255,178,.07),rgba(79,223,255,.09),transparent);
+  animation:shimmerSlide 6s linear infinite;pointer-events:none;will-change:transform;
 }
 .topbar::after{
   content:'';position:absolute;bottom:0;left:0;right:0;height:2px;
@@ -96,7 +97,7 @@ body{
 /* ОТВЕТЫ — показываются только после раскрытия */
 .opts-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
 @keyframes optReveal{from{opacity:0;transform:translateY(14px) scale(.97)}to{opacity:1;transform:none}}
-.opt-row{display:flex;align-items:center;gap:14px;padding:16px 22px;border-radius:16px;background:rgba(5,14,36,.85);border:2px solid rgba(255,255,255,.1);font-size:clamp(.95rem,1.9vw,1.5rem);font-weight:600;transition:all .35s;animation:optReveal .4s ease both;backdrop-filter:blur(6px);}
+.opt-row{display:flex;align-items:center;gap:14px;padding:16px 22px;border-radius:16px;background:rgba(5,14,36,.94);border:2px solid rgba(255,255,255,.1);font-size:clamp(.95rem,1.9vw,1.5rem);font-weight:600;transition:all .35s;animation:optReveal .4s ease both;will-change:transform,opacity;}
 .opt-row:nth-child(1){animation-delay:0ms}
 .opt-row:nth-child(2){animation-delay:60ms}
 .opt-row:nth-child(3){animation-delay:120ms}
@@ -119,7 +120,7 @@ body{
 .status-sub{font-size:1rem;color:var(--muted);max-width:400px;line-height:1.6;}
 
 /* REVEAL баннер */
-.reveal-banner{position:fixed;bottom:0;left:0;right:0;padding:18px 32px;text-align:center;font-size:1.2rem;font-weight:800;transform:translateY(100%);transition:transform .45s cubic-bezier(.34,1.56,.64,1);backdrop-filter:blur(12px);letter-spacing:.02em;}
+.reveal-banner{position:fixed;bottom:0;left:0;right:0;padding:18px 32px;text-align:center;font-size:1.2rem;font-weight:800;transform:translateY(100%);transition:transform .45s cubic-bezier(.34,1.56,.64,1);letter-spacing:.02em;will-change:transform;}
 .reveal-banner.show{transform:translateY(0);}
 .reveal-banner.open{background:rgba(97,255,178,.14);border-top:2px solid rgba(97,255,178,.6);color:var(--ok);box-shadow:0 -4px 40px rgba(97,255,178,.15);}
 
@@ -157,7 +158,7 @@ body{
 .status-title{font-size:clamp(1.5rem,4vw,3rem);font-weight:900;background:linear-gradient(135deg,#4fdfff,#61ffb2);-webkit-background-clip:text;-webkit-text-fill-color:transparent;filter:drop-shadow(0 0 16px rgba(79,223,255,.3));}
 
 /* ВОПРОС — УЛУЧШЕННЫЙ */
-.question-block{background:rgba(3,10,26,.7);border:1px solid rgba(79,223,255,.15);border-radius:22px;padding:34px 40px;backdrop-filter:blur(12px);box-shadow:0 8px 40px rgba(0,0,0,.5),0 0 0 1px rgba(79,223,255,.06),inset 0 1px 0 rgba(79,223,255,.08);}
+.question-block{background:rgba(3,10,26,.93);border:1px solid rgba(79,223,255,.15);border-radius:22px;padding:34px 40px;box-shadow:0 8px 40px rgba(0,0,0,.5),0 0 0 1px rgba(79,223,255,.06),inset 0 1px 0 rgba(79,223,255,.08);contain:layout style;}
 .q-text{font-size:clamp(1.7rem,3.8vw,3.2rem);line-height:1.25;font-weight:800;color:#f0f8ff;text-shadow:0 2px 30px rgba(79,223,255,.12);}
 
 /* ВАРИАНТЫ — УЛУЧШЕННЫЕ */
@@ -221,7 +222,7 @@ body{
 .sb-sub{position:relative;z-index:1;font-size:.78rem;color:rgba(255,211,107,.6);margin-bottom:18px;text-align:center;}
 .sb-list{position:relative;z-index:1;width:min(960px,96%);display:flex;flex-direction:column;gap:8px;max-height:80vh;overflow:hidden;}
 .sb-list.two-col{display:grid;grid-template-columns:1fr 1fr;gap:8px 16px;}
-.sb-row{display:flex;align-items:center;gap:10px;padding:9px 16px;border-radius:12px;border:1px solid rgba(255,255,255,.13);background:rgba(255,255,255,.09);backdrop-filter:blur(8px);animation:sbIn .5s cubic-bezier(.22,.68,0,1.2) both;}
+.sb-row{display:flex;align-items:center;gap:10px;padding:9px 16px;border-radius:12px;border:1px solid rgba(255,255,255,.13);background:rgba(255,255,255,.12);animation:sbIn .5s cubic-bezier(.22,.68,0,1.2) both;}
 .sb-row.top1{border-color:rgba(255,200,50,.5);background:rgba(255,180,30,.14);box-shadow:0 0 22px rgba(255,200,50,.25),inset 0 1px 0 rgba(255,220,100,.2);animation:sbIn .5s cubic-bezier(.22,.68,0,1.2) both,sbGold 2.5s 1s ease-in-out infinite;}
 .sb-row.top2{border-color:rgba(192,204,220,.4);background:rgba(170,185,210,.1);box-shadow:0 0 16px rgba(192,204,220,.18);}
 .sb-row.top3{border-color:rgba(210,130,60,.38);background:rgba(200,120,50,.1);box-shadow:0 0 14px rgba(210,130,60,.18);}
@@ -1318,9 +1319,14 @@ function _introSpawnParticles(){
 // ── APPLY STATE ───────────────────────────────────────────────
 let lastShow=false;
 let lastSurveyPhase="";
+let _lastApplyHash='';
 
 function applyState(s){
   if(!s){showStatusScreen("⏳","Ожидание","Игра ещё не началась…");return;}
+  // Dirty-check — пропускаем повторный рендер если state не изменился
+  const _h=`${s.phase}|${s.current_index}|${s.show_answer}|${s.round_type}|${s.question_started_at}|${s.question_visible}|${s.music_playing}|${s.session_code}|${s.game_timer}|${s.quiz_id}|${s.quiz_mode}`;
+  if(_h===_lastApplyHash)return;
+  _lastApplyHash=_h;
   lastState=s;
   const qmode=s.quiz_mode||"spo";
   const projQid=s.quiz_id||"arctic";
