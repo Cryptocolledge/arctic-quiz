@@ -1658,7 +1658,7 @@ function applyState(s){
   lastState=s;
   if(!s){chipPhase.textContent="⏳";chipPhase.className="chip";stPhase.textContent="Ожидание";stopPresTimer();btnReveal.disabled=true;ansState.className="ans-state";return;}
   // Синхронизируем QT и подсветку кнопок таймера из state
-  if(s.game_timer&&s.game_timer!==QT) presSetTimer(s.game_timer);
+  if(s.game_timer&&s.game_timer!==QT) presSetTimer(s.game_timer, true);
   // Переключаем набор вопросов по quiz_mode
   const qmode=s.quiz_mode||"spo";
   const currentQId = QUIZ_ID_CURRENT||s.quiz_id||QUIZ_ID;
@@ -1752,7 +1752,7 @@ async function getState(){
 }
 async function triggerIntro(){
   const btn=document.getElementById('btnIntro');
-  if(btn){btn.textContent='🎬 Играет…';btn.disabled=true;setTimeout(()=>{btn.textContent='🎬 Шоу!';btn.disabled=false;},20000);}
+  if(btn){btn.textContent='🎬 Играет…';btn.disabled=true;setTimeout(()=>{btn.textContent='🎬 Шоу + правила';btn.disabled=false;},20000);}
   await ups({phase:"intro"});
 }
 async function triggerHowToPlay(){
@@ -1780,7 +1780,7 @@ async function ups(patch){
     game_id:GID,
     quiz_id:QUIZ_ID_CURRENT||lastState?.quiz_id||QUIZ_ID,
     quiz_mode:mode,
-    phase:(()=>{const _lp=lastState?.phase||"";return(["waiting","running","paused","ended","scoreboard"].includes(_lp)||_lp.startsWith("survey_"))?_lp:"waiting";})(),
+    phase:(()=>{const _lp=lastState?.phase||"";return(["waiting","running","paused","ended","scoreboard","intro","howtoplay"].includes(_lp)||_lp.startsWith("survey_"))?_lp:"waiting";})(),
     current_index:lastState?.current_index??0,
     question_started_at:lastState?.question_started_at||null,
     show_answer:lastState?.show_answer||false,
@@ -3396,7 +3396,7 @@ function applyPresenterMode(){
   presSetTimer(QT);
 }
 
-function presSetTimer(t){
+function presSetTimer(t, _skipPush){
   QT=t;
   const chip=$("timerChip"); if(chip) chip.textContent=t+" сек";
   [15,20,25,30,45,60].forEach(v=>{
@@ -3405,8 +3405,8 @@ function presSetTimer(t){
     if(v===t){b.style.background="linear-gradient(120deg,#4fdfff,#61ffb2)";b.style.color="#02111f";b.style.borderColor="rgba(79,223,255,.9)";}
     else{b.style.background="";b.style.color="";b.style.borderColor="";}
   });
-  // Всегда сохраняем в БД чтобы проектор и игроки видели актуальное время
-  ups({game_timer:t});
+  // Сохраняем в БД только при ручном нажатии кнопки, не при синхронизации из поллинга
+  if(!_skipPush) ups({game_timer:t});
 }
 
 function showModeHint(title, text){
