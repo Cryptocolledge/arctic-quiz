@@ -1320,7 +1320,11 @@ let lastShow=false;
 let lastSurveyPhase="";
 
 function applyState(s){
-  if(!s){showStatusScreen("⏳","Ожидание","Игра ещё не началась…");return;}
+  if(!s){
+    // Временная ошибка Supabase во время активной игры — пропустить тик
+    if(lastState?.phase==="running")return;
+    showStatusScreen("⏳","Ожидание","Игра ещё не началась…");return;
+  }
   lastState=s;
   const qmode=s.quiz_mode||"spo";
   const projQid=s.quiz_id||"arctic";
@@ -1371,6 +1375,7 @@ function applyState(s){
   if(phase==="waiting"){
     hideProjScoreboard();
     if(!_idleActive)showIdleOverlay(s.quiz_id||"arctic","");
+    const _wb=$("answeredBar");if(_wb)_wb.style.display="none";
     stopTimer();return;
   }
   if(phase==="ended"){
