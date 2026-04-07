@@ -2422,6 +2422,15 @@ async function initPrep(){
     prepDbStatus.innerHTML='<span style="color:var(--ok)">✓ Подключено</span>';
     prepBtnStart.disabled=false;
 
+    // Синхронизируем session_code из БД — чтобы разные устройства (планшет+ПК) показывали один код
+    if(s&&s.session_code){
+      saveSessionCode(s.session_code);
+      updateQRBlock();
+    } else if(s){
+      // В БД нет кода — записываем наш (первый запуск)
+      ups({session_code:currentSessionCode});
+    }
+
     if(s&&s.phase&&s.phase!=="waiting"){
       // Игра уже идёт — показываем предупреждение
       const phaseLabel={running:"▶ Идёт",paused:"⏸ Пауза",ended:"✓ Завершена"}[s.phase]||s.phase;
@@ -3612,11 +3621,9 @@ function _doNewCode(){
 document.getElementById("btnNewCode")?.addEventListener("click", _doNewCode);
 document.getElementById("btnNewCode2")?.addEventListener("click", _doNewCode);
 
-// Инициализируем при загрузке
+// Инициализируем при загрузке (код из localStorage или новый; БД имеет приоритет — см. initPrep)
 saveSessionCode(currentSessionCode);
 updateQRBlock();
-// Сохраняем код в базу при старте
-setTimeout(()=>{ if(sb) ups({session_code:currentSessionCode}); }, 2000);
 
 // initPrep вызывается только после авторизации (см. ниже)
 
