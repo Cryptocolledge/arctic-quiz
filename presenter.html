@@ -235,6 +235,28 @@ tr:hover td{background:rgba(79,223,255,.03);}
 .pres-lock-inp{width:100%;padding:12px 16px;border-radius:10px;border:2px solid rgba(255,255,255,.1);background:rgba(3,10,28,.9);color:var(--text);font-size:1.1rem;outline:none;letter-spacing:.2em;text-align:center;font-weight:700;transition:border-color .2s;}
 .pres-lock-inp:focus{border-color:rgba(79,223,255,.5);}
 .pres-lock-err{font-size:.75rem;color:var(--err);min-height:18px;}
+/* ===== ПАНЕЛЬ ВОПРОСОВ ===== */
+#qListPanel{position:fixed;top:0;right:-480px;width:min(480px,100vw);height:100vh;background:rgba(8,18,40,.98);border-left:1px solid rgba(79,223,255,.2);box-shadow:-8px 0 40px rgba(0,0,0,.7);z-index:9000;display:flex;flex-direction:column;transition:right .3s cubic-bezier(.4,0,.2,1);backdrop-filter:blur(12px);}
+#qListPanel.open{right:0;}
+.ql-head{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;border-bottom:1px solid rgba(79,223,255,.15);flex-shrink:0;gap:10px;}
+.ql-title{font-weight:800;font-size:.92rem;color:var(--accent);letter-spacing:.05em;}
+.ql-close{background:none;border:1px solid rgba(255,255,255,.15);color:var(--muted);border-radius:50%;width:30px;height:30px;cursor:pointer;font-size:1rem;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:color .15s,border-color .15s;}
+.ql-close:hover{color:var(--err);border-color:rgba(255,95,122,.5);}
+.ql-search{padding:8px 14px;border-bottom:1px solid rgba(79,223,255,.1);flex-shrink:0;}
+.ql-search input{width:100%;padding:7px 11px;border-radius:8px;border:1px solid rgba(79,223,255,.2);background:rgba(3,10,28,.9);color:var(--text);font-size:.8rem;outline:none;}
+.ql-search input:focus{border-color:rgba(79,223,255,.5);}
+.ql-body{overflow-y:auto;flex:1;padding:6px 8px;}
+.ql-row{display:grid;grid-template-columns:28px 22px 1fr auto;gap:7px;align-items:start;padding:8px 10px;border-radius:9px;cursor:pointer;border:1px solid transparent;margin-bottom:3px;transition:background .12s,border-color .12s;}
+.ql-row:hover{background:rgba(79,223,255,.06);border-color:rgba(79,223,255,.15);}
+.ql-row.ql-cur{background:rgba(79,223,255,.1);border-color:rgba(79,223,255,.4);}
+.ql-num{font-size:.75rem;font-weight:800;color:var(--muted);text-align:right;padding-top:1px;}
+.ql-row.ql-cur .ql-num{color:var(--accent);}
+.ql-tp{font-size:.8rem;line-height:1.5;text-align:center;}
+.ql-text{font-size:.78rem;line-height:1.4;color:var(--text);}
+.ql-row.ql-cur .ql-text{color:#fff;font-weight:700;}
+.ql-ans{font-size:.73rem;color:var(--ok);font-weight:600;white-space:nowrap;padding-top:1px;}
+.ql-row.ql-hidden{display:none;}
+.ql-count{padding:5px 14px 3px;font-size:.67rem;color:var(--muted);flex-shrink:0;}
 </style>
 <link rel="manifest" href="manifest-presenter.json">
 <meta name="mobile-web-app-capable" content="yes">
@@ -476,6 +498,7 @@ tr:hover td{background:rgba(79,223,255,.03);}
     <span style="width:1px;background:rgba(255,255,255,.12);align-self:stretch;margin:0 2px"></span>
     <button class="btn bg" id="btnPdfReport" style="border-color:rgba(97,255,178,.4);color:var(--ok);" title="Скачать PDF протокол">📄 PDF</button>
     <button class="btn bg" id="btnMusicPanel" onclick="toggleMusicPanel()" style="border-color:rgba(97,255,178,.3);color:#61ffb2;font-size:.7rem;padding:5px 10px;" title="Плейлист и управление музыкой">🎵 Музыка</button>
+    <button class="btn bg" id="btnQList" onclick="openQList()" style="border-color:rgba(79,223,255,.35);color:var(--accent);font-size:.7rem;padding:5px 10px;" title="Список всех вопросов с ответами">📋 Вопросы</button>
     <button class="btn bg" id="btnHelp" style="border-color:rgba(255,211,107,.4);color:var(--gold);" title="Справка ведущего">❓ Справка</button>
     <button class="btn" id="btnProjector" style="background:rgba(255,211,107,.08);border-color:rgba(255,211,107,.5);color:var(--gold);" title="Открыть проектор на втором экране">🖥 Проектор</button>
     <button class="btn bg" id="btnCopyProjUrl" style="border-color:rgba(255,211,107,.4);color:var(--gold);font-size:.7rem;padding:5px 10px;" title="Скопировать ссылку проектора для другого устройства">📋 Ссылка проектора</button>
@@ -1620,6 +1643,12 @@ function esc(s){return String(s??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').
 // ── РЕНДЕР ВОПРОСА ────────────────────────────────────────────
 function renderQ(idx){
   const q=Q[Math.max(0,Math.min(Q.length-1,idx))];if(!q)return;
+  // Обновляем подсветку текущего вопроса в панели если она открыта
+  if(document.getElementById('qListPanel')?.classList.contains('open')){
+    document.querySelectorAll('#qListBody .ql-row').forEach((r,i)=>{r.classList.toggle('ql-cur',i===idx);});
+    const curRow=document.querySelector('#qListBody .ql-row.ql-cur');
+    if(curRow)curRow.scrollIntoView({block:'nearest',behavior:'smooth'});
+  }
   qChipType.textContent=q.tp==="survey"?"🎲 100к1":q.tp==="rebus"?"Ребус":"Вопрос";
   const p=pts(q.dif);qChipPts.textContent="+"+p+" очк"+(p===1?"о":p<5?"а":"ов");
   qChipDiff.textContent=q.dif<=1?"★☆☆":q.dif===2?"★★☆":"★★★";
@@ -1792,6 +1821,54 @@ async function triggerHowToPlay(){
   if(btn){btn.textContent='📖 На экране…';btn.disabled=true;setTimeout(()=>{btn.textContent='📖 Правила';btn.disabled=false;},90000);}
   await ups({phase:"howtoplay"});
 }
+/* ===== ПАНЕЛЬ ВОПРОСОВ ===== */
+const _qlTypeIcon={text:'📝',svg:'🖼',rebus:'🔤',survey:'🗣'};
+function openQList(){
+  renderQList();
+  document.getElementById('qListPanel').classList.add('open');
+  document.getElementById('qListBackdrop').style.display='block';
+  document.getElementById('qlSearchInput').value='';
+  document.getElementById('qlSearchInput').focus();
+}
+function closeQList(){
+  document.getElementById('qListPanel').classList.remove('open');
+  document.getElementById('qListBackdrop').style.display='none';
+}
+function renderQList(){
+  const body=document.getElementById('qListBody');
+  const cnt=document.getElementById('qlCount');
+  if(!body||!Q||!Q.length){if(body)body.innerHTML='<div style="padding:20px;color:var(--muted);text-align:center">Вопросы не загружены</div>';return;}
+  const cur=lastState?.current_index??-1;
+  body.innerHTML=Q.map((q,i)=>{
+    const ans=q.opts&&q.ci!=null?q.opts[q.ci]:'—';
+    const isCur=i===cur;
+    return `<div class="ql-row${isCur?' ql-cur':''}" onclick="qListJump(${i})" data-text="${(q.q||'').toLowerCase()}">
+      <span class="ql-num">${i+1}</span>
+      <span class="ql-tp">${_qlTypeIcon[q.tp]||'❓'}</span>
+      <span class="ql-text">${q.q||'—'}</span>
+      <span class="ql-ans">✅ ${ans}</span>
+    </div>`;
+  }).join('');
+  cnt.textContent=`Всего вопросов: ${Q.length}`;
+  if(cur>=0&&body.children[cur])body.children[cur].scrollIntoView({block:'center',behavior:'smooth'});
+}
+function filterQList(val){
+  const rows=document.querySelectorAll('#qListBody .ql-row');
+  const s=val.trim().toLowerCase();
+  let vis=0;
+  rows.forEach(r=>{
+    const match=!s||r.dataset.text.includes(s);
+    r.classList.toggle('ql-hidden',!match);
+    if(match)vis++;
+  });
+  const cnt=document.getElementById('qlCount');
+  if(cnt)cnt.textContent=s?`Найдено: ${vis} из ${Q.length}`:`Всего вопросов: ${Q.length}`;
+}
+async function qListJump(i){
+  closeQList();
+  await ups({current_index:i,show_answer:false,phase:'running'});
+}
+/* ============================= */
 let _projMuted=false;
 async function toggleProjMute(){
   _projMuted=!_projMuted;
@@ -3905,5 +3982,19 @@ function updatePresPlayerUI(){
     <button id="presShuffleBtn" onclick="presShufflePlaylist()" style="flex:1;padding:5px;border-radius:7px;border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.04);color:var(--muted);cursor:pointer;font-size:.8rem;" title="Случайный порядок">🔀</button>
   </div>
 </div>
+
+<!-- ПАНЕЛЬ ВОПРОСОВ -->
+<div id="qListPanel">
+  <div class="ql-head">
+    <div class="ql-title">📋 Список вопросов</div>
+    <button class="ql-close" onclick="closeQList()">✕</button>
+  </div>
+  <div class="ql-search">
+    <input id="qlSearchInput" type="search" placeholder="Поиск по тексту вопроса…" oninput="filterQList(this.value)"/>
+  </div>
+  <div class="ql-count" id="qlCount"></div>
+  <div class="ql-body" id="qListBody"></div>
+</div>
+<div id="qListBackdrop" onclick="closeQList()" style="display:none;position:fixed;inset:0;z-index:8999;background:rgba(0,0,0,.35);"></div>
 </body>
 </html>
