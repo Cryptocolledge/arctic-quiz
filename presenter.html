@@ -14,9 +14,10 @@ body{min-height:100vh;font-family:system-ui,-apple-system,"Segoe UI",sans-serif;
   body{padding:4px;}
   .wrap{gap:4px;}
   .topbar{flex-direction:column;align-items:flex-start;padding:8px 10px;gap:8px;}
-  .btns{flex-wrap:wrap;gap:4px;width:100%;}
-  .btns .btn{font-size:.68rem;padding:5px 8px;min-height:30px;}
-  .btns .chip{font-size:.65rem;}
+  .btns{flex-wrap:wrap;gap:5px;width:100%;}
+  /* Планшеты 7–9" portrait: кнопки крупнее для тача */
+  .btns .btn{font-size:.72rem;padding:7px 11px;min-height:38px;touch-action:manipulation;}
+  .btns .chip{font-size:.67rem;}
   .grid{grid-template-columns:1fr!important;}
   .stats{flex-wrap:wrap;}
   .stat{min-width:calc(50% - 4px);}
@@ -26,7 +27,7 @@ body{min-height:100vh;font-family:system-ui,-apple-system,"Segoe UI",sans-serif;
   .session-code-badge{font-size:1.4rem;}
 }
 @media(max-width:480px){
-  .btns .btn{font-size:.62rem;padding:4px 6px;min-height:28px;}
+  .btns .btn{font-size:.64rem;padding:5px 8px;min-height:34px;}
   .sval{font-size:.76rem;}
 }
 .ttl{font-weight:750;letter-spacing:.06em;text-transform:uppercase;font-size:.9rem;}
@@ -35,7 +36,7 @@ body{min-height:100vh;font-family:system-ui,-apple-system,"Segoe UI",sans-serif;
 .chip{padding:3px 8px;border-radius:999px;border:1px solid rgba(79,223,255,.3);background:rgba(79,223,255,.1);color:var(--accent);font-size:.73rem;white-space:nowrap;}
 .chip.ok{border-color:rgba(97,255,178,.6);color:var(--ok);}
 .chip.warn{border-color:rgba(255,200,80,.6);color:#ffe080;}
-.btn{border-radius:999px;border:1px solid rgba(255,255,255,.13);padding:7px 12px;font-size:.76rem;font-weight:650;letter-spacing:.04em;text-transform:uppercase;cursor:pointer;background:rgba(4,12,30,.95);color:var(--text);min-height:34px;transition:filter .14s,transform .12s;}
+.btn{border-radius:999px;border:1px solid rgba(255,255,255,.13);padding:7px 12px;font-size:.76rem;font-weight:650;letter-spacing:.04em;text-transform:uppercase;cursor:pointer;background:rgba(4,12,30,.95);color:var(--text);min-height:34px;transition:filter .14s,transform .12s;touch-action:manipulation;}
 .btn:hover:not(:disabled){filter:brightness(1.2);transform:translateY(-1px);}
 .btn:disabled{opacity:.35;cursor:default;}
 .bp{background:linear-gradient(120deg,#4fdfff,#6b7aff);color:#02111f;border-color:rgba(160,240,255,.8);}
