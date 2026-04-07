@@ -406,14 +406,16 @@ body{
 <div class="main" id="mainArea" style="display:none">
   <div class="question-block fade-in" id="qBlock">
 
-    <div style="display:flex;align-items:center;gap:20px;flex-wrap:wrap;">
-      <div style="flex:1;min-width:0;">
-        <div class="q-meta" id="qMeta"></div>
-        <div class="q-text" id="qText" style="margin-top:10px">…</div>
+    <div class="q-meta" id="qMeta"></div>
+    <div class="q-text" id="qText" style="margin-top:8px">…</div>
+    <!-- Фото — центрированный блок под текстом вопроса -->
+    <div id="qVisualImg" style="display:none;text-align:center;margin-top:14px"></div>
+    <!-- SVG + ребус — в строку рядом с текстом (старый layout для svg/rebus) -->
+    <div id="qVisualRow" style="display:none;margin-top:10px">
+      <div style="display:flex;align-items:center;justify-content:center;gap:20px;flex-wrap:wrap;">
+        <div id="qVisualSvg" style="flex-shrink:0;max-width:340px;display:none"></div>
+        <div id="qVisualRebus" style="flex-shrink:0;max-width:540px;display:none;align-self:center"></div>
       </div>
-      <!-- Правая колонка: SVG иллюстрация или ребус-плитки -->
-      <div id="qVisualSvg" style="flex-shrink:0;max-width:340px;display:none"></div>
-      <div id="qVisualRebus" style="flex-shrink:0;max-width:540px;display:none;align-self:center"></div>
     </div>
 
     <!-- Варианты (скрыты до раскрытия) -->
@@ -1045,15 +1047,20 @@ function renderQ(s){
 
   // Визуальный блок
   const visSvg=$("qVisualSvg"); const visRebus=$("qVisualRebus");
+  const visImg=$("qVisualImg"); const visRow=$("qVisualRow");
   visSvg.innerHTML=""; visSvg.style.display="none";
   visRebus.innerHTML=""; visRebus.style.display="none";
+  visImg.innerHTML=""; visImg.style.display="none";
+  if(visRow) visRow.style.display="none";
   if(q.tp==="svg"&&q.svg&&SVG_URLS[q.svg]){
+    if(visRow) visRow.style.display="";
     visSvg.style.display="";
     visSvg.innerHTML=`<div class="q-illus"><div class="q-svg-wrap">${SVG_URLS[q.svg]}</div>${q.cap?`<div class="q-caption">${q.cap}</div>`:""}</div>`;
   } else if(q.tp==="img"&&q.img){
-    visSvg.style.display="";
-    visSvg.innerHTML=`<div class="q-illus"><div style="display:flex;justify-content:center"><img src="${q.img}" style="max-height:320px;max-width:100%;border-radius:16px;object-fit:contain;box-shadow:0 6px 32px rgba(0,0,0,.7)"></div>${q.cap?`<div class="q-caption" style="text-align:center;margin-top:8px">${q.cap}</div>`:""}</div>`;
+    visImg.style.display="";
+    visImg.innerHTML=`<img src="${q.img}" style="max-height:360px;max-width:80%;border-radius:18px;object-fit:contain;box-shadow:0 8px 40px rgba(0,0,0,.75)">${q.cap?`<div class="q-caption" style="margin-top:10px">${q.cap}</div>`:""}`;
   } else if(q.tp==="rebus"&&q.rp){
+    if(visRow) visRow.style.display="";
     visRebus.style.display="";
     const _w=q.opts[q.ci].toUpperCase().replace(/\s/g,'');
     const _seed=_strHash(_w);

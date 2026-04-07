@@ -246,15 +246,16 @@ tr:hover td{background:rgba(79,223,255,.03);}
 .ql-search input{width:100%;padding:7px 11px;border-radius:8px;border:1px solid rgba(79,223,255,.2);background:rgba(3,10,28,.9);color:var(--text);font-size:.8rem;outline:none;}
 .ql-search input:focus{border-color:rgba(79,223,255,.5);}
 .ql-body{overflow-y:auto;flex:1;padding:6px 8px;}
-.ql-row{display:grid;grid-template-columns:28px 22px 1fr auto;gap:7px;align-items:start;padding:8px 10px;border-radius:9px;cursor:pointer;border:1px solid transparent;margin-bottom:3px;transition:background .12s,border-color .12s;}
+.ql-row{display:grid;grid-template-columns:28px 20px 1fr;gap:6px;align-items:start;padding:7px 10px;border-radius:9px;cursor:pointer;border:1px solid transparent;margin-bottom:2px;transition:background .12s,border-color .12s;}
 .ql-row:hover{background:rgba(79,223,255,.06);border-color:rgba(79,223,255,.15);}
 .ql-row.ql-cur{background:rgba(79,223,255,.1);border-color:rgba(79,223,255,.4);}
-.ql-num{font-size:.75rem;font-weight:800;color:var(--muted);text-align:right;padding-top:1px;}
+.ql-num{font-size:.73rem;font-weight:800;color:var(--muted);text-align:right;padding-top:2px;}
 .ql-row.ql-cur .ql-num{color:var(--accent);}
-.ql-tp{font-size:.8rem;line-height:1.5;text-align:center;}
-.ql-text{font-size:.78rem;line-height:1.4;color:var(--text);}
-.ql-row.ql-cur .ql-text{color:#fff;font-weight:700;}
-.ql-ans{font-size:.73rem;color:var(--ok);font-weight:600;white-space:nowrap;padding-top:1px;}
+.ql-tp{font-size:.78rem;text-align:center;padding-top:2px;}
+.ql-cell{display:flex;flex-direction:column;gap:2px;min-width:0;}
+.ql-text{font-size:.78rem;line-height:1.35;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.ql-row.ql-cur .ql-text{color:#fff;font-weight:700;white-space:normal;}
+.ql-ans{font-size:.7rem;color:var(--ok);font-weight:600;}
 .ql-row.ql-hidden{display:none;}
 .ql-count{padding:5px 14px 3px;font-size:.67rem;color:var(--muted);flex-shrink:0;}
 </style>
@@ -623,6 +624,18 @@ tr:hover td{background:rgba(79,223,255,.03);}
             <div style="font-size:.58rem;color:var(--muted);">игроков</div>
           </div>
         </div>
+      </div>
+    </div>
+
+    <!-- Комментарий ведущего -->
+    <div class="card" id="commentCard">
+      <div class="ctitle" style="cursor:pointer;user-select:none;" onclick="toggleCommentPanel()">
+        <span>🎙 Комментарий ведущего</span>
+        <span id="commentChevron" style="font-size:.7rem;opacity:.6;transition:transform .2s;">▼</span>
+      </div>
+      <div id="commentBody" style="display:none;margin-top:6px;">
+        <div id="commentText" style="font-size:.82rem;line-height:1.6;color:var(--text);background:rgba(3,10,28,.7);border:1px solid rgba(79,223,255,.15);border-radius:10px;padding:10px 12px;white-space:pre-line;min-height:60px;"></div>
+        <button onclick="copyComment()" style="margin-top:6px;width:100%;padding:5px;border-radius:7px;border:1px solid rgba(79,223,255,.2);background:rgba(79,223,255,.06);color:var(--accent);cursor:pointer;font-size:.72rem;">📋 Скопировать</button>
       </div>
     </div>
 
@@ -1687,6 +1700,7 @@ function renderQ(idx){
     row.appendChild(ltr);row.appendChild(txt);ansGrid.appendChild(row);
   });
   ansBarWrap.style.display="";
+  updateComment();
 }
 
 // ── ТАЙМЕР ────────────────────────────────────────────────────
@@ -1843,8 +1857,10 @@ function renderQList(){
     return `<div class="ql-row${isCur?' ql-cur':''}" onclick="qListJump(${i})" data-text="${(q.q||'').toLowerCase()}">
       <span class="ql-num">${i+1}</span>
       <span class="ql-tp">${_qlTypeIcon[q.tp]||'❓'}</span>
-      <span class="ql-text">${q.q||'—'}</span>
-      <span class="ql-ans">✅ ${ans}</span>
+      <div class="ql-cell">
+        <span class="ql-text">${q.q||'—'}</span>
+        <span class="ql-ans">✅ ${ans}</span>
+      </div>
     </div>`;
   }).join('');
   cnt.textContent=`Всего вопросов: ${Q.length}`;
@@ -2001,6 +2017,56 @@ if(_btnSE)_btnSE.addEventListener("click",async()=>{
 
 // ── ПАНЕЛЬ СТАТИСТИКИ ───────────────────────────────────────
 let _statsPanelOpen=false;
+/* ===== КОММЕНТАРИЙ ВЕДУЩЕГО ===== */
+let _commentOpen=false;
+function toggleCommentPanel(){
+  _commentOpen=!_commentOpen;
+  const body=document.getElementById('commentBody');
+  const chev=document.getElementById('commentChevron');
+  if(body)body.style.display=_commentOpen?'':'none';
+  if(chev)chev.style.transform=_commentOpen?'rotate(180deg)':'';
+  if(_commentOpen)updateComment();
+}
+function updateComment(){
+  if(!_commentOpen)return;
+  const el=document.getElementById('commentText');
+  if(!el)return;
+  const idx=lastState?.current_index;
+  const phase=lastState?.phase||'waiting';
+  if(phase==='waiting'||idx==null||!Q||!Q[idx]){el.textContent="Игра ещё не началась. Ожидаем участников.";return;}
+  if(phase==='ended'){el.textContent="Игра завершена! Благодарим всех участников.";return;}
+  if(phase==='paused'){el.textContent="Игра на паузе.";return;}
+  const q=Q[idx];
+  const typeNames={text:'текстовый вопрос',svg:'вопрос с иллюстрацией',img:'вопрос с фотографией',rebus:'ребус — анаграмма',survey:'раунд 100 к 1'};
+  const diffStr=q.dif<=1?'простой (1 звезда)':q.dif===2?'средней сложности (2 звезды)':'сложный (3 звезды)';
+  const p=pts(q.dif);
+  const ptsTxt=`${p} очк${p===1?'о':p<5?'а':'ов'}`;
+  const letter=q.opts?String.fromCharCode(65+q.ci):'';
+  const ans=q.opts?q.opts[q.ci]:'—';
+  const ok=parseInt(document.getElementById('statsQOk')?.textContent)||0;
+  const err=parseInt(document.getElementById('statsQErr')?.textContent)||0;
+  const total_ans=ok+err;
+  let lines=[];
+  lines.push(`Вопрос ${idx+1} из ${Q.length} — ${typeNames[q.tp]||'вопрос'}, ${diffStr}, стоит ${ptsTxt}.`);
+  lines.push(`Задание: «${q.q}»`);
+  if(q.tp!=='survey') lines.push(`Правильный ответ: ${letter} — ${ans}.`);
+  if(total_ans>0){
+    const pct=Math.round(ok/total_ans*100);
+    lines.push(`Ответили ${total_ans} ${total_ans===1?'игрок':total_ans<5?'игрока':'игроков'}: ${ok} верно (${pct}%), ${err} неверно.`);
+  } else {
+    lines.push('Пока никто не ответил.');
+  }
+  // Топ игрок
+  const topEl=document.querySelector('#statsTopList div');
+  if(topEl){const nm=topEl.querySelector('span:first-child');const sc=topEl.querySelector('span:last-child');if(nm&&sc)lines.push(`Лидирует: ${nm.textContent.trim()} — ${sc.textContent.trim()} очков.`);}
+  el.textContent=lines.join('\n');
+}
+function copyComment(){
+  const el=document.getElementById('commentText');
+  if(!el)return;
+  navigator.clipboard?.writeText(el.textContent).catch(()=>{});
+}
+/* ================================ */
 function toggleStatsPanel(){
   _statsPanelOpen=!_statsPanelOpen;
   const body=document.getElementById('statsPanelBody');
@@ -2097,6 +2163,7 @@ async function refreshAnswered(){
     if(!det){det=document.createElement("div");det.id="ans-detail";det.style.cssText="font-size:.72rem;margin-top:5px;display:flex;flex-wrap:wrap;gap:3px;";ansBarWrap.appendChild(det);}
     det.innerHTML=answered.map(a=>`<span style="padding:1px 6px;border-radius:999px;background:rgba(97,255,178,.15);border:1px solid rgba(97,255,178,.35);color:var(--ok);">✓ ${esc(a.student_name||a.team_name)}</span>`).join("")
       +notAnswered.map(p=>`<span style="padding:1px 6px;border-radius:999px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);color:var(--muted);">⏳ ${esc(p.student_name)}</span>`).join("");
+    updateComment();
   }catch(e){}
 }
 
