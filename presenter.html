@@ -240,6 +240,20 @@ tr:hover td{background:rgba(79,223,255,.03);}
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Ведущий">
+<!-- iOS не показывает A2HS промпт автоматически — показываем свой баннер -->
+<style>
+#pwa-banner{position:fixed;bottom:16px;left:50%;transform:translateX(-50%);z-index:9000;
+  background:rgba(8,18,40,.97);border:1px solid rgba(79,223,255,.4);border-radius:14px;
+  padding:10px 16px;display:flex;align-items:center;gap:10px;max-width:340px;width:calc(100% - 32px);
+  box-shadow:0 8px 32px rgba(0,0,0,.5);animation:slideUp .3s ease;}
+@keyframes slideUp{from{opacity:0;transform:translateX(-50%) translateY(20px)}to{opacity:1;transform:translateX(-50%) translateY(0)}}
+#pwa-banner img{width:36px;height:36px;border-radius:8px;flex-shrink:0;}
+#pwa-banner-text{flex:1;font-size:.75rem;line-height:1.35;color:#e8f4ff;}
+#pwa-banner-text b{color:#4fdfff;display:block;font-size:.82rem;margin-bottom:2px;}
+#pwa-banner-close{background:none;border:none;color:rgba(168,200,232,.5);cursor:pointer;font-size:1.1rem;padding:4px;flex-shrink:0;line-height:1;}
+#pwa-banner-close:hover{color:#fff;}
+</style>
 <meta name="apple-mobile-web-app-title" content="КвизЦентр — Ведущий">
 <meta name="theme-color" content="#1a2f4a">
 <link rel="apple-touch-icon" href="icon-presenter-192.png">
@@ -264,6 +278,23 @@ tr:hover td{background:rgba(79,223,255,.03);}
 </script>
 </head>
 <body>
+
+<!-- A2HS баннер для iOS/iPadOS -->
+<div id="pwa-banner" style="display:none">
+  <img src="icon-presenter-192.png" alt="">
+  <div id="pwa-banner-text"><b>Установить как приложение</b>Нажми <strong>Поделиться → На экран «Домой»</strong> чтобы запускать без браузера</div>
+  <button id="pwa-banner-close" onclick="document.getElementById('pwa-banner').style.display='none';localStorage.setItem('pwa-banner-dismissed','1')">×</button>
+</div>
+<script>
+(function(){
+  const isIOS=/iPad|iPhone|iPod/.test(navigator.userAgent)||('ontouchstart' in window&&navigator.maxTouchPoints>1&&/Mac/.test(navigator.platform));
+  const isStandalone=window.navigator.standalone===true||window.matchMedia('(display-mode:standalone)').matches;
+  const dismissed=localStorage.getItem('pwa-banner-dismissed');
+  if(isIOS&&!isStandalone&&!dismissed){
+    setTimeout(()=>{ document.getElementById('pwa-banner').style.display='flex'; }, 3000);
+  }
+})();
+</script>
 
 <!-- OVERLAY ПОДГОТОВКИ — показывается при открытии страницы -->
 

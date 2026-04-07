@@ -6,9 +6,10 @@
   "start_url": "presenter.html",
   "scope": ".",
   "display": "standalone",
-  "background_color": "#1a2f4a",
+  "display_override": ["standalone", "minimal-ui"],
+  "background_color": "#0f1e35",
   "theme_color": "#4fdfff",
-  "orientation": "landscape",
+  "orientation": "any",
   "lang": "ru",
   "categories": ["education"],
   "icons": [
