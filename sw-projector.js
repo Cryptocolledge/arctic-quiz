@@ -42,7 +42,7 @@ self.addEventListener('fetch', e => {
     caches.match(e.request).then(cached => {
       if (cached) return cached;
       return fetch(e.request).then(r => {
-        if (r.ok && e.request.url.match(/\.(js|css|png|ico|mp3|svg)(\?|$)/)) {
+        if (r.ok && r.status===200 && e.request.url.match(/\.(js|css|png|ico|mp3|svg|jpg|jpeg|webp)(\?|$)/)) {
           const cl = r.clone();
           caches.open(CACHE).then(c => c.put(e.request, cl));
         }

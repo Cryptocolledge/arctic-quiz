@@ -1643,11 +1643,9 @@ function esc(s){return String(s??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').
 // ── РЕНДЕР ВОПРОСА ────────────────────────────────────────────
 function renderQ(idx){
   const q=Q[Math.max(0,Math.min(Q.length-1,idx))];if(!q)return;
-  // Обновляем подсветку текущего вопроса в панели если она открыта
+  // Обновляем подсветку текущего вопроса в панели если она открыта (без скролла — пользователь сам скроллит)
   if(document.getElementById('qListPanel')?.classList.contains('open')){
     document.querySelectorAll('#qListBody .ql-row').forEach((r,i)=>{r.classList.toggle('ql-cur',i===idx);});
-    const curRow=document.querySelector('#qListBody .ql-row.ql-cur');
-    if(curRow)curRow.scrollIntoView({block:'nearest',behavior:'smooth'});
   }
   qChipType.textContent=q.tp==="survey"?"🎲 100к1":q.tp==="rebus"?"Ребус":q.tp==="img"?"🖼 Фото":"Вопрос";
   const p=pts(q.dif);qChipPts.textContent="+"+p+" очк"+(p===1?"о":p<5?"а":"ов");
@@ -3563,6 +3561,7 @@ function showModeHint(title, text){
   setTimeout(()=>d.remove(), 5000);
 }
 
+let currentSessionCode = localStorage.getItem("sessionCode") || generateSessionCode();
 applyPresenterMode();
 
 // ── ВЫБОР КВИЗА В ПРЕЗЕНТЕРЕ ─────────────────────────────────
@@ -3641,8 +3640,6 @@ function generateSessionCode(){
   for(let i=0;i<4;i++) code+=digits[Math.floor(Math.random()*digits.length)];
   return code;
 }
-
-let currentSessionCode = localStorage.getItem("sessionCode") || generateSessionCode();
 
 function saveSessionCode(code){
   currentSessionCode = code;
