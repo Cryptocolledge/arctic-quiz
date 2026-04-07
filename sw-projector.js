@@ -1,7 +1,15 @@
-const CACHE = 'quizhub-proj-v1';
+const CACHE = 'quizhub-proj-v2';
+const CORE = [
+  'projector.html',
+  'gagarin.jpg',
+  'RIAN_archive_612748_Valentina_Tereshkova.jpg',
+  'SPUTNIK_original.jpg'
+];
 
 self.addEventListener('install', e => {
-  e.waitUntil(self.skipWaiting());
+  e.waitUntil(
+    caches.open(CACHE).then(c => c.addAll(CORE)).then(() => self.skipWaiting())
+  );
 });
 
 self.addEventListener('activate', e => {

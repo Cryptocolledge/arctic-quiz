@@ -8,7 +8,10 @@ const CORE = [
   'wrong-1.mp3',
   'Endgame music.mp3',
   'Blic new.mp3',
-  'Stavki new.mp3'
+  'Stavki new.mp3',
+  'gagarin.jpg',
+  'RIAN_archive_612748_Valentina_Tereshkova.jpg',
+  'SPUTNIK_original.jpg'
 ];
 
 self.addEventListener('install', e => {
