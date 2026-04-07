@@ -1819,7 +1819,7 @@ async function ups(patch){
     round_type:lastState?.round_type||null,
     bet_question_index:lastState?.bet_question_index??null,
     bet_correct_index:lastState?.bet_correct_index??null,
-    session_code:lastState?.session_code||null,
+    session_code:lastState?.session_code||currentSessionCode||null,
     question_visible:lastState?.question_visible!==undefined?lastState.question_visible:true,
     shuffle_seed:lastState?.shuffle_seed??0,
     game_timer:lastState?.game_timer??QT,
@@ -2423,12 +2423,15 @@ async function initPrep(){
     prepBtnStart.disabled=false;
 
     // Синхронизируем session_code из БД — чтобы разные устройства (планшет+ПК) показывали один код
-    if(s&&s.session_code){
-      saveSessionCode(s.session_code);
-      updateQRBlock();
-    } else if(s){
-      // В БД нет кода — записываем наш (первый запуск)
-      ups({session_code:currentSessionCode});
+    if(s){
+      lastState=s; // устанавливаем до начала sync-loop чтобы ups() мог использовать session_code
+      if(s.session_code){
+        saveSessionCode(s.session_code);
+        updateQRBlock();
+      } else {
+        // В БД нет кода — записываем наш (первый запуск)
+        ups({session_code:currentSessionCode});
+      }
     }
 
     if(s&&s.phase&&s.phase!=="waiting"){
@@ -2601,6 +2604,10 @@ async function generatePdfReport(){
   if(!sb){alert("Нет соединения");return;}
   const btn=$("btnPdfReport");
   btn.textContent="Генерация...";btn.disabled=true;
+  // Открываем окно СИНХРОННО (до любых await) — иначе iOS/Safari блокирует window.open
+  const isIOS=/iPad|iPhone|iPod/.test(navigator.userAgent)||('ontouchstart' in window&&/Mac/.test(navigator.platform)&&navigator.maxTouchPoints>1);
+  const desktopWin = isIOS ? null : window.open("","_blank","width=980,height=760");
+  if(desktopWin) desktopWin.document.write('<html><body style="background:#1a2f4a;color:#fff;font-family:sans-serif;padding:30px;text-align:center"><p style="font-size:1.2rem">⏳ Загрузка данных…</p></body></html>');
   try{
     const [{data:scores},{data:players}] = await Promise.all([
       sb.from("quiz_scores").select("*").eq("game_id",GID).order("score",{ascending:false}),
@@ -2834,17 +2841,36 @@ ${topBlock}
 </body></html>`;
 
     const blob = new Blob([html], {type:"text/html;charset=utf-8"});
-    const blobUrl = URL.createObjectURL(blob);
-    const w = window.open(blobUrl,"_blank","width=980,height=760");
-    if(w){ setTimeout(()=>{ w.print(); }, 900); }
-    const a = document.createElement("a");
-    a.href = blobUrl;
     const safeQid = qid.replace(/[^a-z0-9]/gi,"_");
-    a.download = `kviz_${safeQid}_protokol_`+now.toLocaleDateString("ru-RU").replace(/\./g,"-")+".html";
-    a.style.cssText="position:fixed;bottom:80px;right:20px;z-index:9999;padding:10px 18px;background:linear-gradient(120deg,#61ffb2,#00c97a);color:#012010;border-radius:999px;font-weight:800;font-size:.85rem;text-decoration:none;box-shadow:0 4px 20px rgba(97,255,178,.4)";
-    a.textContent="⬇ Скачать HTML протокол";
-    document.body.appendChild(a);
-    setTimeout(()=>a.remove(), 12000);
+    const fileName = `kviz_${safeQid}_protokol_`+now.toLocaleDateString("ru-RU").replace(/\./g,"-")+".html";
+
+    if(desktopWin){
+      // ПК: записываем в уже открытое окно и печатаем
+      desktopWin.document.open();desktopWin.document.write(html);desktopWin.document.close();
+      setTimeout(()=>desktopWin.print(), 900);
+    } else {
+      // Планшет/iOS: скачиваем файл + предлагаем поделиться
+      const blobUrl=URL.createObjectURL(blob);
+      // Кнопка скачивания
+      const a=document.createElement("a");
+      a.href=blobUrl; a.download=fileName;
+      a.style.cssText="position:fixed;bottom:130px;right:20px;z-index:9999;padding:12px 20px;background:linear-gradient(120deg,#61ffb2,#00c97a);color:#012010;border-radius:999px;font-weight:800;font-size:.9rem;text-decoration:none;box-shadow:0 4px 20px rgba(97,255,178,.4)";
+      a.textContent="⬇ Скачать протокол";
+      document.body.appendChild(a);
+      // Web Share API — AirDrop / почта / другие приложения
+      if(navigator.canShare){
+        const file=new File([blob],fileName,{type:"text/html"});
+        if(navigator.canShare({files:[file]})){
+          const shareBtn=document.createElement("button");
+          shareBtn.style.cssText="position:fixed;bottom:70px;right:20px;z-index:9999;padding:12px 20px;background:linear-gradient(120deg,#4fdfff,#6b7aff);color:#02111f;border:none;border-radius:999px;font-weight:800;font-size:.9rem;cursor:pointer;box-shadow:0 4px 20px rgba(79,223,255,.4)";
+          shareBtn.textContent="📤 Поделиться / AirDrop";
+          shareBtn.onclick=()=>navigator.share({files:[file],title:fileName}).catch(()=>{});
+          document.body.appendChild(shareBtn);
+          setTimeout(()=>shareBtn.remove(),20000);
+        }
+      }
+      setTimeout(()=>a.remove(),20000);
+    }
   }catch(err){
     alert("Ошибка генерации: "+err.message);
   }finally{
