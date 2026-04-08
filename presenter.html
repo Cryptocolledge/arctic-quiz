@@ -3804,10 +3804,7 @@ updateQRBlock();
 const PRESENTER_PWD = "arctic2025";
 
 function _presCheckAuth(){
-  // Пароль требуется всегда при каждом открытии
-  try{ sessionStorage.removeItem("pres_authed"); }catch(e){}
-  try{ localStorage.removeItem("hub_auth_ts"); }catch(e){}
-  return false;
+  try{ return localStorage.getItem("pres_authed")==="1"; }catch(e){ return false; }
 }
 
 function _presShowLock(){
@@ -3825,7 +3822,7 @@ function _presLogin(){
   const lock = document.getElementById("presLock");
   if(!inp||!err||!lock) return;
   if(inp.value.trim() === PRESENTER_PWD){
-    try{ sessionStorage.setItem("pres_authed","1"); }catch(e){}
+    try{ localStorage.setItem("pres_authed","1"); }catch(e){}
     lock.style.display = "none";
     document.getElementById("prepOv").style.display = "flex";
     initPrep(); // <-- запускаем после входа
