@@ -726,12 +726,12 @@ tr:hover td{background:rgba(79,223,255,.03);}
     <div class="help-sec-title" onclick="toggleHelp('h1')">🚀 Шаг 1 — Подготовка перед игрой <span style="margin-left:auto;font-size:.8rem;opacity:.6">▼</span></div>
     <div class="help-sec-body" id="h1">
       <div class="help-step"><div class="help-num">1</div><div class="help-step-text">При открытии presenter.html появляется <b>экран подготовки</b>. Дождитесь надписи <b style="color:var(--ok)">✓ Подключено</b> — без этого игра не начнётся.</div></div>
-      <div class="help-step"><div class="help-num">2</div><div class="help-step-text">Выберите <b>режим квиза</b>: <span class="help-btn-chip">🎓 СПО / Колледж</span> — средний/сложный уровень, или <span class="help-btn-chip">🏫 Школьники</span> — базовый уровень. <b>Выбор влияет на все вопросы!</b></div></div>
-      <div class="help-step"><div class="help-num">3</div><div class="help-step-text">Выберите <b>режим проведения</b>: <span class="help-btn-chip">🖥 Очно</span> — таймер 20 сек, варианты ответов перемешаны у каждого игрока; <span class="help-btn-chip" style="background:rgba(167,139,250,.12);border-color:rgba(167,139,250,.3);color:#c4b5fd">🌐 Онлайн</span> — таймер 35 сек, вопрос скрыт до вашего нажатия.</div></div>
-      <div class="help-step"><div class="help-num">4</div><div class="help-step-text">Игроки открывают <b>hub.html</b> — это главная страница. Они выбирают квиз, вводят <b>код игры</b> или сканируют <b>QR-код</b> и регистрируются. Нажмите <span class="help-btn-chip green">🎮 Открыть для игрока</span> чтобы открыть hub.html в новой вкладке.</div></div>
-      <div class="help-step"><div class="help-num">5</div><div class="help-step-text">Дождитесь пока все игроки зарегистрируются — счётчик <b>Зарегистрировано игроков</b> покажет их число. Зелёная точка = игрок онлайн.</div></div>
+      <div class="help-step"><div class="help-num">2</div><div class="help-step-text">Выберите <b>квиз</b>: 🧊 Арктика · 🌿 Экология · 📜 История · 🎖 Патриотика · 🔬 Наука · 🌍 География · 🚀 Космос · 🏆 Спорт — каждый квиз имеет два уровня сложности.</div></div>
+      <div class="help-step"><div class="help-num">3</div><div class="help-step-text">Выберите <b>уровень</b>: <span class="help-btn-chip">🏫 Школьники (5–9 кл.)</span> — базовый, или <span class="help-btn-chip">🎓 СПО / Колледж</span> — средний/сложный. <b>Выбор влияет на все вопросы!</b></div></div>
+      <div class="help-step"><div class="help-num">4</div><div class="help-step-text">Выберите <b>режим проведения</b>: <span class="help-btn-chip">🖥 Очно</span> — таймер 45 сек, варианты перемешаны; <span class="help-btn-chip" style="background:rgba(167,139,250,.12);border-color:rgba(167,139,250,.3);color:#c4b5fd">🌐 Онлайн</span> — таймер 25 сек, вопрос скрыт до вашего нажатия.</div></div>
+      <div class="help-step"><div class="help-num">5</div><div class="help-step-text">Игроки заходят на сайт и вводят <b>код игры</b> (показан в топбаре) или сканируют QR. Дождитесь пока все зарегистрируются — зелёная точка = игрок онлайн.</div></div>
       <div class="help-step"><div class="help-num">6</div><div class="help-step-text">Нажмите <span class="help-btn-chip green">▶ Начать новую игру</span> — квиз запустится!</div></div>
-      <div class="help-tip">💡 <b>Для очного режима:</b> откройте projector.html на втором экране/проекторе кнопкой <span class="help-btn-chip gold">🖥 Проектор</span> в топбаре — там только вопрос и варианты крупным шрифтом.</div>
+      <div class="help-tip">💡 <b>Для очного режима:</b> откройте проектор кнопкой <span class="help-btn-chip gold">🖥 Проектор</span> в топбаре — на втором экране появится вопрос крупным шрифтом.</div>
     </div>
   </div>
 
@@ -745,11 +745,13 @@ tr:hover td{background:rgba(79,223,255,.03);}
         <div class="help-step"><div class="help-step-text"><span class="help-btn-chip">🔓 Показать ответ</span><br>Раскрывает правильный ответ игрокам. Очки начисляются автоматически.</div></div>
         <div class="help-step"><div class="help-step-text"><span class="help-btn-chip">◀ Назад</span><br>Вернуться на предыдущий вопрос (таймер перезапускается).</div></div>
         <div class="help-step"><div class="help-step-text"><span class="help-btn-chip red">✕ Сброс</span><br>Полный сброс игры. Подтверждается кнопкой в диалоге.</div></div>
-        <div class="help-step"><div class="help-step-text"><span class="help-btn-chip green" style="background:rgba(79,223,255,.12);color:#cff6ff">👁 Показать вопрос</span><br><b>Только онлайн-режим.</b> Открывает вопрос для игроков и запускает таймер.</div></div>
+        <div class="help-step"><div class="help-step-text"><span class="help-btn-chip" style="background:rgba(79,223,255,.12);color:#cff6ff">👁 Показать вопрос</span><br><b>Только онлайн-режим.</b> Открывает вопрос для игроков и запускает таймер.</div></div>
+        <div class="help-step"><div class="help-step-text"><span class="help-btn-chip">📋 Вопросы</span><br>Панель со всеми вопросами и ответами. Клик по вопросу — прыжок на него. Есть поиск.</div></div>
+        <div class="help-step"><div class="help-step-text"><span class="help-btn-chip red">🔒 Выйти</span><br>Сбросить авторизацию. При следующем открытии потребуется пароль.</div></div>
       </div>
-      <div class="help-tip">💡 <b>Рекомендуемый порядок:</b> нажать <b>Далее ▶</b> → дать время прочитать → таймер сам отсчитывает → нажать <b>🔓 Показать ответ</b> → обсудить → снова <b>Далее ▶</b></div>
-      <div class="help-tip" style="background:rgba(97,255,178,.06);border-color:rgba(97,255,178,.2);">🌿 <b>Выбор квиза:</b> В блоке «Режим квиза» выберите тему — <b>🧊 Арктика</b> или <b>🌿 Экология</b>. Игроки увидят вопросы именно выбранного квиза. Один код — один квиз!</div>
-      <div class="help-warn">⚠️ <b>Онлайн-режим:</b> после нажатия «Далее ▶» вопрос у игроков скрыт — не забудьте нажать <b>👁 Показать вопрос</b> когда будете готовы запустить таймер!</div>
+      <div class="help-tip">💡 <b>Рекомендуемый порядок:</b> <b>Далее ▶</b> → таймер идёт → <b>🔓 Показать ответ</b> → обсудить → снова <b>Далее ▶</b></div>
+      <div class="help-tip" style="background:rgba(97,255,178,.06);border-color:rgba(97,255,178,.2);">📋 <b>Совет:</b> откройте панель <b>Вопросы</b> — там виден список всех вопросов с правильными ответами. Можно искать по тексту и прыгать на любой вопрос кликом.</div>
+      <div class="help-warn">⚠️ <b>Онлайн-режим:</b> после «Далее ▶» вопрос у игроков скрыт — не забудьте нажать <b>👁 Показать вопрос</b> чтобы запустить таймер!</div>
     </div>
   </div>
 
@@ -757,10 +759,11 @@ tr:hover td{background:rgba(79,223,255,.03);}
   <div class="help-section">
     <div class="help-sec-title" onclick="toggleHelp('h3')">📊 Правая панель — что здесь? <span style="margin-left:auto;font-size:.8rem;opacity:.6">▼</span></div>
     <div class="help-sec-body" id="h3">
-      <div class="help-step"><div class="help-num">✋</div><div class="help-step-text"><b>Готовы к игре</b> — игроки могут нажать кнопку «Готов» или «Прошу паузу» на своём устройстве. Здесь отображаются их сигналы.</div></div>
-      <div class="help-step"><div class="help-num">✅</div><div class="help-step-text"><b>Зарегистрировались</b> — уведомления о новых участниках по мере их входа в игру.</div></div>
-      <div class="help-step"><div class="help-num">🚨</div><div class="help-step-text"><b>Вызовы</b> — если игрок нажал кнопку вызова ведущего (поднял руку). Появляется красное уведомление.</div></div>
-      <div class="help-step"><div class="help-num">💬</div><div class="help-step-text"><b>Чат</b> — переписка с игроками. Можно отправить сообщение всем, одной команде или личное. Кнопка <span class="help-btn-chip red">⚠️ Предупреждение</span> — выдать нарушителю предупреждение с готовым текстом.</div></div>
+      <div class="help-step"><div class="help-num">✅</div><div class="help-step-text"><b>Зарегистрировались</b> — уведомления о новых участниках по мере их входа. Кнопка <b>× Очистить</b> удаляет уведомления (не игроков).</div></div>
+      <div class="help-step"><div class="help-num">🚨</div><div class="help-step-text"><b>Вызовы</b> — если игрок нажал кнопку «Поднять руку». Появляется красное уведомление.</div></div>
+      <div class="help-step"><div class="help-num">📊</div><div class="help-step-text"><b>Статистика игры</b> — раскрывается кликом. Показывает: верных/неверных ответов на текущий вопрос, топ-5 игроков, средние очки и количество участников. Обновляется каждые 2 с.</div></div>
+      <div class="help-step"><div class="help-num">🎙</div><div class="help-step-text"><b>Комментарий ведущего</b> — автоматически генерируется текст для озвучки: номер вопроса, тип, правильный ответ, статистика. Можно скопировать кнопкой 📋.</div></div>
+      <div class="help-step"><div class="help-num">💬</div><div class="help-step-text"><b>Чат</b> — переписка с игроками. Можно писать всем, одной команде или лично. Кнопка <span class="help-btn-chip red">⚠️ Предупреждение</span> — предупреждение нарушителю с готовым текстом.</div></div>
     </div>
   </div>
 
@@ -768,10 +771,11 @@ tr:hover td{background:rgba(79,223,255,.03);}
   <div class="help-section">
     <div class="help-sec-title" onclick="toggleHelp('h4')">⚡ Специальные раунды <span style="margin-left:auto;font-size:.8rem;opacity:.6">▼</span></div>
     <div class="help-sec-body" id="h4">
-      <div class="help-step"><div class="help-num" style="background:rgba(249,115,22,.2);border-color:rgba(249,115,22,.5);color:#f97316">⚡</div><div class="help-step-text"><b>Блиц-раунд</b> — нажмите <span class="help-btn-chip" style="background:rgba(249,115,22,.15);border-color:rgba(249,115,22,.5);color:#f97316">⚡ Блиц</span>. Игроки самостоятельно отвечают на 10 быстрых вопросов (10 сек каждый). Вы наблюдаете в реальном времени. Нажмите «Завершить блиц» когда все ответят.</div></div>
-      <div class="help-step"><div class="help-num" style="background:rgba(167,139,250,.2);border-color:rgba(167,139,250,.5);color:#a78bfa">🎰</div><div class="help-step-text"><b>Раунд ставок</b> — нажмите <span class="help-btn-chip" style="background:rgba(167,139,250,.15);border-color:rgba(167,139,250,.5);color:#a78bfa">🎰 Ставки</span>. Игроки делают ставку (0/1/2/3 очка), затем вы открываете вопрос. Угадал → получает ×ставку; ошибся → теряет ставку.</div></div>
-      <div class="help-step"><div class="help-num" style="background:rgba(255,211,107,.2);border-color:rgba(255,211,107,.5);color:var(--gold)">⚡</div><div class="help-step-text"><b>Суперигра</b> — нажмите <span class="help-btn-chip gold">⚡ Суперигра</span> в конце квиза. Если несколько игроков набрали одинаковые очки — запускается тайбрейк с вопросом и таймером 60 сек. Кто ответит первым и правильно — победитель!</div></div>
-      <div class="help-tip">💡 Спецраунды можно запустить <b>в любой момент игры</b> — до, во время или после основных вопросов.</div>
+      <div class="help-step"><div class="help-num" style="background:rgba(249,115,22,.2);border-color:rgba(249,115,22,.5);color:#f97316">⚡</div><div class="help-step-text"><b>Блиц-раунд</b> — нажмите <span class="help-btn-chip" style="background:rgba(249,115,22,.15);border-color:rgba(249,115,22,.5);color:#f97316">⚡ Блиц</span>. Игроки самостоятельно отвечают на 10 быстрых вопросов (10 сек каждый). Верный ответ = +0.5 очка. Запускается анонс с анимацией ⚡.</div></div>
+      <div class="help-step"><div class="help-num" style="background:rgba(167,139,250,.2);border-color:rgba(167,139,250,.5);color:#a78bfa">🎰</div><div class="help-step-text"><b>Раунд ставок</b> — нажмите <span class="help-btn-chip" style="background:rgba(167,139,250,.15);border-color:rgba(167,139,250,.5);color:#a78bfa">🎰 Ставки</span>. Игроки делают ставку 0/1/2/3 очка, затем вы открываете вопрос. Угадал → +ставка; ошибся → −ставка. Запускается анонс с анимацией 💎.</div></div>
+      <div class="help-step"><div class="help-num" style="background:rgba(255,211,107,.2);border-color:rgba(255,211,107,.5);color:var(--gold)">🏆</div><div class="help-step-text"><b>Суперигра</b> — нажмите <span class="help-btn-chip gold">⚡ Суперигра</span> в конце квиза. Тайбрейк-вопрос с таймером 60 сек — кто ответит первым и правильно, тот побеждает!</div></div>
+      <div class="help-step"><div class="help-num">🎲</div><div class="help-step-text"><b>100 к 1</b> — вопросы типа «Назовите…» со свободным ответом. Игроки пишут текстом. Вы последовательно открываете топ-5 ответов кнопкой <b>Открыть ответ</b>. Очки за попадание в список.</div></div>
+      <div class="help-tip">💡 Спецраунды можно запустить <b>в любой момент игры</b> — не только в конце.</div>
     </div>
   </div>
 
@@ -779,10 +783,11 @@ tr:hover td{background:rgba(79,223,255,.03);}
   <div class="help-section">
     <div class="help-sec-title" onclick="toggleHelp('h45')">🎬 Шоу и музыка <span style="margin-left:auto;font-size:.8rem;opacity:.6">▼</span></div>
     <div class="help-sec-body" id="h45">
-      <div class="help-step"><div class="help-num">🎬</div><div class="help-step-text"><b>Кнопка «🎬 Шоу!»</b> — запускает пафосное вступление на проекторе: полноэкранная анимация с музыкой <b>Startgame.mp3</b>. Нажмите перед первым вопросом. После окончания проектор вернётся к экрану ожидания.</div></div>
-      <div class="help-step"><div class="help-num">🖥</div><div class="help-step-text"><b>Проектор (очный режим)</b> — до нажатия «Шоу!» проектор показывает <b>экран ожидания</b> с кодом игры и играет фоновую музыку <b>DRIVE</b>. Во время игры — фоновый <b>Amarok</b>. Блиц запускает <b>Blic new</b>, ставки — <b>Stavki new</b>, конец игры — <b>Endgame</b>.</div></div>
-      <div class="help-step"><div class="help-num">🎵</div><div class="help-step-text"><b>Плейлист ведущего</b> — нажмите <span class="help-btn-chip">🎵 Музыка</span> в топбаре. Загрузите mp3-файлы с компьютера, управляйте воспроизведением внутри панели. Включите <b>📡 Транслировать игрокам</b> — и они услышат музыку на своих устройствах.</div></div>
-      <div class="help-step"><div class="help-num">🔔</div><div class="help-step-text"><b>Звуки ответов у игроков</b> — правильный ответ: <b>respuesta-correcta.mp3</b>; неправильный: <b>wrong-1.mp3</b>. Тики таймера и сигналы генерируются через Web Audio API — без файлов.</div></div>
+      <div class="help-step"><div class="help-num">🎬</div><div class="help-step-text"><b>«🎬 Шоу + правила»</b> — запускает цепочку на проекторе: вступительная анимация (Startgame.mp3) → экран «ВНИМАНИЕ! ПРАВИЛА» (10 сек) → озвучка правил (Rulesgame.mp3) → код игры на экране. Нажмите до старта.</div></div>
+      <div class="help-step"><div class="help-num">📖</div><div class="help-step-text"><b>«📖 Правила»</b> — только экран правил с озвучкой, без вступительного шоу. Удобно если шоу уже было показано.</div></div>
+      <div class="help-step"><div class="help-num">🖥</div><div class="help-step-text"><b>Проектор (очный режим)</b> — до шоу: экран ожидания с музыкой DRIVE. Во время игры: фоновый Amarok. Блиц → Blic new; ставки → Stavki new; конец → Endgame music.</div></div>
+      <div class="help-step"><div class="help-num">🔊</div><div class="help-step-text"><b>«🔊 Звук проектора»</b> — мутирует/размутирует фоновую музыку на проекторе (через БД). Громкость проектора регулируется ползунком в панели Музыка.</div></div>
+      <div class="help-step"><div class="help-num">🎵</div><div class="help-step-text"><b>Плейлист ведущего</b> — нажмите <span class="help-btn-chip">🎵 Музыка</span>. Загрузите mp3, управляйте воспроизведением. Включите <b>📡 Транслировать игрокам</b> — игроки услышат музыку на своих устройствах (только онлайн-режим).</div></div>
     </div>
   </div>
 
@@ -795,11 +800,12 @@ tr:hover td{background:rgba(79,223,255,.03);}
         <div class="help-step"><div class="help-step-text">⭐⭐ <b>Средний (★★☆)</b> — 2 очка</div></div>
         <div class="help-step"><div class="help-step-text">⭐⭐⭐ <b>Сложный (★★★)</b> — 3 очка</div></div>
         <div class="help-step"><div class="help-step-text">⚡ <b>Блиц-вопрос</b> — 0.5 очка</div></div>
-        <div class="help-step"><div class="help-step-text">🔥 <b>Серия ×3 подряд</b> — бонус +0.5 очка</div></div>
-        <div class="help-step"><div class="help-step-text red">⏰ <b>Не ответил вовремя</b> — штраф −0.5 очка</div></div>
-        <div class="help-step"><div class="help-step-text">🔄 <b>Смена ответа</b> — 1-я раз бесплатно, каждая следующая −0.5 очка</div></div>
-        <div class="help-step"><div class="help-step-text">🎰 <b>Ставки</b> — угадал: +ставка, ошибся: −ставка (0/1/2/3 очка)</div></div>
+        <div class="help-step"><div class="help-step-text">🔥 <b>Серия ×3 правильных подряд</b> — бонус +0.5</div></div>
+        <div class="help-step"><div class="help-step-text">💀 <b>Серия ×5 подряд</b> — кража −1 очка у лидера</div></div>
+        <div class="help-step"><div class="help-step-text">🔄 <b>Смена ответа</b> — 1-я раз бесплатно, каждая следующая −0.5</div></div>
+        <div class="help-step"><div class="help-step-text">🎰 <b>Ставки</b> — угадал: +ставка, ошибся: −ставка (0–3 очка)</div></div>
       </div>
+      <div class="help-tip">💡 Очки начисляются сразу при ответе игрока, не ждут «Показать ответ». При повторном открытии страницы очки восстанавливаются из базы.</div>
     </div>
   </div>
 
@@ -807,17 +813,14 @@ tr:hover td{background:rgba(79,223,255,.03);}
   <div class="help-section">
     <div class="help-sec-title" onclick="toggleHelp('h6')">📄 PDF-протокол и завершение <span style="margin-left:auto;font-size:.8rem;opacity:.6">▼</span></div>
     <div class="help-sec-body" id="h6">
-      <div class="help-step"><div class="help-num">1</div><div class="help-step-text">После окончания квиза нажмите <span class="help-btn-chip green">📄 PDF</span> в правом верхнем углу — откроется страница протокола с итоговой таблицей.</div></div>
-      <div class="help-step"><div class="help-num">2</div><div class="help-step-text">В открывшемся окне нажмите <b>Ctrl+P</b> (или Cmd+P на Mac) → выберите <b>«Сохранить как PDF»</b> → готово!</div></div>
-      <div class="help-step"><div class="help-num">3</div><div class="help-step-text">Дополнительно появляется кнопка <b>«⬇ Скачать HTML-файл»</b> — сохраняет протокол как файл на компьютер.</div></div>
-      <div class="help-tip">💡 Протокол содержит: дату/время, режим, итоговую таблицу с очками и временем ответов, список всех участников.</div>
+      <div class="help-step"><div class="help-num">1</div><div class="help-step-text">После окончания квиза нажмите <span class="help-btn-chip green">📄 PDF</span> в топбаре — откроется страница протокола с итоговой таблицей результатов.</div></div>
+      <div class="help-step"><div class="help-num">2</div><div class="help-step-text">В открывшемся окне нажмите <b>Ctrl+P</b> → выберите <b>«Сохранить как PDF»</b> → готово!</div></div>
+      <div class="help-step"><div class="help-num">3</div><div class="help-step-text">Дополнительно доступна кнопка <b>«⬇ Скачать HTML»</b> — сохраняет протокол файлом на компьютер.</div></div>
+      <div class="help-tip">💡 Протокол содержит: дату/время, тему квиза, уровень, итоговую таблицу с очками всех участников.</div>
     </div>
   </div>
 
-  <div style="text-align:center;padding:8px;font-size:.72rem;color:var(--muted);">
-    Нашли ошибку или есть предложение? Пишите разработчику:
-    <a href="/cdn-cgi/l/email-protection#4c3d3925360c29342d213c2029622f2321" style="color:#4fdfff;text-decoration:none;"><span class="__cf_email__" data-cfemail="304145594a705548515d405c551e535f5d">[email&#160;protected]</span></a>
-  </div>
+  <div style="text-align:center;padding:8px;font-size:.72rem;color:var(--muted);">КвизЦентр · cryptocolledge.github.io</div>
 
 </div>
 </div>
