@@ -1,6 +1,7 @@
-const CACHE = 'quizhub-proj-v2';
+const CACHE = 'quizhub-proj-v3';
 const CORE = [
   'projector.html',
+  'Млечный%20путь.gif',
   'gagarin.jpg',
   'RIAN_archive_612748_Valentina_Tereshkova.jpg',
   'SPUTNIK_original.jpg'

@@ -1,4 +1,4 @@
-const CACHE = 'quizhub-presenter-v5';
+const CACHE = 'quizhub-presenter-v6';
 const CORE = [
   'presenter.html',
   'manifest-presenter.json',
@@ -9,6 +9,7 @@ const CORE = [
   'Endgame music.mp3',
   'Blic new.mp3',
   'Stavki new.mp3',
+  'Млечный%20путь.gif',
   'gagarin.jpg',
   'RIAN_archive_612748_Valentina_Tereshkova.jpg',
   'SPUTNIK_original.jpg'
