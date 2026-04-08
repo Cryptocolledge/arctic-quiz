@@ -1,4 +1,4 @@
-const CACHE = 'quizhub-presenter-v4';
+const CACHE = 'quizhub-presenter-v5';
 const CORE = [
   'presenter.html',
   'manifest-presenter.json',
@@ -41,7 +41,16 @@ self.addEventListener('fetch', e => {
     );
     return;
   }
-  // Всё остальное — cache-first, затем сеть
+  // HTML — network-first (всегда свежий, чтобы изменения кода применялись сразу)
+  if(e.request.url.match(/\.html(\?|$)/) || e.request.url.endsWith('/')){
+    e.respondWith(
+      fetch(e.request, {cache:'no-cache'})
+        .then(r => { if(r.ok){ const cl=r.clone(); caches.open(CACHE).then(c=>c.put(e.request,cl)); } return r; })
+        .catch(() => caches.match(e.request))
+    );
+    return;
+  }
+  // Остальное — cache-first, затем сеть
   e.respondWith(
     caches.match(e.request).then(cached => {
       if(cached) return cached;
