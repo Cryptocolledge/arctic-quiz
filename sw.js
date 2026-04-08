@@ -1,4 +1,4 @@
-const CACHE = 'quizhub-v1';
+const CACHE = 'quizhub-v2';
 const CORE = ['hub.html', 'manifest.json'];
 
 self.addEventListener('install', e => {

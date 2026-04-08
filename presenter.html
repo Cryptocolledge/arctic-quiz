@@ -2080,12 +2080,16 @@ async function refreshStats(){
   if(!_statsPanelOpen||!sb)return;
   try{
     const idx=lastState?.current_index;
-    const[{data:scores},{data:ansStats}]=await Promise.all([
-      sb.from("quiz_scores").select("student_name,score,questions_answered").eq("game_id",GID).order("score",{ascending:false}).limit(10),
+    const[{data:scoresRaw},{data:ansStats},{data:curPlayers}]=await Promise.all([
+      sb.from("quiz_scores").select("student_name,score,questions_answered").eq("game_id",GID).order("score",{ascending:false}).limit(50),
       typeof idx==="number"
         ?sb.from("quiz_chat").select("sender_name,message").eq("game_id",GID).eq("msg_type","answer_stat")
-        :{data:[]}
+        :{data:[]},
+      sb.from("quiz_players").select("student_name,team_name").eq("game_id",GID)
     ]);
+    // Только игроки текущей сессии (cross-reference с quiz_players)
+    const pSet=new Set((curPlayers||[]).map(p=>p.student_name+'_'+(p.team_name||'')));
+    const scores=pSet.size>0?(scoresRaw||[]).filter(s=>pSet.has(s.student_name+'_'+(s.team_name||''))):(scoresRaw||[]);
     // Топ игроков
     const topEl=document.getElementById('statsTopList');
     if(topEl&&scores){
@@ -2144,7 +2148,9 @@ async function refreshAnswered(){
     if(lastState?.current_index!==idx)return;
     if(!scores)return;
     const total=players?.length||0;
-    const answered=scores.filter(s=>s.questions_answered>idx);
+    // Только текущие игроки сессии — исключаем старые записи прошлых игр
+    const pSet=new Set((players||[]).map(p=>p.student_name+'_'+(p.team_name||'')));
+    const answered=(pSet.size>0?scores.filter(s=>pSet.has(s.student_name+'_'+(s.team_name||''))):scores).filter(s=>s.questions_answered>idx);
     const notAnswered=(players||[]).filter(p=>!answered.find(a=>a.student_name===p.student_name&&a.team_name===p.team_name));
     // Статистика правильных/неправильных для текущего вопроса
     const qStats=(ansStats||[]).filter(m=>{try{return JSON.parse(m.message).q===idx;}catch(e){return false;}});
