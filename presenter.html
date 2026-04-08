@@ -320,7 +320,7 @@ tr:hover td{background:rgba(79,223,255,.03);}
 </script>
 
 <!-- OVERLAY ПОДГОТОВКИ — показывается при открытии страницы -->
-
+<script>if(localStorage.getItem('pres_authed')==='1'){document.head.insertAdjacentHTML('beforeend','<style>#presLock{display:none!important}</style>');}</script>
 <div class="pres-lock" id="presLock" style="display:flex;">
   <div class="pres-lock-card">
     <div class="pres-lock-icon">🎙</div>
