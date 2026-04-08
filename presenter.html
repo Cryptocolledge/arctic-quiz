@@ -544,7 +544,7 @@ tr:hover td{background:rgba(79,223,255,.03);}
             <span class="chip" style="font-size:.65rem" id="timerChip">25 сек</span>
           </div>
         </div>
-        <div class="ans-bar-wrap" id="ansBarWrap" style="display:none;flex:0 0 auto;min-width:160px;margin:0;">
+        <div class="ans-bar-wrap" id="ansBarWrap" style="visibility:hidden;flex:0 0 auto;min-width:160px;margin:0;">
           <div class="ans-bar-lbl" style="margin-bottom:3px"><span>Ответили</span><span id="ansBarLbl">0 / 0</span></div>
           <div class="ans-bar-track"><div class="ans-bar-fill" id="ansBarFill" style="width:0%"></div></div>
         </div>
@@ -1690,7 +1690,7 @@ function renderQ(idx){
       const pts_el=document.createElement("span");pts_el.style.cssText="color:var(--gold);font-weight:700;margin-left:4px;";pts_el.textContent="+"+a.pts;
       txt.appendChild(pts_el);row.appendChild(ltr);row.appendChild(txt);ansGrid.appendChild(row);
     });
-    ansBarWrap.style.display="";
+    ansBarWrap.style.visibility="visible";
     return;
   }
   (q.opts||[]).forEach((o,i)=>{
@@ -1700,7 +1700,7 @@ function renderQ(idx){
     if(i===q.ci){const m=document.createElement("span");m.textContent=" ✓";m.style.cssText="color:var(--ok);font-weight:700;";txt.appendChild(m);}
     row.appendChild(ltr);row.appendChild(txt);ansGrid.appendChild(row);
   });
-  ansBarWrap.style.display="";
+  ansBarWrap.style.visibility="visible";
   updateComment();
 }
 
@@ -1801,7 +1801,7 @@ function applyState(s){
   else{chipPhase.textContent="⏳";chipPhase.className="chip";stPhase.textContent="Ожидание";stopPresTimer();
     // Очищаем и скрываем панель «Ответили» в режиме ожидания
     ansBarLbl.textContent="0 / 0";ansBarFill.style.width="0%";stAnswered.textContent="0 / 0";
-    ansBarWrap.style.display="none";
+    ansBarWrap.style.visibility="hidden";
     const _d=$("ans-detail");if(_d)_d.innerHTML="";
   }
   if(idx!==null){chipQ.textContent="Вопрос: "+(idx+1)+" / "+Q.length;stQ.textContent=(idx+1)+" из "+Q.length;renderQ(idx);}
@@ -2137,7 +2137,7 @@ $("btnShowQ")?.addEventListener("click",async()=>{
 async function refreshAnswered(){
   if(!sb)return;
   const phase=lastState?.phase;
-  if(!phase||phase==="waiting"||phase==="ended"||phase==="intro"||phase==="howtoplay"){ansBarWrap.style.display="none";return;}
+  if(!phase||phase==="waiting"||phase==="ended"||phase==="intro"||phase==="howtoplay"){ansBarWrap.style.visibility="hidden";return;}
   const idx=lastState?.current_index;if(typeof idx!=="number")return;
   try{
     const[{data:scores},{data:players},{data:ansStats}]=await Promise.all([
