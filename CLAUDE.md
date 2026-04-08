@@ -122,7 +122,18 @@ function pts(d){ return !d||d<=1 ? 1 : d===2 ? 2 : 3; }
 
 ## Question Types
 
-`text` — 4 варианта | `svg` — с иллюстрацией | `rebus` — анаграмма | `survey` — 100к1 со свободным ответом
+`text` — 4 варианта | `svg` — с иллюстрацией | `img` — фото | `rebus` — анаграмма | `survey` — 100к1 со свободным ответом
+
+### Тип `img` — фото-вопрос
+
+```js
+{tp:"img", dif:1, q:"Кто изображён?", img:"gagarin.jpg", cap:"Подпись под фото", opts:[...], ci:N}
+```
+
+- `img` — имя файла из корня проекта (добавить в `CORE` обоих SW и `<link rel="preload">` в `<head>` hub.html и projector.html)
+- В projector: рендерится в `#qVisualImg` (полная ширина, центрировано под текстом) — отдельно от `#qVisualRow` который используют svg/rebus
+- В hub: рендерится внутри `qillusEl`/`qsvgEl` через `<img>` тег
+- Чип в presenter: `🖼 Фото`
 
 ### Тип `rebus` — анаграмма
 
@@ -219,7 +230,13 @@ hub.html скипает ambient-звуки в очном режиме (`shuffle_
 
 ## Presenter Access
 
-`presenter.html` защищён паролем (`PRESENTER_PWD = "arctic2025"`, строка ~3488). При каждом открытии показывает форму входа — `_presCheckAuth()` всегда возвращает `false`. После успешного входа вызывается `initPrep()`.
+`presenter.html` защищён паролем (`PRESENTER_PWD = "arctic2025"`). После входа флаг `pres_authed=1` сохраняется в `localStorage` — перезагрузка страницы не требует повторного ввода пароля.
+
+**Как работает**: прямо перед `<div id="presLock">` стоит inline `<script>`, который синхронно читает `localStorage` и инжектирует `<style>#presLock{display:none!important}</style>` если авторизован. Это работает даже при кэшированном HTML (SW, CDN).
+
+**Сбросить авторизацию**: кнопка 🔒 Выйти в топбаре (очищает `localStorage` и перезагружает), либо через консоль: `localStorage.removeItem('pres_authed')`.
+
+После успешного входа вызывается `initPrep()`.
 
 ## Presenter Features
 
@@ -234,6 +251,13 @@ hub.html скипает ambient-звуки в очном режиме (`shuffle_
 ### Статистика ответов
 
 `refreshAnswered()` — поллинг каждые 2 с. Guard: при `waiting`/`ended` скрывает `ansBarWrap` (`style.display="none"`) и выходит — чтобы не мерцал счётчик. Показывает ✅/❌ статистику текущего вопроса через `quiz_chat` с `msg_type='answer_stat'`. Дедупликация: берётся **последний** ответ каждого игрока на текущий вопрос.
+
+**Важно**: `quiz_scores` накапливает записи между играми (GID="default" не меняется). `refreshAnswered()` и `refreshStats()` **обязаны** кросс-проверять результаты с `quiz_players` текущей сессии — иначе игроки прошлых игр попадут в статистику. Паттерн:
+
+```js
+const pSet = new Set((players||[]).map(p => p.student_name+'_'+(p.team_name||'')));
+const scores = pSet.size > 0 ? scoresRaw.filter(s => pSet.has(s.student_name+'_'+(s.team_name||''))) : scoresRaw;
+```
 
 `ansBarWrap` скрывается явно в трёх местах: в `refreshAnswered()` при раннем выходе, в `applyState()` в ветке waiting/else, и при сбросе в `resetQuiz()`. `renderQ()` показывает его — поэтому скрытие должно происходить **после** `renderQ()` для non-running фаз.
 
