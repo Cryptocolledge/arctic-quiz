@@ -57,7 +57,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## Key Files
 
 | Файл | Роль |
-|------|------|
+| ---- | ---- |
 | `hub.html` | Игрок: регистрация, ответы, скоринг, чат (~5000+ строк) |
 | `presenter.html` | Ведущий PWA: управление игрой, таймер, раунды |
 | `projector.html` | Большой экран: вопрос + таймер + анимации |
@@ -83,7 +83,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 `phase` в `quiz_state` управляет всеми экранами:
 
 | Phase | Состояние |
-|-------|-----------|
+| ----- | --------- |
 | `waiting` | Ожидание — проектор показывает idle-экран с DRIVE музыкой (без кода игры) |
 | `intro` | Вступительное шоу на проекторе (Startgame.mp3 + анимация) |
 | `howtoplay` | Экран правил игры на проекторе — автозапуск Rulesgame.mp3, показывает `session_code`, скрывается по окончании аудио → возврат на idle с кодом |
@@ -259,7 +259,7 @@ const pSet = new Set((players||[]).map(p => p.student_name+'_'+(p.team_name||'')
 const scores = pSet.size > 0 ? scoresRaw.filter(s => pSet.has(s.student_name+'_'+(s.team_name||''))) : scoresRaw;
 ```
 
-`ansBarWrap` скрывается явно в трёх местах: в `refreshAnswered()` при раннем выходе, в `applyState()` в ветке waiting/else, и при сбросе в `resetQuiz()`. `renderQ()` показывает его — поэтому скрытие должно происходить **после** `renderQ()` для non-running фаз.
+`ansBarWrap` использует **`visibility:hidden/visible`** (не `display:none/block`) — чтобы таймер рядом не расширялся на секунду при скрытии блока. Скрывается в трёх местах: в `refreshAnswered()` при раннем выходе, в `applyState()` в ветке waiting/else, и при сбросе в `resetQuiz()`. `renderQ()` показывает его — поэтому скрытие должно происходить **после** `renderQ()` для non-running фаз.
 
 `questions_answered` в `quiz_scores` = `Math.max(qAnswered, curIdx + 1)` — чтобы корректно работало после перезагрузки страницы.
 
@@ -288,3 +288,19 @@ Intro-анимации CSS: `introTitleReveal`, `introTitleShimmer`, `introLineE
 **Частицы intro** — реализованы через `<canvas>` + `requestAnimationFrame` (функция `_introSpawnParticles`). RAF-хэндл хранится в `_introCanvasRAF` и отменяется в `_hideIntroOverlay()`. Не использовать DOM-элементы с CSS-анимациями для частиц — это создаёт 90+ анимированных слоёв и тормозит проектор.
 
 `introParticle` и `introStarPulse` keyframes оставлены только для **idle-частиц** (emoji + dots в `_spawnIdleParticles`).
+
+## Service Workers
+
+| Файл | Область |
+| ---- | ------- |
+| `sw.js` | `hub.html` (игрок) — CACHE `quizhub-vN` |
+| `sw-presenter.js` | `presenter.html` — CACHE `quizhub-presenter-vN` |
+| `sw-projector.js` | `projector.html` — CACHE `quizhub-proj-vN` |
+
+**Стратегия**: `sw-presenter.js` и `sw-projector.js` используют **network-first для HTML** (чтобы изменения кода применялись сразу, не застревая в CDN-кэше), cache-first для медиа/шрифтов. `sw.js` (hub) — network-first для всего.
+
+**При изменении логики в HTML-файлах** нужно **сбросить кэш SW**: увеличить версию `CACHE` в соответствующем SW-файле (`quizhub-presenter-v5` → `v6` и т.д.). Иначе браузер продолжит отдавать старый HTML из кэша SW.
+
+**CORE-массив** в каждом SW — список файлов для предзагрузки при установке (картинки, аудио). При добавлении нового `tp:"img"` вопроса: добавить файл в `CORE` обоих SW (`sw-presenter.js` и `sw-projector.js`) и в `<link rel="preload">` в `<head>` hub.html и projector.html.
+
+**Ошибка 206 Partial Content**: Cache API не кэширует ответы со статусом 206. Во всех SW стоит guard `r.status===200` перед `c.put()` — не убирать.
