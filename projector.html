@@ -138,6 +138,7 @@ body{
 
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}
 @keyframes fadeIn{from{opacity:0;transform:translateY(18px) scale(.98)}to{opacity:1;transform:translateY(0) scale(1)}}
+@keyframes surveyReveal{0%{opacity:0;transform:translateY(-16px) scale(.92)}60%{transform:translateY(4px) scale(1.03)}100%{opacity:1;transform:translateY(0) scale(1)}}
 .fade-in{animation:fadeIn .55s cubic-bezier(.22,1,.36,1) forwards;}
 @keyframes qEntrance{from{opacity:0;transform:translateY(24px) scale(.96)}to{opacity:1;transform:none}}
 .q-entrance{animation:qEntrance .6s cubic-bezier(.22,1,.36,1) both;}
@@ -1076,14 +1077,35 @@ function renderQ(s){
     const ph=s?.phase||"";
     const step=ph.startsWith("survey_")?parseInt(ph.split("_")[1])||0:0;
     const ansList=q.answers||[];
-    const icons=['🥇','','🥉','4️⃣','5️⃣'];
+    const icons=['🥇','🥈','🥉','4️⃣','5️⃣'];
+    // Звук раскрытия — при каждом новом шаге
+    if(step>0&&step>_lastRenderedSurveyStep)_projSurveyRevealSound();
+    _lastRenderedSurveyStep=step;
     if(visRow) visRow.style.display="";
     visRebus.style.display="";
+    // Обеспечить фоновую музыку
+    if(!_projBgOn&&_projBg){_projBgStart();}
     if(step===0){
       visRebus.innerHTML=`<div style="text-align:center;padding:28px 16px"><div style="font-size:3rem;margin-bottom:12px;filter:drop-shadow(0 0 20px rgba(255,200,80,.6))">🎲</div><div style="font-size:1.4rem;font-weight:900;color:#ffd36b;margin-bottom:8px;letter-spacing:.05em">100 К 1</div><div style="font-size:1rem;color:rgba(255,255,255,.55)">Игроки пишут свои ответы…</div><div style="display:flex;gap:10px;justify-content:center;margin-top:18px">${[0,1,2].map(i=>`<div style="width:12px;height:12px;border-radius:50%;background:#4fdfff;animation:pulse ${1+i*0.3}s ease-in-out infinite"></div>`).join('')}</div></div>`;
     } else {
       const revealed=ansList.slice(0,step);
-      visRebus.innerHTML=`<div style="padding:12px 0">${revealed.map((a,i)=>`<div style="display:flex;align-items:center;gap:14px;padding:14px 20px;border-radius:14px;margin-bottom:10px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);animation:fadeIn .4s ease ${i*0.12}s both;"><span style="font-size:1.5rem;min-width:38px;text-align:center">${icons[i]||'#'+(i+1)}</span><span style="flex:1;font-size:clamp(.95rem,1.9vw,1.4rem);font-weight:750">${a.text}</span><span style="font-size:1.1rem;font-weight:900;color:#ffd36b">+${a.pts}</span></div>`).join('')}</div>`;
+      const qIdx=s?.current_index??0;
+      visRebus.innerHTML=`<div style="padding:8px 0">${revealed.map((a,i)=>{
+        const isNew=i===step-1;
+        const bg=isNew?'rgba(255,211,107,.1)':'rgba(255,255,255,.04)';
+        const brd=isNew?'rgba(255,211,107,.35)':'rgba(255,255,255,.08)';
+        const anim=isNew?'surveyReveal .55s cubic-bezier(.22,.68,0,1.3) both':'fadeIn .3s ease both';
+        return `<div style="display:flex;align-items:flex-start;gap:14px;padding:12px 20px;border-radius:14px;margin-bottom:8px;background:${bg};border:1px solid ${brd};animation:${anim};animation-delay:${isNew?0:i*60}ms">
+          <span style="font-size:1.5rem;min-width:38px;text-align:center;padding-top:2px">${icons[i]||'#'+(i+1)}</span>
+          <div style="flex:1;min-width:0">
+            <div style="font-size:clamp(.9rem,1.8vw,1.35rem);font-weight:750;line-height:1.2">${a.text}</div>
+            <div class="survey-players-${i}" style="font-size:.72rem;color:rgba(255,255,255,.4);margin-top:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis"></div>
+          </div>
+          <span style="font-size:1.1rem;font-weight:900;color:#ffd36b;flex-shrink:0;padding-top:2px">+${a.pts}</span>
+        </div>`;
+      }).join('')}</div>`;
+      // Асинхронно загружаем имена игроков, угадавших каждый ответ
+      _loadSurveyPlayerMatches(revealed,qIdx);
     }
     $("optsArea").style.display="none";
     $("timerNum").textContent="🎲";stopTimer();
@@ -1149,7 +1171,7 @@ function hideProjScoreboard(){$("scoreboardOv").style.display="none";}
 // ── MUTE STATE + MASTER VOLUME ────────────────────────────────
 let _projAudioMuted=false;
 let _projMasterVol=1.0; // 0–1, управляется из presenter через BroadcastChannel
-const _PVOL={bg:0.35,idle:0.45,intro:0.9,htp:0.92,end:0.85,fan:0.88};
+const _PVOL={bg:0.35,idle:0.45,intro:0.9,htp:0.92,end:0.85,fan:1.0};
 function _pv(base){return _projAudioMuted?0:base*_projMasterVol;}
 function _projMuteAll(){
   _projAudioMuted=true;
@@ -1336,6 +1358,60 @@ function _introSpawnParticles(){
 // ── APPLY STATE ───────────────────────────────────────────────
 let lastShow=false;
 let lastSurveyPhase="";
+let _lastRenderedSurveyStep=-1;
+
+// Звук раскрытия ответа 100к1 — синтез через Web Audio
+function _projSurveyRevealSound(){
+  try{
+    const actx=new(window.AudioContext||window.webkitAudioContext)();
+    const t=actx.currentTime;
+    // Восходящий аккорд C–E–G–C (до мажор)
+    const freqs=[523.25,659.25,784,1046.5];
+    freqs.forEach((freq,i)=>{
+      const o=actx.createOscillator(),g=actx.createGain();
+      o.type="sine";o.frequency.value=freq;
+      g.gain.setValueAtTime(0,t+i*0.07);
+      g.gain.linearRampToValueAtTime(0.28,t+i*0.07+0.02);
+      g.gain.exponentialRampToValueAtTime(0.001,t+i*0.07+0.55);
+      o.connect(g);g.connect(actx.destination);
+      o.start(t+i*0.07);o.stop(t+i*0.07+0.6);
+    });
+  }catch(e){}
+}
+
+// Загрузить и показать имена игроков, угадавших каждый ответ
+async function _loadSurveyPlayerMatches(revealedList,qIdx){
+  if(!sb||!GID)return;
+  try{
+    const{data}=await sb.from("quiz_chat")
+      .select("sender_name,message")
+      .eq("game_id",GID)
+      .eq("msg_type","survey");
+    if(!data)return;
+    // Парсим ответы: {answer, qi}
+    const byAnswer={};
+    for(const row of data){
+      try{
+        const parsed=JSON.parse(row.message);
+        if((parsed.qi??-1)!==qIdx)continue;
+        const ans=(parsed.answer||"").toLowerCase().trim();
+        if(!byAnswer[ans])byAnswer[ans]=[];
+        byAnswer[ans].push(row.sender_name);
+      }catch(e){}
+    }
+    // Обновляем DOM для каждого раскрытого ответа
+    revealedList.forEach((a,i)=>{
+      const key=a.text.toLowerCase().trim();
+      const players=byAnswer[key]||[];
+      const el=document.querySelector(`.survey-players-${i}`);
+      if(el){
+        el.textContent=players.length>0
+          ?`✓ ${players.slice(0,5).join(", ")}${players.length>5?` +ещё ${players.length-5}`:""}`
+          :"";
+      }
+    });
+  }catch(e){}
+}
 
 function applyState(s){
   if(!s){
@@ -1412,7 +1488,7 @@ function applyState(s){
     if(phase!==lastSurveyPhase||idx!==lastIdx){lastIdx=idx;lastShow=show;lastSurveyPhase=phase;renderQ(s);}
     return;
   }
-  if(lastSurveyPhase){lastSurveyPhase="";lastIdx=-1;}
+  if(lastSurveyPhase){lastSurveyPhase="";lastIdx=-1;_lastRenderedSurveyStep=-1;}
   if(phase==="paused"){
     // Остаёмся на вопросе, показываем паузу
     $("timerNum").textContent="⏸";

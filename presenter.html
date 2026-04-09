@@ -8,8 +8,27 @@
 :root{--bg:#1a2f4a;--card:rgba(22,42,72,0.97);--muted:#a8c8e8;--text:#e8f4ff;--accent:#4fdfff;--ok:#61ffb2;--err:#ff5f7a;--gold:#ffd36b;--border:rgba(79,223,255,0.15);--r:14px;}
 *{box-sizing:border-box;margin:0;padding:0}
 body{min-height:100vh;font-family:system-ui,-apple-system,"Segoe UI",sans-serif;background:linear-gradient(160deg,#0f1e35 0%,#162848 40%,#1a3055 100%);color:var(--text);padding:8px;}
-.wrap{max-width:1500px;margin:0 auto;display:flex;flex-direction:column;gap:6px;}
+.wrap{max-width:1600px;margin:0 auto;display:flex;flex-direction:column;gap:6px;}
 .topbar{display:flex;align-items:center;justify-content:space-between;gap:6px;flex-wrap:wrap;padding:8px 12px;border:1px solid var(--border);background:var(--card);border-radius:var(--r);}
+/* Большие экраны (≥1600px): увеличиваем шрифты и отступы */
+@media(min-width:1600px){
+  body{padding:12px 16px;}
+  .wrap{gap:10px;}
+  .btn{font-size:.88rem;padding:9px 16px;min-height:40px;}
+  .btn-sm{font-size:.78rem;padding:5px 12px;min-height:30px;}
+  .ttl{font-size:1.05rem;}
+  .sub{font-size:.84rem;}
+  .chip{font-size:.82rem;padding:4px 12px;}
+  .card{padding:14px 18px;}
+  .ctitle{font-size:.72rem;margin-bottom:8px;}
+  .qtext{font-size:clamp(1rem,1.3vw,1.5rem)!important;}
+  .slbl{font-size:.66rem;}
+  .sval{font-size:1.05rem;}
+  .ans-row{font-size:.92rem;padding:7px 12px;}
+  .ans-bar-lbl{font-size:.78rem;}
+  .grid{gap:12px;}
+  .stats{gap:8px;}
+}
 @media(max-width:768px){
   body{padding:4px;}
   .wrap{gap:4px;}
@@ -518,6 +537,16 @@ tr:hover td{background:rgba(79,223,255,.03);}
   <div class="stat"><div class="slbl">Всего</div><div class="sval" id="stAll">0</div></div>
   <div class="stat"><div class="slbl">Ответили</div><div class="sval" id="stAnswered">0 / 0</div></div>
   <div class="stat"><div class="slbl">Лидер</div><div class="sval" style="font-size:.76rem" id="stLeader">—</div></div>
+</div>
+
+<!-- Баннер разрыва соединения игрока -->
+<div id="disconnectBanner" style="display:none;background:rgba(255,159,67,.12);border:1px solid rgba(255,159,67,.45);border-radius:12px;padding:10px 16px;align-items:center;gap:12px;flex-wrap:wrap;">
+  <span style="font-size:1.2rem">📡</span>
+  <div style="flex:1;min-width:0">
+    <div id="disconnectMsg" style="font-size:.82rem;font-weight:700;color:#ffb347;"></div>
+    <div id="disconnectCountdown" style="font-size:.72rem;color:rgba(255,179,71,.7);margin-top:2px;"></div>
+  </div>
+  <button class="btn" onclick="resumeFromDisconnect()" style="font-size:.72rem;padding:5px 12px;background:rgba(255,159,67,.2);border-color:rgba(255,159,67,.5);color:#ffb347;white-space:nowrap;">▶ Продолжить сейчас</button>
 </div>
 
 <div class="grid">
@@ -1967,6 +1996,10 @@ async function goReset(){
   // Очищаем панель «Ответили»
   ansBarLbl.textContent="0 / 0";ansBarFill.style.width="0%";stAnswered.textContent="0 / 0";
   const _det=$("ans-detail");if(_det)_det.innerHTML="";
+  // Сбрасываем мониторинг разрывов соединения
+  clearTimeout(_discTimer);_discTimer=null;clearInterval(_discCountInt);_discCountInt=null;
+  _discSet.clear();_recentOnlineSet.clear();
+  const _db=$('disconnectBanner');if(_db)_db.style.display='none';
   applyState(await ups({phase:"waiting",current_index:0,question_started_at:null,show_answer:false}));
 }
 async function goReveal(){
@@ -2207,6 +2240,9 @@ async function refreshUnified(){
     stAll.textContent = allPlayers.length;
     const onlCount = allPlayers.filter(p=>p.last_seen&&(now-new Date(p.last_seen).getTime())<ONLINE_MS).length;
     stOnline.textContent = onlCount; totalOnline = onlCount;
+
+    // ── Обнаружение разрыва соединения игрока ──
+    _checkDisconnects(allPlayers, now);
 
     // Обновляем ansBar
     const total = allPlayers.length;
@@ -2541,6 +2577,59 @@ document.getElementById("prepBtnClearOffline").addEventListener("click",async()=
     }
   }catch(e){}
 });
+
+// ── МОНИТОРИНГ РАЗРЫВА СОЕДИНЕНИЯ ─────────────────────────────
+const DISC_THRESHOLD_MS = 45000; // 45 с без heartbeat = разрыв
+const DISC_RESUME_MS    = 60000; // автовозобновление через 60 с
+let _discTimer = null;
+let _discCountInt = null;
+let _discSet = new Set();        // ключи игроков, сейчас оффлайн
+let _recentOnlineSet = new Set();// игроки, которые были онлайн в этой сессии
+
+function _checkDisconnects(allPlayers, now){
+  if(!lastState||lastState.phase!=='running') return;
+  const newDisc=[], reconn=[];
+  for(const p of allPlayers){
+    const key=p.student_name+'_'+(p.team_name||'');
+    const ls=p.last_seen?new Date(p.last_seen).getTime():0;
+    const gap=now-ls;
+    // Только следим за игроками, которые были онлайн в этой сессии
+    if(gap<DISC_THRESHOLD_MS) _recentOnlineSet.add(key);
+    if(!_recentOnlineSet.has(key)) continue; // игрок ещё не заходил — не считаем
+    if(gap>=DISC_THRESHOLD_MS && !_discSet.has(key)){
+      _discSet.add(key); newDisc.push(p.student_name);
+    } else if(gap<DISC_THRESHOLD_MS && _discSet.has(key)){
+      _discSet.delete(key); reconn.push(p.student_name);
+    }
+  }
+  if(newDisc.length>0 && !_discTimer) _triggerDisconnectPause(newDisc.join(', '));
+  if(reconn.length>0 && _discSet.size===0 && _discTimer) resumeFromDisconnect();
+}
+
+function _triggerDisconnectPause(playerNames){
+  ups({phase:'paused'}).then(s=>applyState(s)).catch(()=>{});
+  const banner=$('disconnectBanner'), msg=$('disconnectMsg'), cd=$('disconnectCountdown');
+  if(!banner)return;
+  banner.style.display='flex';
+  msg.textContent=`${playerNames} потерял соединение — игра поставлена на паузу`;
+  let t=Math.round(DISC_RESUME_MS/1000);
+  cd.textContent=`Автовозобновление через ${t} с`;
+  clearInterval(_discCountInt);
+  _discCountInt=setInterval(()=>{
+    t--;cd.textContent=t>0?`Автовозобновление через ${t} с`:'Возобновляю…';
+    if(t<=0)clearInterval(_discCountInt);
+  },1000);
+  clearTimeout(_discTimer);
+  _discTimer=setTimeout(()=>resumeFromDisconnect(),DISC_RESUME_MS);
+}
+
+async function resumeFromDisconnect(){
+  clearTimeout(_discTimer);_discTimer=null;
+  clearInterval(_discCountInt);_discCountInt=null;
+  _discSet.clear();
+  const banner=$('disconnectBanner');if(banner)banner.style.display='none';
+  if(lastState?.phase==='paused') applyState(await ups({phase:'running'}).catch(()=>{})||lastState);
+}
 
 async function initPrep(){
   updateQRBlock();

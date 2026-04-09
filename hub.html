@@ -2737,7 +2737,7 @@ const _sndAudio={};
 function _playSnd(key){
   if(!_sndAudio[key]){
     const a=new Audio(_sndFiles[key]);
-    a.volume=key==='done'?0.85:0.75;
+    a.volume=key==='done'?0.85:key==='blitz'||key==='bet'?1.0:0.75;
     _sndAudio[key]=a;
   }
   const a=_sndAudio[key];

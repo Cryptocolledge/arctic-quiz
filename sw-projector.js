@@ -1,4 +1,4 @@
-const CACHE = 'quizhub-proj-v4';
+const CACHE = 'quizhub-proj-v5';
 const CORE = [
   'projector.html',
   'Млечный%20путь.gif',
