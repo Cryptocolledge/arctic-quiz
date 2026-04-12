@@ -3430,8 +3430,9 @@ let lastQVisible=true;
 // ── АВТО-ВОССТАНОВЛЕНИЕ СЕССИИ ПОСЛЕ ПЕРЕЗАГРУЗКИ ────────────
 let _needsRejoin=false;
 try{
-  // Сначала sessionStorage (обычная перезагрузка), затем localStorage (закрытое приложение)
-  const _saved=sessionStorage.getItem('hub_player_session')||localStorage.getItem('hub_player_session');
+  // Только sessionStorage: авто-восстановление только при обновлении страницы.
+  // localStorage не используем — иначе новый игрок на том же устройстве попадает в чужую сессию.
+  const _saved=sessionStorage.getItem('hub_player_session');
   if(_saved){
     const _d=JSON.parse(_saved);
     if(_d.pName){
@@ -3847,10 +3848,9 @@ async function register(){
   $("qwait-name").textContent=pName;
   readyInfo.innerHTML=[["Режим",pMode==="solo"?"Одиночный":"Команда"],["Имя / команда",pName],["Учреждение",pInst],["Доп. инфо",pExtra]].map(([l,v])=>`<div style="display:flex;justify-content:space-between;gap:8px;padding:4px 0;border-bottom:1px solid rgba(255,255,255,.05);font-size:.82rem"><span style="color:var(--muted)">${l}</span><span style="font-weight:600;text-align:right;max-width:60%">${v||"—"}</span></div>`).join("");
   registered=true;
-  // Сохраняем для восстановления после перезагрузки (в обоих хранилищах)
+  // Сохраняем только в sessionStorage (живёт пока открыта вкладка)
   const _sessionData=JSON.stringify({pName,pTeam,pInst,pMode,pExtra,currentQuizId});
   try{sessionStorage.setItem('hub_player_session',_sessionData);}catch(e){}
-  try{localStorage.setItem('hub_player_session',_sessionData);}catch(e){}
   // Блокируем параллельные вкладки с тем же именем — они перезапишут очки
   // Используем tab-id в sessionStorage (уникален для каждой вкладки)
   const _tabId=Date.now()+'_'+Math.random().toString(36).slice(2);
