@@ -842,6 +842,18 @@ document.addEventListener('DOMContentLoaded',function(){
     </div>
   </div>
 
+  <!-- БАННЕР АКТИВНОЙ ИГРЫ -->
+  <div id="hub-active-banner" style="display:none;max-width:1100px;width:100%;margin:0 auto 4px;padding:0 24px;">
+    <div style="display:flex;align-items:center;gap:12px;padding:12px 18px;background:rgba(79,223,255,.07);border:1px solid rgba(79,223,255,.25);border-radius:14px;cursor:pointer;" onclick="_joinActiveBanner()">
+      <div id="hub-active-icon" style="font-size:1.6rem;line-height:1;">🧊</div>
+      <div style="flex:1;">
+        <div style="font-size:.65rem;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:rgba(79,223,255,.5);margin-bottom:2px;">▶ Идёт игра</div>
+        <div id="hub-active-name" style="font-size:.9rem;font-weight:800;color:#fff;">Арктический квиз</div>
+      </div>
+      <div style="padding:8px 18px;background:linear-gradient(120deg,#4fdfff,#2563eb);color:#020d1f;font-weight:900;font-size:.8rem;border-radius:999px;white-space:nowrap;">Войти →</div>
+    </div>
+  </div>
+
   <!-- АНОНСЫ НА ГЛАВНОЙ -->
   <div id="hubAnnouncesBlock" style="display:none;max-width:1100px;width:100%;margin:0 auto;padding:0 24px 16px;">
     <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">
@@ -2603,11 +2615,20 @@ window.addEventListener('DOMContentLoaded', function(){
       syncLoop();
     }, 1200);
   } else {
-    if(hs) hs.style.display = 'flex';
     ['ov-reg','ov-wait','ov-result','ov-scoreboard'].forEach(id=>{
       const el = document.getElementById(id);
       if(el) el.classList.remove('active');
     });
+    if(hs) hs.style.display = 'flex';
+    // Баннер активной игры: показываем только если игра реально идёт
+    setTimeout(async function(){
+      const s = await fetchState();
+      const qid = s?.quiz_id;
+      const qmode = s?.quiz_mode || 'spo';
+      const phase = s?.phase || 'waiting';
+      const isActive = phase !== 'waiting' && phase !== 'ended' && !!qid;
+      if(isActive) _showActiveBanner(qid, qmode);
+    }, 1000);
   }
 });
 
@@ -4747,6 +4768,22 @@ function backToHub() {
   // Скрываем форму регистрации, показываем хаб
   hideOv(ovReg);
   document.getElementById("hubScreen").style.display = "flex";
+}
+
+let _activeBannerQuiz = null, _activeBannerMode = 'spo';
+function _showActiveBanner(quizId, quizMode) {
+  const meta = _getQuizMeta(quizId);
+  _activeBannerQuiz = quizId; _activeBannerMode = quizMode;
+  const iconEl = document.getElementById('hub-active-icon');
+  const nameEl = document.getElementById('hub-active-name');
+  const banner = document.getElementById('hub-active-banner');
+  if(iconEl) iconEl.textContent = meta.icon;
+  if(nameEl) nameEl.textContent = meta.name;
+  if(banner) banner.style.display = 'block';
+}
+function _joinActiveBanner() {
+  if(!_activeBannerQuiz) return;
+  hubStartGame(_activeBannerQuiz, _activeBannerMode);
 }
 
 // Закрыть по Escape
