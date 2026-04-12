@@ -3309,6 +3309,18 @@ function showToast(msg, type){
 }
 async function loadSavedScore(){
   if(!sb||!pName||score>0)return;
+  // Быстрый путь: sessionStorage-снапшот (выживает при крашe вкладки в той же сессии браузера)
+  try{
+    const snap=JSON.parse(sessionStorage.getItem('hub_score_snap')||'null');
+    if(snap&&snap.s>0&&(Date.now()-snap.t)<7200000){
+      score=snap.s;qAnswered=snap.qa||0;
+      const sd=score%1===0?score:score.toFixed(1);
+      scoreEl.textContent=sd;score2El.textContent=sd;
+      showToast("💾 Счёт восстановлен: "+sd+" очков","info");
+      return;
+    }
+  }catch(e){}
+  // Медленный путь: запрос к Supabase (работает и после закрытия браузера)
   try{
     const{data}=await sb.from("quiz_scores").select("score,questions_answered")
       .eq("game_id",GID).eq("student_name",pName).eq("team_name",pTeam).maybeSingle();
@@ -3330,6 +3342,17 @@ function pushScore(){
 }
 async function _pushScoreNow(){
   if(!sb||!pName)return;
+  // Защита от двух вкладок: если другая вкладка стала активной — не пишем
+  try{
+    const myTab=sessionStorage.getItem('hub_tab_id');
+    const activeTab=localStorage.getItem('hub_active_tab_'+pName);
+    if(myTab&&activeTab&&myTab!==activeTab){
+      // Другая вкладка активна — тихо отступаем, не перезатираем её счёт
+      console.warn("pushScore blocked: другая активная вкладка",activeTab);return;
+    }
+  }catch(e){}
+  // Сохраняем снапшот в sessionStorage — быстрое восстановление после краша вкладки
+  try{sessionStorage.setItem('hub_score_snap',JSON.stringify({s:score,qa:qAnswered,t:Date.now()}));}catch(e){}
   const correct=UA.filter(a=>a&&a.ok);
   const avgTime=correct.length>0?Math.round(correct.reduce((s,a)=>s+(a.t||QT),0)/correct.length*10)/10:QT;
   try{
@@ -3542,6 +3565,16 @@ function applyState(s){
   // ОЖИДАНИЕ
   if(phase==="waiting"){
     stopTimer();showWaitPanel();showOv(ovWait);hideOv(ovRes);
+    // Сброс игрового состояния при переходе между играми
+    // Условие: пришли из реальной фазы (не первый applyState на загрузке страницы)
+    if(lastPhase&&lastPhase!=="waiting"&&lastPhase!=="intro"&&lastPhase!=="howtoplay"){
+      REVEALED.clear();
+      score=0;scoreEl.textContent="0";score2El.textContent="0";
+      streak=0;qAnswered=0;totalTime=0;penalty=0;changeCount=0;
+      UA.fill(null);
+      _scoreLoaded=false; // разрешить восстановление очков если игрок реконнектится
+      try{sessionStorage.removeItem('hub_score_snap');}catch(e){}
+    }
     lastIdx=-1;lastAt="";lastShow=false;lastPhase="waiting";
     _surveyAnswer="";_surveyBet=3;_surveyScored=false;_surveyQ=null;_isSurveyPhase=false;_lastSurveyPhase="";
     return;
@@ -3643,6 +3676,17 @@ function applyState(s){
 }
 
 async function syncLoop(){
+  // Проверка дублирующей вкладки (однократно показываем предупреждение)
+  if(pName&&!window._dupTabWarnShown){
+    try{
+      const myTab=sessionStorage.getItem('hub_tab_id');
+      const activeTab=localStorage.getItem('hub_active_tab_'+pName);
+      if(myTab&&activeTab&&myTab!==activeTab){
+        window._dupTabWarnShown=true;
+        showToast("⚠️ Эта страница открыта в другой вкладке. Очки учитываются только там.","err");
+      }
+    }catch(e){}
+  }
   const s=await fetchState();if(s!==undefined)applyState(s);
   if(!sb||!pName)return;
   if(!_scoreLoaded){_scoreLoaded=true;await loadSavedScore();}
@@ -3786,6 +3830,11 @@ async function register(){
   const _sessionData=JSON.stringify({pName,pTeam,pInst,pMode,pExtra,currentQuizId});
   try{sessionStorage.setItem('hub_player_session',_sessionData);}catch(e){}
   try{localStorage.setItem('hub_player_session',_sessionData);}catch(e){}
+  // Блокируем параллельные вкладки с тем же именем — они перезапишут очки
+  // Используем tab-id в sessionStorage (уникален для каждой вкладки)
+  const _tabId=Date.now()+'_'+Math.random().toString(36).slice(2);
+  try{sessionStorage.setItem('hub_tab_id',_tabId);}catch(e){}
+  try{localStorage.setItem('hub_active_tab_'+pName,_tabId);}catch(e){}
   hideOv(ovReg);showOv(ovWait);
   window._updateWatermark&&window._updateWatermark(pName);
   const avg=Q.reduce((s,q)=>s+(q.dif||2),0)/Q.length;

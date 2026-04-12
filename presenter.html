@@ -277,6 +277,22 @@ tr:hover td{background:rgba(79,223,255,.03);}
 .ql-ans{font-size:.7rem;color:var(--ok);font-weight:600;}
 .ql-row.ql-hidden{display:none;}
 .ql-count{padding:5px 14px 3px;font-size:.67rem;color:var(--muted);flex-shrink:0;}
+/* === ДИАГНОСТИКА === */
+#diagBadge{position:relative;font-size:.75rem;padding:4px 9px;min-height:28px;white-space:nowrap;}
+#diagErrBubble{position:absolute;top:-4px;right:-4px;background:#ff5f7a;color:#fff;border-radius:999px;font-size:.58rem;font-weight:800;min-width:15px;height:15px;display:none;align-items:center;justify-content:center;padding:0 3px;line-height:1;pointer-events:none;}
+.diag-modal{position:fixed;inset:0;z-index:9998;display:flex;align-items:flex-end;justify-content:flex-end;padding:16px;pointer-events:none;}
+.diag-modal.open{pointer-events:auto;}
+.diag-panel{width:min(520px,96vw);max-height:72vh;background:rgba(6,14,38,.98);border:1px solid rgba(79,223,255,.3);border-radius:16px;padding:16px;display:flex;flex-direction:column;gap:10px;box-shadow:0 16px 48px rgba(0,0,0,.7);transform:translateY(20px) scale(.97);opacity:0;transition:all .2s;pointer-events:none;backdrop-filter:blur(10px);}
+.diag-modal.open .diag-panel{transform:none;opacity:1;pointer-events:auto;}
+.diag-log{overflow-y:auto;flex:1;display:flex;flex-direction:column;gap:2px;font-size:.71rem;font-family:monospace;}
+.diag-log::-webkit-scrollbar{width:3px;}.diag-log::-webkit-scrollbar-thumb{background:rgba(79,223,255,.3);border-radius:999px;}
+.diag-row{padding:3px 8px;border-radius:5px;line-height:1.4;}
+.diag-row.INFO{background:rgba(79,223,255,.05);color:#a8d8f0;}
+.diag-row.WARN{background:rgba(255,200,80,.08);color:#ffe08a;}
+.diag-row.ERROR{background:rgba(255,95,122,.1);color:#ff9898;}
+.diag-row.OK{background:rgba(97,255,178,.07);color:#80ffcc;}
+.diag-time{color:rgba(120,150,180,.65);margin-right:4px;font-size:.66rem;}
+.diag-lvl{font-weight:800;margin-right:4px;font-size:.66rem;}
 </style>
 <link rel="manifest" href="manifest-presenter.json">
 <meta name="mobile-web-app-capable" content="yes">
@@ -520,6 +536,7 @@ tr:hover td{background:rgba(79,223,255,.03);}
     <button class="btn bg" id="btnMusicPanel" onclick="toggleMusicPanel()" style="border-color:rgba(97,255,178,.3);color:#61ffb2;font-size:.7rem;padding:5px 10px;" title="Плейлист и управление музыкой">🎵 Музыка</button>
     <button class="btn bg" id="btnQList" onclick="openQList()" style="border-color:rgba(79,223,255,.35);color:var(--accent);font-size:.7rem;padding:5px 10px;" title="Список всех вопросов с ответами">📋 Вопросы</button>
     <button class="btn bg" id="btnHelp" style="border-color:rgba(255,211,107,.4);color:var(--gold);" title="Справка ведущего">❓ Справка</button>
+    <button class="btn bg" id="diagBadge" title="Диагностика · нет ошибок">🟢<span id="diagErrBubble"></span></button>
     <button class="btn bg" onclick="localStorage.removeItem('pres_authed');location.reload();" style="border-color:rgba(255,80,80,.35);color:#ff8080;font-size:.7rem;padding:5px 10px;" title="Выйти из панели ведущего (запросит пароль при следующем открытии)">🔒 Выйти</button>
     <button class="btn" id="btnProjector" style="background:rgba(255,211,107,.08);border-color:rgba(255,211,107,.5);color:var(--gold);" title="Открыть проектор на втором экране">🖥 Проектор</button>
     <button class="btn bg" id="btnCopyProjUrl" style="border-color:rgba(255,211,107,.4);color:var(--gold);font-size:.7rem;padding:5px 10px;" title="Скопировать ссылку проектора для другого устройства">📋 Ссылка проектора</button>
@@ -846,6 +863,33 @@ tr:hover td{background:rgba(79,223,255,.03);}
       <div class="help-step"><div class="help-num">2</div><div class="help-step-text">В открывшемся окне нажмите <b>Ctrl+P</b> → выберите <b>«Сохранить как PDF»</b> → готово!</div></div>
       <div class="help-step"><div class="help-num">3</div><div class="help-step-text">Дополнительно доступна кнопка <b>«⬇ Скачать HTML»</b> — сохраняет протокол файлом на компьютер.</div></div>
       <div class="help-tip">💡 Протокол содержит: дату/время, тему квиза, уровень, итоговую таблицу с очками всех участников.</div>
+    </div>
+  </div>
+
+  <!-- Памятка: что нельзя делать -->
+  <div class="help-section" style="border-color:rgba(255,95,122,.25);">
+    <div class="help-sec-title" onclick="toggleHelp('h7')" style="background:rgba(255,95,122,.08);color:#ff8080;">🚨 Памятка: что НЕЛЬЗЯ делать во время игры <span style="margin-left:auto;font-size:.8rem;opacity:.6">▼</span></div>
+    <div class="help-sec-body" id="h7" style="padding:12px 16px;display:flex;flex-direction:column;gap:8px;">
+      <div style="display:flex;align-items:flex-start;gap:10px;padding:8px 12px;background:rgba(255,95,122,.07);border:1px solid rgba(255,95,122,.2);border-radius:10px;">
+        <span style="font-size:1.1rem;flex-shrink:0">🔴</span>
+        <div style="font-size:.8rem;line-height:1.5"><b style="color:#ff8080">Не нажимать «Старт» без предварительного «Сброса»</b><br>Если предыдущая игра не была сброшена, очки могут задвоиться. Правильный порядок: <b>«Сброс» → «Старт»</b>.</div>
+      </div>
+      <div style="display:flex;align-items:flex-start;gap:10px;padding:8px 12px;background:rgba(255,95,122,.07);border:1px solid rgba(255,95,122,.2);border-radius:10px;">
+        <span style="font-size:1.1rem;flex-shrink:0">🔴</span>
+        <div style="font-size:.8rem;line-height:1.5"><b style="color:#ff8080">Один игрок — только одна открытая вкладка на устройстве</b><br>Две вкладки с одним именем конкурируют за очки. Вторая вкладка заблокируется автоматически, но лучше не допускать.</div>
+      </div>
+      <div style="display:flex;align-items:flex-start;gap:10px;padding:8px 12px;background:rgba(255,200,80,.07);border:1px solid rgba(255,200,80,.25);border-radius:10px;">
+        <span style="font-size:1.1rem;flex-shrink:0">⚠️</span>
+        <div style="font-size:.8rem;line-height:1.5"><b style="color:#ffe080">Не нажимать «Сброс» посреди игры без крайней необходимости</b><br>Чат будет удалён, игроки увидят экран ожидания. Очки в БД сохраняются до нажатия «Старт», но игроки уже видят 0 на экране.</div>
+      </div>
+      <div style="display:flex;align-items:flex-start;gap:10px;padding:8px 12px;background:rgba(255,200,80,.07);border:1px solid rgba(255,200,80,.25);border-radius:10px;">
+        <span style="font-size:1.1rem;flex-shrink:0">⚠️</span>
+        <div style="font-size:.8rem;line-height:1.5"><b style="color:#ffe080">Не перезагружать страницу ведущего посреди игры без необходимости</b><br>При перезагрузке ведущий заново подключается, игра продолжается. Но не нажимайте «Старт» снова — очки сбросятся.</div>
+      </div>
+      <div style="display:flex;align-items:flex-start;gap:10px;padding:8px 12px;background:rgba(97,255,178,.06);border:1px solid rgba(97,255,178,.2);border-radius:10px;">
+        <span style="font-size:1.1rem;flex-shrink:0">✅</span>
+        <div style="font-size:.8rem;line-height:1.5"><b style="color:#61ffb2">Если игрок закрыл вкладку — не паникуйте</b><br>Игра автоматически встанет на паузу (через ~45 сек). Игрок открывает вкладку заново → очки восстановятся автоматически. Если не вернулся за 60 сек — игра возобновится сама.</div>
+      </div>
     </div>
   </div>
 
@@ -1679,6 +1723,7 @@ const chatMsgs=$("chatMsgs"),chatInp=$("chatInp"),chatSend=$("chatSend"),chatTar
 const alertList=$("alertList"),regList=$("regList");
 
 let lastState=null,timerTick=null,lastChatId=0,chatReady=false;
+let _diagLastPhase=null; // для логирования смен фазы
 const ONLINE_MS=15000;
 let knownPlayers=new Set(); // для уведомлений о новых регистрациях
 let totalOnline=0;
@@ -1762,6 +1807,14 @@ function startPresTimer(at,qtOverride){
 // ── СОСТОЯНИЕ ─────────────────────────────────────────────────
 function applyState(s){
   lastState=s;
+  // Логируем смену фазы
+  if(typeof Diagnostics!=='undefined'){
+    const _np=s?.phase||'null';
+    if(_np!==_diagLastPhase){
+      Diagnostics.log('Смена фазы: '+(_diagLastPhase||'—')+' → '+_np,{idx:s?.current_index??null});
+      _diagLastPhase=_np;
+    }
+  }
   if(!s){chipPhase.textContent="⏳";chipPhase.className="chip";stPhase.textContent="Ожидание";stopPresTimer();btnReveal.disabled=true;ansState.className="ans-state";return;}
   // Синхронизируем QT и подсветку кнопок таймера из state
   if(s.game_timer&&s.game_timer!==QT) presSetTimer(s.game_timer, true);
@@ -1949,7 +2002,7 @@ async function ups(patch){
     game_timer:lastState?.game_timer??QT,
   };
   const full={...base,...patch};
-  try{const{data,error}=await sb.from("quiz_state").upsert(full,{onConflict:"game_id"}).select().maybeSingle();if(error)return null;if(data)lastState=data;return data;}catch(e){return null;}
+  try{const{data,error}=await sb.from("quiz_state").upsert(full,{onConflict:"game_id"}).select().maybeSingle();if(error){if(typeof Diagnostics!=='undefined')Diagnostics.error('Supabase ups() error',error.message||error.code);return null;}if(data)lastState=data;return data;}catch(e){if(typeof Diagnostics!=='undefined')Diagnostics.error('Supabase ups() exception',e.message);return null;}
 }
 
 // ── ИГРА ─────────────────────────────────────────────────────
@@ -1958,6 +2011,7 @@ function nowUtc(){return new Date().toISOString().replace(/\.\d+Z$/,"Z");}
 function nowUtcPlus3(){ return new Date(Date.now()+3000).toISOString(); }
 
 async function goStart(){
+  if(typeof Diagnostics!=='undefined')Diagnostics.ok('Игра запущена',{quiz:QUIZ_ID_CURRENT||QUIZ_ID,mode:presenterMode||'offline'});
   const vis = presenterMode==="online" ? false : true;
   const seed = Math.floor(Math.random()*100000);
   // Сбрасываем очки всех игроков перед новой игрой
@@ -1990,6 +2044,7 @@ async function goNext(){
 async function goPrev(){const p=Math.max(0,(lastState?.current_index??0)-1);applyState(await ups({phase:"running",current_index:p,question_started_at:nowUtc(),show_answer:false}));}
 async function goReset(){
   if(!confirm("Сбросить игру? Чат будет очищен."))return;
+  if(typeof Diagnostics!=='undefined')Diagnostics.warn('Сброс игры ведущим',{phase:lastState?.phase||'?',idx:lastState?.current_index??null});
   // Очищаем чат при сбросе
   if(sb)try{await sb.from("quiz_chat").delete().eq("game_id",GID);}catch(e){}
   chatMsgs.innerHTML="";lastChatId=0;
@@ -2321,7 +2376,7 @@ async function refreshUnified(){
     tbody.querySelectorAll("button[data-block]").forEach(btn=>{
       btn.addEventListener("click",()=>toggleBlockChat(btn.dataset.name,btn.dataset.team,btn.dataset.blocked!=="1"));
     });
-  }catch(e){console.error("refreshUnified:",e);}
+  }catch(e){console.error("refreshUnified:",e);if(typeof Diagnostics!=='undefined')Diagnostics.error('refreshUnified exception',e.message);}
 }
 
 // ── ИГРОКИ ────────────────────────────────────────────────────
@@ -3786,7 +3841,7 @@ function toggleHelp(id){
   el.style.display=el.style.display==="none"?"flex":"none";
 }
 // По умолчанию все секции открыты
-["h1","h2","h3","h4","h45","h5","h6"].forEach(id=>{
+["h1","h2","h3","h4","h45","h5","h6","h7"].forEach(id=>{
   const el=document.getElementById(id);
   if(el) el.style.display="flex";
 });
@@ -3930,12 +3985,24 @@ function _presLogin(){
 // Инициализация: проверяем авторизацию
 if(_presCheckAuth()){
   // Открыт из хаба (свежий auth) — сразу запускаем
+  // Явно скрываем через inline style (не полагаемся только на injected <style>)
+  const _lk=document.getElementById("presLock");if(_lk)_lk.style.display="none";
   document.getElementById("prepOv").style.display="flex";
   initPrep();
 } else {
   _presShowLock();
   // initPrep будет вызван из _presLogin после успешного входа
 }
+
+// Защита от Android-браузеров, которые при смене ориентации сбрасывают
+// динамически добавленные <style> теги, но сохраняют inline-стили элементов
+window.addEventListener('orientationchange',function(){
+  if(_presCheckAuth()){const l=document.getElementById('presLock');if(l)l.style.display='none';}
+});
+// Резервный вариант для браузеров без orientationchange (resize достаточен)
+window.addEventListener('resize',function(){
+  if(_presCheckAuth()){const l=document.getElementById('presLock');if(l&&l.style.display!=='none')l.style.display='none';}
+});
 
 document.getElementById("presLockBtn").addEventListener("click", _presLogin);
 document.getElementById("presLockInp").addEventListener("keydown", function(e){
@@ -4156,5 +4223,171 @@ function updatePresPlayerUI(){
   <div class="ql-body" id="qListBody"></div>
 </div>
 <div id="qListBackdrop" onclick="closeQList()" style="display:none;position:fixed;inset:0;z-index:8999;background:rgba(0,0,0,.35);"></div>
+
+<!-- ── ДИАГНОСТИКА ──────────────────────────────────────────── -->
+<div class="diag-modal" id="diagModal">
+  <div class="diag-panel">
+    <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;flex-shrink:0;">
+      <span style="font-size:.82rem;font-weight:800;color:var(--accent);letter-spacing:.06em;">🛠 ДИАГНОСТИКА</span>
+      <div style="display:flex;gap:6px;align-items:center;">
+        <button onclick="Diagnostics.checkHealth()" style="font-size:.68rem;padding:4px 10px;border-radius:8px;border:1px solid rgba(79,223,255,.3);background:rgba(79,223,255,.06);color:var(--accent);cursor:pointer;white-space:nowrap;">🔍 Проверить</button>
+        <button onclick="Diagnostics.exportLog()" style="font-size:.68rem;padding:4px 10px;border-radius:8px;border:1px solid rgba(97,255,178,.3);background:rgba(97,255,178,.06);color:var(--ok);cursor:pointer;white-space:nowrap;">💾 Скачать лог</button>
+        <button onclick="document.getElementById('diagModal').classList.remove('open')" style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:1rem;padding:2px 6px;line-height:1;">✕</button>
+      </div>
+    </div>
+    <div id="diagHealthStatus" style="font-size:.65rem;color:var(--muted);line-height:1.5;flex-shrink:0;min-height:16px;">Нажмите «Проверить» для диагностики состояния</div>
+    <div class="diag-log" id="diagLog">
+      <div style="color:var(--muted);text-align:center;padding:20px;font-size:.72rem;">Лог пуст — события появятся по мере игры</div>
+    </div>
+    <div style="font-size:.62rem;color:rgba(120,150,180,.5);flex-shrink:0;text-align:right;" id="diagLogCount">0 записей</div>
+  </div>
+</div>
+
+<script>
+// ── DIAGNOSTICS MODULE ─────────────────────────────────────────
+const Diagnostics=(function(){
+  const MAX_LOGS=300;
+  const _logs=[];
+  let _errCount=0,_warnCount=0;
+  let _autoNotified=false;
+  const _badge=()=>document.getElementById('diagBadge');
+  const _bubble=()=>document.getElementById('diagErrBubble');
+  const _logEl=()=>document.getElementById('diagLog');
+  const _countEl=()=>document.getElementById('diagLogCount');
+
+  function _ts(){return new Date().toLocaleTimeString('ru',{hour:'2-digit',minute:'2-digit',second:'2-digit'});}
+
+  function _add(level,msg,data){
+    const entry={ts:_ts(),level,msg,data:data??null,at:Date.now()};
+    _logs.push(entry);
+    if(_logs.length>MAX_LOGS)_logs.splice(0,_logs.length-MAX_LOGS);
+    if(level==='ERROR'){_errCount++;if(!_autoNotified&&_errCount>5){_autoNotified=true;_autoExportToast();}}
+    if(level==='WARN')_warnCount++;
+    _updateBadge();
+    _appendRow(entry);
+    const ce=_countEl();if(ce)ce.textContent=_logs.length+' записей';
+  }
+
+  function _updateBadge(){
+    const b=_badge();if(!b)return;
+    const bub=_bubble();
+    if(_errCount>0){
+      b.title='Диагностика: '+_errCount+' ошибок, '+_warnCount+' предупр.';
+      b.firstChild.textContent='🔴';
+      if(bub){bub.textContent=_errCount;bub.style.display='flex';}
+    } else if(_warnCount>0){
+      b.title='Диагностика: '+_warnCount+' предупреждений';
+      b.firstChild.textContent='⚠️';
+      if(bub)bub.style.display='none';
+    } else {
+      b.title='Диагностика: всё в порядке';
+      b.firstChild.textContent='🟢';
+      if(bub)bub.style.display='none';
+    }
+  }
+
+  function _appendRow(entry){
+    const log=_logEl();if(!log)return;
+    const ph=log.querySelector('div[style*="text-align:center"]');if(ph)ph.remove();
+    const row=document.createElement('div');
+    row.className='diag-row '+entry.level;
+    const ds=entry.data?(typeof entry.data==='object'?' | '+JSON.stringify(entry.data):' | '+entry.data):'';
+    row.innerHTML='<span class="diag-time">'+entry.ts+'</span><span class="diag-lvl">['+entry.level+']</span>'+_esc(entry.msg)+ds;
+    log.appendChild(row);
+    log.scrollTop=log.scrollHeight;
+    while(log.children.length>60)log.removeChild(log.firstChild);
+  }
+
+  function _esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+
+  function _autoExportToast(){
+    const t=document.createElement('div');
+    t.style.cssText='position:fixed;bottom:80px;right:16px;z-index:9997;background:rgba(255,95,122,.14);border:1px solid rgba(255,95,122,.5);border-radius:10px;padding:10px 14px;font-size:.75rem;color:#ffb0b8;max-width:280px;box-shadow:0 4px 16px rgba(0,0,0,.5);';
+    t.innerHTML='⚠️ <b style="color:#ff7a7a">Зафиксировано >5 ошибок</b><br>Скачайте отчёт диагностики для анализа.'
+      +'<div style="display:flex;gap:6px;margin-top:8px;">'
+      +'<button onclick="Diagnostics.exportLog();this.closest(\'div[style]\').remove()" style="flex:1;padding:4px 8px;border-radius:7px;border:1px solid rgba(255,95,122,.4);background:rgba(255,95,122,.1);color:#ff8080;cursor:pointer;font-size:.72rem;">💾 Скачать</button>'
+      +'<button onclick="this.closest(\'div[style]\').remove()" style="padding:4px 8px;border-radius:7px;border:1px solid rgba(255,255,255,.1);background:none;color:var(--muted);cursor:pointer;font-size:.72rem;">Позже</button>'
+      +'</div>';
+    document.body.appendChild(t);
+    setTimeout(()=>{if(t.parentNode)t.remove();},25000);
+  }
+
+  return {
+    log(msg,data){_add('INFO',msg,data);},
+    warn(msg,data){_add('WARN',msg,data);},
+    error(msg,data){_add('ERROR',msg,data);},
+    ok(msg,data){_add('OK',msg,data);},
+
+    exportLog(){
+      const lines=['=== Quiz Presenter Diagnostics ===','Дата: '+new Date().toLocaleString('ru'),'Ошибок: '+_errCount+' | Предупреждений: '+_warnCount,''];
+      _logs.forEach(e=>{
+        const ds=e.data?(typeof e.data==='object'?' | '+JSON.stringify(e.data):' | '+e.data):'';
+        lines.push('['+e.ts+'] ['+e.level+'] '+e.msg+ds);
+      });
+      const blob=new Blob([lines.join('\n')],{type:'text/plain;charset=utf-8'});
+      const a=document.createElement('a');
+      a.href=URL.createObjectURL(blob);
+      a.download='quiz_debug_'+new Date().toISOString().slice(0,19).replace(/[T:]/g,'-')+'.txt';
+      document.body.appendChild(a);a.click();document.body.removeChild(a);
+      URL.revokeObjectURL(a.href);
+      _add('INFO','Лог экспортирован',{entries:_logs.length});
+    },
+
+    async checkHealth(){
+      const hEl=document.getElementById('diagHealthStatus');
+      if(hEl)hEl.textContent='⏳ Проверка...';
+      const res=[];
+      // 1. Supabase
+      try{
+        if(typeof sb!=='undefined'&&sb){
+          const{error}=await sb.from('quiz_state').select('phase').eq('game_id',GID).maybeSingle();
+          if(error){res.push('🔴 Supabase: '+error.message);_add('ERROR','Health: Supabase error',error.message);}
+          else{res.push('🟢 Supabase: OK');_add('OK','Health: Supabase OK');}
+        } else {res.push('🔴 Supabase: не инициализирован');_add('ERROR','Health: sb=null');}
+      }catch(e){res.push('🔴 Supabase: исключение');_add('ERROR','Health: Supabase exception',e.message);}
+      // 2. Game state
+      if(typeof lastState!=='undefined'&&lastState){
+        res.push('🟢 Состояние: phase='+lastState.phase+', idx='+lastState.current_index);
+        _add('INFO','Health: state OK',{phase:lastState.phase,idx:lastState.current_index});
+      } else {res.push('⚠️ Состояние: не загружено');_add('WARN','Health: lastState null');}
+      // 3. Service Worker
+      if('serviceWorker' in navigator){
+        try{
+          const reg=await navigator.serviceWorker.getRegistration('sw-presenter.js');
+          res.push(reg&&reg.active?'🟢 SW: активен':'⚠️ SW: не активен');
+        }catch(e){res.push('⚠️ SW: ошибка');}
+      }
+      // 4. Error summary
+      res.push((_errCount>0?'🔴':'🟢')+' Лог: '+_errCount+' ошибок, '+_warnCount+' предупр.');
+      if(hEl)hEl.innerHTML=res.join('<br>');
+      _add('INFO','Health check выполнен',{errors:_errCount,warns:_warnCount});
+    }
+  };
+})();
+
+// Перехват глобальных ошибок
+window.addEventListener('error',function(e){
+  Diagnostics.error('JS Error: '+e.message,{file:(e.filename||'').replace(/.*\//,''),line:e.lineno});
+});
+window.addEventListener('unhandledrejection',function(e){
+  Diagnostics.error('UnhandledPromise: '+(e.reason?.message||String(e.reason)));
+});
+
+// Клик по значку
+document.getElementById('diagBadge')?.addEventListener('click',function(e){
+  e.stopPropagation();
+  document.getElementById('diagModal')?.classList.toggle('open');
+});
+// Клик за пределами панели
+document.getElementById('diagModal')?.addEventListener('click',function(e){
+  if(e.target===this)this.classList.remove('open');
+});
+
+// Автопроверка каждые 30 с
+setInterval(function(){Diagnostics.checkHealth();},30000);
+
+// Первая запись
+Diagnostics.log('Диагностика запущена · '+new Date().toLocaleString('ru'));
+</script>
 </body>
 </html>
