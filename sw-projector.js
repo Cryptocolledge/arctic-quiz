@@ -1,10 +1,12 @@
-const CACHE = 'quizhub-proj-v7';
+const CACHE = 'quizhub-proj-v8';
 const CORE = [
   'projector.html',
   'Млечный%20путь.gif',
   'gagarin.jpg',
   'RIAN_archive_612748_Valentina_Tereshkova.jpg',
-  'SPUTNIK_original.jpg'
+  'SPUTNIK_original.jpg',
+  'pesec.jpg',
+  'narval.jpg'
 ];
 
 self.addEventListener('install', e => {

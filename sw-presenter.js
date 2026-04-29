@@ -1,4 +1,4 @@
-const CACHE = 'quizhub-presenter-v11';
+const CACHE = 'quizhub-presenter-v12';
 const CORE = [
   'presenter.html',
   'manifest-presenter.json',
@@ -12,7 +12,9 @@ const CORE = [
   'Млечный%20путь.gif',
   'gagarin.jpg',
   'RIAN_archive_612748_Valentina_Tereshkova.jpg',
-  'SPUTNIK_original.jpg'
+  'SPUTNIK_original.jpg',
+  'pesec.jpg',
+  'narval.jpg'
 ];
 
 self.addEventListener('install', e => {
