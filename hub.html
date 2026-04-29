@@ -3767,7 +3767,7 @@ function showKicked(){
 // ── ЧАТ ───────────────────────────────────────────────────────
 function renderMsg(m,mine){
   // Скрываем служебные сообщения из чата игрока
-  if(m.msg_type==="answer_stat"||m.msg_type==="ready"||m.msg_type==="bet"||m.msg_type==="round_done")return null;
+  if(m.msg_type==="answer_stat"||m.msg_type==="ready"||m.msg_type==="bet"||m.msg_type==="round_done"||m.msg_type==="bet_result")return null;
   const isHost=m.sender_name==="ВЕДУЩИЙ";
   const isAlert=m.msg_type==="alert";
   const isWarn=m.msg_type==="warning";
@@ -4280,6 +4280,8 @@ function revealBettingAnswer(qi, correctIdx){
     scoreEl.textContent=score;score2El.textContent=score;
     pushScore();
   }
+  // Отправляем результат ставки для проектора
+  try{sb&&sb.from("quiz_chat").insert({game_id:GID,sender_name:pName,team_name:pTeam,message:JSON.stringify({stake:betStake,won:won}),msg_type:"bet_result",created_at:new Date().toISOString()}).then(()=>{});}catch(e){}
   const rp=$("betResultPhase");
   if(rp){
     rp.style.display="";

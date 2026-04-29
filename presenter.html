@@ -2501,7 +2501,7 @@ function filterPresMsg(txt){
 
 // ── ЧАТ ───────────────────────────────────────────────────────
 function renderChatMsg(m){
-  if(m.msg_type==="answer_stat"||m.msg_type==="ready"||m.msg_type==="bet"||m.msg_type==="pause_request")return null;
+  if(m.msg_type==="answer_stat"||m.msg_type==="ready"||m.msg_type==="bet"||m.msg_type==="pause_request"||m.msg_type==="round_done"||m.msg_type==="bet_result")return null;
   const isHost=m.sender_name==="ВЕДУЩИЙ";
   const isAlert=m.msg_type==="alert";
   const isWarn=m.msg_type==="warning";

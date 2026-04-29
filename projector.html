@@ -25,6 +25,13 @@ body{
 
 /* ТОП-BAR */
 @keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
+@keyframes rcPop{0%{opacity:0;transform:scale(.5) translateY(10px)}60%{transform:scale(1.08) translateY(-2px)}100%{opacity:1;transform:scale(1) translateY(0)}}
+.rc-chip{display:inline-flex;align-items:center;gap:5px;padding:5px 14px;border-radius:20px;font-size:.82rem;font-weight:600;color:#fff;background:rgba(79,223,255,.15);border:1px solid rgba(79,223,255,.25);animation:rcPop .45s cubic-bezier(.34,1.56,.64,1) both;white-space:nowrap;}
+.rc-chip .rc-dot{width:7px;height:7px;border-radius:50%;background:#61ffb2;box-shadow:0 0 8px rgba(97,255,178,.6);flex-shrink:0;}
+.rr-row{display:flex;align-items:center;justify-content:space-between;padding:10px 18px;border-radius:12px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.08);animation:rcPop .4s cubic-bezier(.34,1.56,.64,1) both;}
+.rr-row .rr-name{font-weight:700;font-size:.95rem;color:#fff;text-align:left;}
+.rr-row .rr-team{font-size:.72rem;color:rgba(255,255,255,.5);margin-top:2px;}
+.rr-row .rr-val{font-weight:800;font-size:1.1rem;white-space:nowrap;}
 @keyframes dragPulse{0%,100%{opacity:.7;transform:scale(1)}50%{opacity:1;transform:scale(1.05)}}
 @keyframes scanline{0%{transform:translateX(-100%)}100%{transform:translateX(100vw)}}
 .topbar{
@@ -398,12 +405,15 @@ body{
     <div class="status-title" id="statusTitle">Арктический квиз</div>
     <div class="status-sub" id="statusSub">Ожидаем начала игры…</div>
     <div id="statusOnline" style="font-size:.85rem;color:var(--ok);margin-top:4px"></div>
-    <div id="statusRoundCounter" style="display:none;margin-top:18px;text-align:center;">
-      <div style="font-size:1.1rem;font-weight:700;color:#4fdfff;" id="roundCountText">0 / 0</div>
-      <div style="font-size:.75rem;color:rgba(255,255,255,.5);margin-top:4px;">ответили</div>
-      <div style="width:200px;height:6px;background:rgba(255,255,255,.1);border-radius:99px;margin:8px auto 0;overflow:hidden;">
+    <div id="statusRoundCounter" style="display:none;margin-top:18px;text-align:center;width:90%;max-width:700px;">
+      <div style="display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:10px;">
+        <div style="font-size:1.1rem;font-weight:700;color:#4fdfff;" id="roundCountText">0 / 0</div>
+        <div style="font-size:.75rem;color:rgba(255,255,255,.5);">ответили</div>
+      </div>
+      <div style="width:100%;max-width:300px;height:6px;background:rgba(255,255,255,.1);border-radius:99px;margin:0 auto 14px;overflow:hidden;">
         <div id="roundCountFill" style="height:100%;background:linear-gradient(90deg,#4fdfff,#61ffb2);border-radius:99px;width:0%;transition:width .4s ease;"></div>
       </div>
+      <div id="roundPlayersList" style="display:flex;flex-wrap:wrap;justify-content:center;gap:8px;max-height:260px;overflow-y:auto;padding:4px 0;"></div>
     </div>
     <div id="statusCodeBlock" style="display:none;margin-top:28px;text-align:center;">
       <div style="font-size:.7rem;color:rgba(79,223,255,.6);text-transform:uppercase;letter-spacing:.15em;margin-bottom:8px;">Код игры для участников</div>
@@ -411,6 +421,12 @@ body{
       <div style="font-size:.75rem;color:var(--muted);margin-top:8px;">Введите на hub.html</div>
     </div>
   </div>
+</div>
+
+<!-- Оверлей итогов раунда блиц/ставки -->
+<div id="roundResultsOv" style="position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:rgba(2,6,20,.97);z-index:85;flex-direction:column;text-align:center;padding:40px 20px;overflow-y:auto;">
+  <div id="roundResultsTitle" style="font-size:clamp(1.4rem,3.5vw,2.4rem);font-weight:900;background:linear-gradient(135deg,#4fdfff,#61ffb2);-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:24px;"></div>
+  <div id="roundResultsList" style="display:flex;flex-direction:column;gap:8px;width:90%;max-width:600px;max-height:70vh;overflow-y:auto;"></div>
 </div>
 
 <!-- MAIN CONTENT -->
@@ -1099,6 +1115,7 @@ function renderQ(s){
   mainArea.style.display="flex";
   $("statusOv").style.display="none";
   stopRoundCounter();
+  hideRoundResults();
   // Запускаем анимацию входа при каждом новом вопросе
   const qb=$("qBlock");if(qb){qb.classList.remove("q-entrance");void qb.offsetWidth;qb.classList.add("q-entrance");}
 
@@ -1585,6 +1602,8 @@ function applyState(s){
     stopTimer(); return;
   }
   const wasSpecialRound = lastRoundType==="blitz_start"||lastRoundType.startsWith("betting");
+  const wasBlitz = lastRoundType==="blitz_start";
+  const wasBetting = lastRoundType.startsWith("betting");
   // ── Ambient звук для очного режима ──
   if(rt==="blitz_start"&&lastRoundType!=="blitz_start")_projFanfare("blitz");
   if(rt==="betting_chips"&&lastRoundType!=="betting_chips")_projFanfare("bet");
@@ -1593,13 +1612,17 @@ function applyState(s){
   lastRoundType = rt;
 
   if(rt==="blitz_start"||rt==="betting_chips"||rt==="betting_open"||rt==="betting_reveal"){
-    showStatusScreen("🎮",rt==="blitz_start"?"Блиц-раунд":"Раунд ставок","Участники отвечают на своих устройствах…");
+    showStatusScreen("🎮",rt==="blitz_start"?"Блиц-раунд":"Раунд ставок","Участники отвечают на своих устройствах…",true);
     startRoundCounter(rt==="blitz_start"?"blitz":"betting");
     stopTimer(); return;
   }
 
-  // Возврат из ставок/блица — принудительно перерисовать вопрос
-  if(wasSpecialRound) lastIdx=-1;
+  // Возврат из ставок/блица — показать итоги и перерисовать вопрос
+  if(wasSpecialRound){
+    lastIdx=-1;
+    stopRoundCounter();
+    showRoundResults(wasBlitz?"blitz":"betting");
+  }
 
   // Новый вопрос — или тот же вопрос, но новый старт (сброс/перезапуск)
   const startedAt=s.question_started_at||null;
@@ -1615,7 +1638,7 @@ function applyState(s){
   }
 }
 
-function showStatusScreen(icon,title,sub){
+function showStatusScreen(icon,title,sub,hideCode){
   $("mainArea").style.display="none";
   $("statusOv").style.display="flex";
   $("statusIcon").textContent=icon;
@@ -1623,41 +1646,122 @@ function showStatusScreen(icon,title,sub){
   $("statusSub").textContent=sub;
   const bar=$("answeredBar");if(bar)bar.style.display="none";
   const rc=$("statusRoundCounter");if(rc)rc.style.display="none";
+  const scb=$("statusCodeBlock");if(scb)scb.style.display=hideCode?"none":"";
   stopTimer();
 }
 
 // ── Счётчик ответов для блица/ставок ──
 let _roundCountInt=null;
+let _roundKnownPlayers=new Set();
 function startRoundCounter(roundType){
   stopRoundCounter();
+  _roundKnownPlayers=new Set();
   const rc=$("statusRoundCounter");if(rc)rc.style.display="";
+  const pl=$("roundPlayersList");if(pl)pl.innerHTML="";
   _roundCountInt=setInterval(()=>_refreshRoundCount(roundType),2000);
   _refreshRoundCount(roundType);
 }
 function stopRoundCounter(){
   if(_roundCountInt){clearInterval(_roundCountInt);_roundCountInt=null;}
   const rc=$("statusRoundCounter");if(rc)rc.style.display="none";
+  _roundKnownPlayers=new Set();
 }
 async function _refreshRoundCount(roundType){
   if(!sb)return;
   try{
     const {data:players}=await sb.from("quiz_players").select("student_name,team_name").eq("game_id",GID);
     const total=(players||[]).length;
-    let answered=0;
+    let doneList=[];
     if(roundType==="blitz"){
-      const {data:msgs}=await sb.from("quiz_chat").select("sender_name,team_name").eq("game_id",GID).eq("msg_type","round_done");
-      const seen=new Set();
-      (msgs||[]).forEach(m=>{seen.add(m.sender_name+"_"+(m.team_name||""));});
-      answered=seen.size;
+      const {data:msgs}=await sb.from("quiz_chat").select("sender_name,team_name,message").eq("game_id",GID).eq("msg_type","round_done");
+      const seen=new Map();
+      (msgs||[]).forEach(m=>{const k=m.sender_name+"_"+(m.team_name||"");if(!seen.has(k))seen.set(k,{name:m.sender_name,team:m.team_name||"",info:m.message});});
+      doneList=[...seen.values()];
     } else {
-      const {data:msgs}=await sb.from("quiz_chat").select("sender_name,team_name").eq("game_id",GID).eq("msg_type","bet");
-      const seen=new Set();
-      (msgs||[]).forEach(m=>{seen.add(m.sender_name+"_"+(m.team_name||""));});
-      answered=seen.size;
+      const {data:msgs}=await sb.from("quiz_chat").select("sender_name,team_name,message").eq("game_id",GID).eq("msg_type","bet");
+      const seen=new Map();
+      (msgs||[]).forEach(m=>{const k=m.sender_name+"_"+(m.team_name||"");if(!seen.has(k))seen.set(k,{name:m.sender_name,team:m.team_name||"",info:m.message});});
+      doneList=[...seen.values()];
     }
+    const answered=doneList.length;
     const el=$("roundCountText");if(el)el.textContent=answered+" / "+total;
     const fill=$("roundCountFill");if(fill)fill.style.width=(total>0?answered/total*100:0)+"%";
+    // Добавляем новые плашки с анимацией
+    const pl=$("roundPlayersList");
+    if(pl){
+      doneList.forEach(p=>{
+        const k=p.name+"_"+p.team;
+        if(_roundKnownPlayers.has(k))return;
+        _roundKnownPlayers.add(k);
+        const chip=document.createElement("div");
+        chip.className="rc-chip";
+        const label=p.team?p.team:p.name;
+        chip.innerHTML='<span class="rc-dot"></span>'+label.replace(/</g,"&lt;");
+        pl.appendChild(chip);
+      });
+    }
   }catch(e){}
+}
+
+// ── Итоги раунда блиц/ставки ──
+let _rrTimeout=null;
+function hideRoundResults(){
+  if(_rrTimeout){clearTimeout(_rrTimeout);_rrTimeout=null;}
+  const ov=$("roundResultsOv");if(ov)ov.style.display="none";
+}
+async function showRoundResults(type){
+  if(!sb)return;
+  const ov=$("roundResultsOv");if(!ov)return;
+  const titleEl=$("roundResultsTitle");
+  const listEl=$("roundResultsList");
+  if(!titleEl||!listEl)return;
+  listEl.innerHTML="";
+  try{
+    if(type==="blitz"){
+      titleEl.textContent="⚡ Итоги блиц-раунда";
+      const {data:msgs}=await sb.from("quiz_chat").select("sender_name,team_name,message").eq("game_id",GID).eq("msg_type","round_done");
+      const seen=new Map();
+      (msgs||[]).forEach(m=>{const k=m.sender_name+"_"+(m.team_name||"");if(!seen.has(k))seen.set(k,{name:m.sender_name,team:m.team_name||"",correct:parseInt(m.message)||0});});
+      const rows=[...seen.values()].sort((a,b)=>b.correct-a.correct);
+      rows.forEach((r,i)=>{
+        const div=document.createElement("div");
+        div.className="rr-row";
+        div.style.animationDelay=(i*80)+"ms";
+        const label=r.team||r.name;
+        const teamLine=r.team?'<div class="rr-team">'+r.name.replace(/</g,"&lt;")+'</div>':"";
+        div.innerHTML='<div><div class="rr-name">'+label.replace(/</g,"&lt;")+'</div>'+teamLine+'</div><div class="rr-val" style="color:'+(r.correct>=7?"#61ffb2":r.correct>=4?"#4fdfff":"#ff6b6b")+'">'+r.correct+' / 10</div>';
+        listEl.appendChild(div);
+      });
+    } else {
+      titleEl.textContent="💎 Итоги раунда ставок";
+      const {data:msgs}=await sb.from("quiz_chat").select("sender_name,team_name,message").eq("game_id",GID).eq("msg_type","bet_result");
+      const seen=new Map();
+      (msgs||[]).forEach(m=>{
+        const k=m.sender_name+"_"+(m.team_name||"");
+        if(seen.has(k))return;
+        let d;try{d=JSON.parse(m.message);}catch(e){return;}
+        seen.set(k,{name:m.sender_name,team:m.team_name||"",stake:d.stake||0,won:!!d.won});
+      });
+      const rows=[...seen.values()].sort((a,b)=>(b.won?1:0)-(a.won?1:0)||b.stake-a.stake);
+      rows.forEach((r,i)=>{
+        const div=document.createElement("div");
+        div.className="rr-row";
+        div.style.animationDelay=(i*80)+"ms";
+        const label=r.team||r.name;
+        const teamLine=r.team?'<div class="rr-team">'+r.name.replace(/</g,"&lt;")+'</div>':"";
+        const icon=r.won?"✅":"❌";
+        const color=r.won?"#61ffb2":"#ff6b6b";
+        const sign=r.won?"+":"−";
+        div.innerHTML='<div><div class="rr-name">'+label.replace(/</g,"&lt;")+'</div>'+teamLine+'</div><div class="rr-val" style="color:'+color+'">'+icon+" "+sign+r.stake+' оч.</div>';
+        listEl.appendChild(div);
+      });
+    }
+    if(listEl.children.length===0){
+      listEl.innerHTML='<div style="color:var(--muted);font-size:.9rem;">Нет данных</div>';
+    }
+    ov.style.display="flex";
+    _rrTimeout=setTimeout(hideRoundResults,8000);
+  }catch(e){console.warn("showRoundResults error",e);}
 }
 
 // ── ДАННЫЕ ────────────────────────────────────────────────────
