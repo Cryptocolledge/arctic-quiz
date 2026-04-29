@@ -1,4 +1,4 @@
-const CACHE = 'quizhub-proj-v5';
+const CACHE = 'quizhub-proj-v6';
 const CORE = [
   'projector.html',
   'Млечный%20путь.gif',
@@ -51,7 +51,7 @@ self.addEventListener('fetch', e => {
     caches.match(e.request).then(cached => {
       if (cached) return cached;
       return fetch(e.request).then(r => {
-        if (r.ok && r.status===200 && e.request.url.match(/\.(js|css|png|ico|mp3|svg|jpg|jpeg|webp)(\?|$)/)) {
+        if (r.ok && r.status===200 && e.request.url.match(/\.(js|css|png|ico|mp3|svg|jpg|jpeg|gif|webp)(\?|$)/)) {
           const cl = r.clone();
           caches.open(CACHE).then(c => c.put(e.request, cl));
         }
