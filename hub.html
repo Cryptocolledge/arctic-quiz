@@ -4072,7 +4072,25 @@ async function submitSurvey(){
   }
 }
 
-function _normStr(s){return (s||'').toLowerCase().replace(/ё/g,'е').trim();}
+function _normStr(s){return (s||'').toLowerCase().replace(/ё/g,'е').replace(/\s+/g,' ').trim();}
+
+// Нечёткое сравнение ответа игрока с каноническим ответом 100к1
+function _surveyMatch(player,canonical){
+  const p=_normStr(player),c=_normStr(canonical);
+  if(!p||!c)return false;
+  if(p===c)return true;
+  if(p.length>=4&&c.includes(p))return true;
+  if(c.length>=4&&p.includes(c))return true;
+  const pW=p.split(' ').filter(w=>w.length>=3);
+  const cW=c.split(' ').filter(w=>w.length>=3);
+  for(const pw of pW)for(const cw of cW){
+    if(pw===cw)return true;
+    const mn=Math.min(pw.length,cw.length);
+    const t=Math.max(4,Math.floor(mn*.7));
+    if(mn>=4&&pw.substring(0,t)===cw.substring(0,t))return true;
+  }
+  return false;
+}
 
 let _lastSurveyStep=-1;
 function updateSurveyReveal(q,step){
@@ -4084,7 +4102,7 @@ function updateSurveyReveal(q,step){
   const revealed=ansList.slice(0,step);
   const icons=['🥇','🥈','🥉','4️⃣','5️⃣'];
   const rows=revealed.map((a,i)=>{
-    const isMatch=_surveyAnswer&&_normStr(a.text)===_normStr(_surveyAnswer);
+    const isMatch=_surveyAnswer&&_surveyMatch(_surveyAnswer,a.text);
     return `<div class="sv-ritem${isMatch?' sv-match':''}" id="svr-${i}"><span class="sv-rank">${icons[i]||'#'+(i+1)}</span><span style="flex:1;font-size:.84rem;font-weight:650">${a.text}</span><span class="sv-pts">+${a.pts}</span>${isMatch?`<span style="font-size:.68rem;padding:1px 5px;border-radius:4px;background:rgba(97,255,178,.2);color:var(--ok);font-weight:700">ВЫ!</span>`:''}</div>`;
   }).join('');
   optsEl.innerHTML=`<div class="sv-panel" style="border-color:rgba(79,223,255,.2)"><div style="font-size:.7rem;color:var(--muted);text-transform:uppercase;letter-spacing:.12em">🎲 100 К 1 — Результаты</div>${_surveyAnswer?`<div style="font-size:.73rem;color:rgba(255,255,255,.35)">Ваш ответ: <b style="color:var(--text)">${_surveyAnswer}</b> · Ставка: <b style="color:var(--gold)">${_surveyBet}</b></div>`:''}<div style="display:flex;flex-direction:column;gap:5px">${rows}</div></div>`;
@@ -4095,7 +4113,7 @@ function updateSurveyReveal(q,step){
 function applySurveyScore(){
   if(_surveyScored||!_surveyQ||!_surveyAnswer)return;
   _surveyScored=true;
-  const matched=(_surveyQ.answers||[]).find(a=>_normStr(a.text)===_normStr(_surveyAnswer));
+  const matched=(_surveyQ.answers||[]).find(a=>_surveyMatch(_surveyAnswer,a.text));
   if(matched){
     score+=matched.pts;
     const sd=score%1===0?score:score.toFixed(1);

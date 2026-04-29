@@ -1433,6 +1433,27 @@ function _projSurveyRevealSound(){
   }catch(e){}
 }
 
+// Нормализация строки для сравнения ответов 100к1
+function _normSurvey(s){return(s||'').toLowerCase().replace(/ё/g,'е').replace(/\s+/g,' ').trim();}
+
+// Нечёткое сравнение ответа игрока с каноническим ответом
+function _surveyMatch(player,canonical){
+  const p=_normSurvey(player),c=_normSurvey(canonical);
+  if(!p||!c)return false;
+  if(p===c)return true;
+  if(p.length>=4&&c.includes(p))return true;
+  if(c.length>=4&&p.includes(c))return true;
+  const pW=p.split(' ').filter(w=>w.length>=3);
+  const cW=c.split(' ').filter(w=>w.length>=3);
+  for(const pw of pW)for(const cw of cW){
+    if(pw===cw)return true;
+    const mn=Math.min(pw.length,cw.length);
+    const t=Math.max(4,Math.floor(mn*.7));
+    if(mn>=4&&pw.substring(0,t)===cw.substring(0,t))return true;
+  }
+  return false;
+}
+
 // Загрузить и показать имена игроков, угадавших каждый ответ
 async function _loadSurveyPlayerMatches(revealedList,qIdx){
   if(!sb||!GID)return;
@@ -1442,25 +1463,30 @@ async function _loadSurveyPlayerMatches(revealedList,qIdx){
       .eq("game_id",GID)
       .eq("msg_type","survey");
     if(!data)return;
-    // Парсим ответы: {answer, qi}
-    const byAnswer={};
+    // Парсим ответы игроков для текущего вопроса
+    const playerAnswers=[];
     for(const row of data){
       try{
         const parsed=JSON.parse(row.message);
         if((parsed.qi??-1)!==qIdx)continue;
-        const ans=(parsed.answer||"").toLowerCase().trim();
-        if(!byAnswer[ans])byAnswer[ans]=[];
-        byAnswer[ans].push(row.sender_name);
+        playerAnswers.push({name:row.sender_name,answer:parsed.answer||""});
       }catch(e){}
     }
-    // Обновляем DOM для каждого раскрытого ответа
+    // Для каждого раскрытого ответа находим игроков fuzzy-матчингом
+    const claimed=new Set();
     revealedList.forEach((a,i)=>{
-      const key=a.text.toLowerCase().trim();
-      const players=byAnswer[key]||[];
+      const players=[];
+      for(const pa of playerAnswers){
+        if(claimed.has(pa.name))continue;
+        if(_surveyMatch(pa.answer,a.text)){
+          players.push(pa.name);
+          claimed.add(pa.name);
+        }
+      }
       const el=document.querySelector(`.survey-players-${i}`);
       if(el){
         el.textContent=players.length>0
-          ?`✓ ${players.slice(0,5).join(", ")}${players.length>5?` +ещё ${players.length-5}`:""}`
+          ?`\u2714 ${players.slice(0,8).join(", ")}${players.length>8?` +ещё ${players.length-8}`:""}`
           :"";
       }
     });
