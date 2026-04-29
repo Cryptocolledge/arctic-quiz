@@ -398,6 +398,13 @@ body{
     <div class="status-title" id="statusTitle">Арктический квиз</div>
     <div class="status-sub" id="statusSub">Ожидаем начала игры…</div>
     <div id="statusOnline" style="font-size:.85rem;color:var(--ok);margin-top:4px"></div>
+    <div id="statusRoundCounter" style="display:none;margin-top:18px;text-align:center;">
+      <div style="font-size:1.1rem;font-weight:700;color:#4fdfff;" id="roundCountText">0 / 0</div>
+      <div style="font-size:.75rem;color:rgba(255,255,255,.5);margin-top:4px;">ответили</div>
+      <div style="width:200px;height:6px;background:rgba(255,255,255,.1);border-radius:99px;margin:8px auto 0;overflow:hidden;">
+        <div id="roundCountFill" style="height:100%;background:linear-gradient(90deg,#4fdfff,#61ffb2);border-radius:99px;width:0%;transition:width .4s ease;"></div>
+      </div>
+    </div>
     <div id="statusCodeBlock" style="display:none;margin-top:28px;text-align:center;">
       <div style="font-size:.7rem;color:rgba(79,223,255,.6);text-transform:uppercase;letter-spacing:.15em;margin-bottom:8px;">Код игры для участников</div>
       <div id="statusCodeNum" style="font-size:4rem;font-weight:900;color:#4fdfff;letter-spacing:.2em;font-variant-numeric:tabular-nums;text-shadow:0 0 30px rgba(79,223,255,.5);">—</div>
@@ -1091,6 +1098,7 @@ function renderQ(s){
   const mainArea=$("mainArea");
   mainArea.style.display="flex";
   $("statusOv").style.display="none";
+  stopRoundCounter();
   // Запускаем анимацию входа при каждом новом вопросе
   const qb=$("qBlock");if(qb){qb.classList.remove("q-entrance");void qb.offsetWidth;qb.classList.add("q-entrance");}
 
@@ -1586,6 +1594,7 @@ function applyState(s){
 
   if(rt==="blitz_start"||rt==="betting_chips"||rt==="betting_open"||rt==="betting_reveal"){
     showStatusScreen("🎮",rt==="blitz_start"?"Блиц-раунд":"Раунд ставок","Участники отвечают на своих устройствах…");
+    startRoundCounter(rt==="blitz_start"?"blitz":"betting");
     stopTimer(); return;
   }
 
@@ -1613,7 +1622,42 @@ function showStatusScreen(icon,title,sub){
   $("statusTitle").textContent=title;
   $("statusSub").textContent=sub;
   const bar=$("answeredBar");if(bar)bar.style.display="none";
+  const rc=$("statusRoundCounter");if(rc)rc.style.display="none";
   stopTimer();
+}
+
+// ── Счётчик ответов для блица/ставок ──
+let _roundCountInt=null;
+function startRoundCounter(roundType){
+  stopRoundCounter();
+  const rc=$("statusRoundCounter");if(rc)rc.style.display="";
+  _roundCountInt=setInterval(()=>_refreshRoundCount(roundType),2000);
+  _refreshRoundCount(roundType);
+}
+function stopRoundCounter(){
+  if(_roundCountInt){clearInterval(_roundCountInt);_roundCountInt=null;}
+  const rc=$("statusRoundCounter");if(rc)rc.style.display="none";
+}
+async function _refreshRoundCount(roundType){
+  if(!sb)return;
+  try{
+    const {data:players}=await sb.from("quiz_players").select("student_name,team_name").eq("game_id",GID);
+    const total=(players||[]).length;
+    let answered=0;
+    if(roundType==="blitz"){
+      const {data:msgs}=await sb.from("quiz_chat").select("sender_name,team_name").eq("game_id",GID).eq("msg_type","round_done");
+      const seen=new Set();
+      (msgs||[]).forEach(m=>{seen.add(m.sender_name+"_"+(m.team_name||""));});
+      answered=seen.size;
+    } else {
+      const {data:msgs}=await sb.from("quiz_chat").select("sender_name,team_name").eq("game_id",GID).eq("msg_type","bet");
+      const seen=new Set();
+      (msgs||[]).forEach(m=>{seen.add(m.sender_name+"_"+(m.team_name||""));});
+      answered=seen.size;
+    }
+    const el=$("roundCountText");if(el)el.textContent=answered+" / "+total;
+    const fill=$("roundCountFill");if(fill)fill.style.width=(total>0?answered/total*100:0)+"%";
+  }catch(e){}
 }
 
 // ── ДАННЫЕ ────────────────────────────────────────────────────

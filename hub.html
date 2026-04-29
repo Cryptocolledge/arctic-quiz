@@ -3767,7 +3767,7 @@ function showKicked(){
 // ── ЧАТ ───────────────────────────────────────────────────────
 function renderMsg(m,mine){
   // Скрываем служебные сообщения из чата игрока
-  if(m.msg_type==="answer_stat"||m.msg_type==="ready"||m.msg_type==="bet")return null;
+  if(m.msg_type==="answer_stat"||m.msg_type==="ready"||m.msg_type==="bet"||m.msg_type==="round_done")return null;
   const isHost=m.sender_name==="ВЕДУЩИЙ";
   const isAlert=m.msg_type==="alert";
   const isWarn=m.msg_type==="warning";
@@ -4512,6 +4512,8 @@ function autoNextBlitz(){
     const _bDisp=score%1===0?score:score.toFixed(1);
     if(scoreEl)scoreEl.textContent=_bDisp;if(score2El)score2El.textContent=_bDisp;
     pushScore(); // сохраняем в quiz_scores
+    // Уведомляем проектор что блиц завершён
+    try{sb&&sb.from("quiz_chat").insert({game_id:GID,sender_name:pName,team_name:pTeam,message:String(correct),msg_type:"round_done",created_at:new Date().toISOString()}).then(()=>{});}catch(e){}
     if(stEl){
       stEl.style.cssText="text-align:center;padding:14px;font-size:.95rem";
       stEl.innerHTML=`Ваш результат: <b style="color:var(--gold)">${correct}</b> из ${Qb.length}<br><span style="font-size:.78rem;color:var(--ok)">+${blitzPts.toFixed(1)} очков добавлено к вашему счёту 🎉</span><br><button class="btn btn-g" style="width:100%;padding:12px;margin-top:12px" onclick="document.getElementById('ov-blitz').classList.remove('active');document.getElementById('blitzStatusPl').style.cssText='';[...document.querySelectorAll('#ov-blitz [style]')].forEach(el=>{if(el.id!='blitzTbarPl')el.style.display='';});">✓ Закрыть</button>`;
