@@ -2723,8 +2723,12 @@ async function initPrep(){
     return;
   }
 
-  // Параллельно: состояние игры + список игроков
+  // Параллельно: состояние игры + список игроков (с retry)
+  let _initRetries=0;
+  const _maxRetries=3;
+  while(_initRetries<=_maxRetries){
   try{
+    if(_initRetries>0) prepDbStatus.innerHTML=`<span style="color:var(--muted)">🔄 Повтор ${_initRetries}/${_maxRetries}…</span>`;
     const [s, {data:plData}] = await Promise.all([
       getState(),
       sb.from("quiz_players").select("student_name,team_name,last_seen").eq("game_id",GID).order("joined_at",{ascending:true})
@@ -2773,11 +2777,20 @@ async function initPrep(){
       prepPlayerCount.innerHTML=`<span style="color:var(--ok)">${onlineCount}</span><span style="color:var(--muted);font-size:.75rem"> / ${plData.length}</span>`;
     }
     if(plData)plData.forEach(r=>knownPlayers.add(r.student_name+"_"+r.team_name));
+    break; // успех — выходим из retry-цикла
   }catch(e){
-    prepDbStatus.innerHTML='<span style="color:var(--err)">✗ Ошибка подключения к базе</span>';
+    _initRetries++;
+    if(_initRetries<=_maxRetries){
+      prepDbStatus.innerHTML=`<span style="color:#ffe080">⚠️ ${e.message||e} — повтор через 2с…</span>`;
+      await new Promise(r=>setTimeout(r,2000));
+      continue;
+    }
+    prepDbStatus.innerHTML=`<span style="color:var(--err)">✗ ${e.message||e}</span>`;
+    prepPhase.innerHTML=`<span style="color:var(--muted);font-size:.7rem">Проверьте WiFi на планшете. На ПК работает? Если да — перезагрузите роутер или используйте мобильный хотспот.</span>`;
     prepBtnStart.disabled=false;
     prepBtnStart.textContent="🔄 Повторить";
     prepBtnStart.onclick=()=>{location.reload();};
+  }
   }
 
   // Обновляем список игроков каждые 3 сек пока overlay открыт
