@@ -3,16 +3,16 @@
 <head>
 <meta charset="UTF-8"/>
 <title>Панель ведущего · QuizHub</title>
-<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0,viewport-fit=cover"/>
 <style>
 :root{--bg:#1a2f4a;--card:rgba(22,42,72,0.97);--muted:#a8c8e8;--text:#e8f4ff;--accent:#4fdfff;--ok:#61ffb2;--err:#ff5f7a;--gold:#ffd36b;--border:rgba(79,223,255,0.15);--r:14px;}
 *{box-sizing:border-box;margin:0;padding:0}
-body{min-height:100vh;font-family:system-ui,-apple-system,"Segoe UI",sans-serif;background:linear-gradient(160deg,#0f1e35 0%,#162848 40%,#1a3055 100%);color:var(--text);padding:8px;}
+body{min-height:100vh;font-family:system-ui,-apple-system,"Segoe UI",sans-serif;background:linear-gradient(160deg,#0f1e35 0%,#162848 40%,#1a3055 100%);color:var(--text);padding:8px;padding-top:calc(8px + env(safe-area-inset-top));padding-left:calc(8px + env(safe-area-inset-left));padding-right:calc(8px + env(safe-area-inset-right));padding-bottom:calc(8px + env(safe-area-inset-bottom));}
 .wrap{max-width:1600px;margin:0 auto;display:flex;flex-direction:column;gap:6px;}
 .topbar{display:flex;align-items:center;justify-content:space-between;gap:6px;flex-wrap:wrap;padding:8px 12px;border:1px solid var(--border);background:var(--card);border-radius:var(--r);}
 /* Большие экраны (≥1600px): увеличиваем шрифты и отступы */
 @media(min-width:1600px){
-  body{padding:12px 16px;}
+  body{padding:12px 16px;padding-top:calc(12px + env(safe-area-inset-top));padding-left:calc(16px + env(safe-area-inset-left));padding-right:calc(16px + env(safe-area-inset-right));padding-bottom:calc(12px + env(safe-area-inset-bottom));}
   .wrap{gap:10px;}
   .btn{font-size:.88rem;padding:9px 16px;min-height:40px;}
   .btn-sm{font-size:.78rem;padding:5px 12px;min-height:30px;}
@@ -30,7 +30,7 @@ body{min-height:100vh;font-family:system-ui,-apple-system,"Segoe UI",sans-serif;
   .stats{gap:8px;}
 }
 @media(max-width:768px){
-  body{padding:4px;}
+  body{padding:4px;padding-top:calc(4px + env(safe-area-inset-top));padding-left:calc(4px + env(safe-area-inset-left));padding-right:calc(4px + env(safe-area-inset-right));padding-bottom:calc(4px + env(safe-area-inset-bottom));}
   .wrap{gap:4px;}
   .topbar{flex-direction:column;align-items:flex-start;padding:8px 10px;gap:8px;}
   .btns{flex-wrap:wrap;gap:5px;width:100%;}
@@ -138,7 +138,7 @@ tr:hover td{background:rgba(79,223,255,.03);}
 /* registered badge */
 .reg-notif{background:rgba(97,255,178,.1);border:1px solid rgba(97,255,178,.35);color:var(--ok);border-radius:8px;padding:5px 8px;font-size:.76rem;margin-bottom:4px;display:flex;justify-content:space-between;align-items:center;gap:5px;}
 /* PREP OVERLAY */
-.prep-ov{position:fixed;inset:0;z-index:100;display:flex;align-items:flex-start;background:linear-gradient(160deg,#0f1e35,#1a3055);padding:16px;overflow-y:auto;}
+.prep-ov{position:fixed;inset:0;z-index:100;display:flex;align-items:flex-start;background:linear-gradient(160deg,#0f1e35,#1a3055);padding:16px;padding-top:calc(16px + env(safe-area-inset-top));padding-left:calc(16px + env(safe-area-inset-left));padding-right:calc(16px + env(safe-area-inset-right));padding-bottom:calc(16px + env(safe-area-inset-bottom));overflow-y:auto;}
 .prep-card{width:min(620px,100%);background:rgba(8,18,40,.98);border:1px solid rgba(79,223,255,.35);border-radius:20px;padding:28px;box-shadow:0 24px 80px rgba(0,0,0,.9);display:flex;flex-direction:column;gap:14px;margin:auto;}
 .prep-title{font-size:1.15rem;font-weight:800;letter-spacing:.07em;text-transform:uppercase;display:flex;align-items:center;gap:9px;}
 .prep-sub{font-size:.82rem;color:var(--muted);}
@@ -246,7 +246,7 @@ tr:hover td{background:rgba(79,223,255,.03);}
 .blitz-flash{animation:blitz-flash .4s;}
 
 /* Экран пароля presenter */
-.pres-lock{position:fixed;inset:0;z-index:9999;display:flex;align-items:center;justify-content:center;background:linear-gradient(160deg,#0f1e35,#1a3055);padding:16px;}
+.pres-lock{position:fixed;inset:0;z-index:9999;display:flex;align-items:center;justify-content:center;background:linear-gradient(160deg,#0f1e35,#1a3055);padding:16px;padding-top:calc(16px + env(safe-area-inset-top));}
 .pres-lock-card{width:min(380px,100%);background:rgba(14,28,52,.99);border:1px solid rgba(79,223,255,.25);border-radius:20px;padding:32px;display:flex;flex-direction:column;gap:16px;text-align:center;}
 .pres-lock-icon{font-size:2.5rem;}
 .pres-lock-title{font-family:system-ui;font-size:1.1rem;font-weight:800;}
