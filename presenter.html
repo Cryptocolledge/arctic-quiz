@@ -2172,17 +2172,13 @@ function toggleStatsPanel(){
   if(_statsPanelOpen)refreshStats();
 }
 
-async function refreshStats(){
+async function refreshStats(_d){
   if(!_statsPanelOpen||!sb)return;
   try{
     const idx=lastState?.current_index;
-    const[{data:scoresRaw},{data:ansStats},{data:curPlayers}]=await Promise.all([
-      sb.from("quiz_scores").select("student_name,score,questions_answered").eq("game_id",GID).order("score",{ascending:false}).limit(50),
-      typeof idx==="number"
-        ?sb.from("quiz_chat").select("sender_name,message").eq("game_id",GID).eq("msg_type","answer_stat")
-        :{data:[]},
-      sb.from("quiz_players").select("student_name,team_name").eq("game_id",GID)
-    ]);
+    let scoresRaw,ansStats,curPlayers;
+    if(_d){scoresRaw=[..._d.scores].sort((a,b)=>(parseFloat(b.score)||0)-(parseFloat(a.score)||0)).slice(0,50);ansStats=typeof idx==="number"?_d.chat.filter(c=>c.msg_type==="answer_stat"):[];curPlayers=_d.players;}
+    else{[{data:scoresRaw},{data:ansStats},{data:curPlayers}]=await Promise.all([sb.from("quiz_scores").select("student_name,team_name,score,questions_answered").eq("game_id",GID).order("score",{ascending:false}).limit(50),typeof idx==="number"?sb.from("quiz_chat").select("sender_name,message").eq("game_id",GID).eq("msg_type","answer_stat"):{data:[]},sb.from("quiz_players").select("student_name,team_name").eq("game_id",GID)]);}
     // Только игроки текущей сессии (cross-reference с quiz_players)
     const pSet=new Set((curPlayers||[]).map(p=>p.student_name+'_'+(p.team_name||'')));
     const scores=pSet.size>0?(scoresRaw||[]).filter(s=>pSet.has(s.student_name+'_'+(s.team_name||''))):(scoresRaw||[]);
@@ -2229,19 +2225,17 @@ $("btnShowQ")?.addEventListener("click",async()=>{
 });
 
 // ── СЧЁТЧИК ОТВЕТИВШИХ ────────────────────────────────────────
-async function refreshAnswered(){
+async function refreshAnswered(_d){
   if(!sb)return;
   const phase=lastState?.phase;
   if(!phase||phase==="waiting"||phase==="ended"||phase==="intro"||phase==="howtoplay"){ansBarWrap.style.visibility="hidden";return;}
   const idx=lastState?.current_index;if(typeof idx!=="number")return;
   try{
-    const[{data:scores},{data:players},{data:ansStats}]=await Promise.all([
-      sb.from("quiz_scores").select("student_name,team_name,questions_answered").eq("game_id",GID),
-      sb.from("quiz_players").select("student_name,team_name").eq("game_id",GID),
-      sb.from("quiz_chat").select("sender_name,team_name,message").eq("game_id",GID).eq("msg_type","answer_stat")
-    ]);
+    let scores,players,ansStats;
+    if(_d){scores=_d.scores;players=_d.players;ansStats=_d.chat.filter(c=>c.msg_type==="answer_stat");}
+    else{[{data:scores},{data:players},{data:ansStats}]=await Promise.all([sb.from("quiz_scores").select("student_name,team_name,questions_answered").eq("game_id",GID),sb.from("quiz_players").select("student_name,team_name").eq("game_id",GID),sb.from("quiz_chat").select("sender_name,team_name,message").eq("game_id",GID).eq("msg_type","answer_stat")]);}
     // Stale guard: question may have changed while we were awaiting
-    if(lastState?.current_index!==idx)return;
+    if(!_d&&lastState?.current_index!==idx)return;
     if(!scores)return;
     const total=players?.length||0;
     // Только текущие игроки сессии — исключаем старые записи прошлых игр
@@ -2269,28 +2263,42 @@ async function refreshAnswered(){
   }catch(e){}
 }
 
+// ── ЕДИНЫЙ ЦИКЛ ОБНОВЛЕНИЯ (3 запроса вместо 10+) ───────────
+let _refreshInFlight=false;
+async function refreshAll(){
+  if(!sb||_refreshInFlight)return;
+  _refreshInFlight=true;
+  try{
+    const[{data:players},{data:scores},{data:chat}]=await Promise.all([
+      sb.from("quiz_players").select("*").eq("game_id",GID),
+      sb.from("quiz_scores").select("student_name,team_name,score,questions_answered").eq("game_id",GID),
+      sb.from("quiz_chat").select("sender_name,team_name,message,msg_type,created_at,id").eq("game_id",GID).in("msg_type",["answer_stat","ready","pause_request"])
+    ]);
+    const _d={players:players||[],scores:scores||[],chat:chat||[]};
+    refreshUnified(_d);
+    refreshAnswered(_d);
+    if(_statsPanelOpen)refreshStats(_d);
+    refreshReady(_d);
+  }catch(e){
+    console.error("refreshAll:",e);
+    if(typeof Diagnostics!=='undefined')Diagnostics.error('refreshAll exception',e.message);
+  }finally{_refreshInFlight=false;}
+}
+
 // ── ЕДИНОЕ ТАБЛО ─────────────────────────────────────────────
 let _unifiedReady = new Set(); // кто нажал "Готов"
 let _unifiedAnswered = new Set(); // кто ответил на текущий вопрос
 
-async function refreshUnified(){
+async function refreshUnified(_d){
   if(!sb)return;
   try{
-    const [
-      {data:players},
-      {data:scores},
-      {data:readyData}
-    ] = await Promise.all([
-      sb.from("quiz_players").select("*").eq("game_id",GID),
-      sb.from("quiz_scores").select("student_name,team_name,score,questions_answered").eq("game_id",GID),
-      sb.from("quiz_chat").select("sender_name,team_name").eq("game_id",GID).eq("msg_type","ready")
-    ]);
+    let allPlayers,allScores,readyRaw;
+    if(_d){allPlayers=_d.players;allScores=_d.scores;readyRaw=_d.chat.filter(c=>c.msg_type==="ready");}
+    else{const[{data:p},{data:s},{data:r}]=await Promise.all([sb.from("quiz_players").select("*").eq("game_id",GID),sb.from("quiz_scores").select("student_name,team_name,score,questions_answered").eq("game_id",GID),sb.from("quiz_chat").select("sender_name,team_name").eq("game_id",GID).eq("msg_type","ready")]);allPlayers=p||[];allScores=s||[];readyRaw=r||[];}
 
     const now = Date.now();
     const ONLINE_MS = 15000;
-    const allPlayers = players||[];
-    const allScores = scores||[];
-    const readySet = new Set((readyData||[]).map(r=>r.sender_name+"_"+r.team_name));
+    const readySet = new Set(readyRaw.map(r=>r.sender_name+"_"+r.team_name));
     const curIdx = lastState?.current_index??-1;
 
     // Кто ответил на текущий вопрос
@@ -2816,7 +2824,7 @@ function enterPresenter(){
   _presTimerIds.forEach(id=>clearInterval(id));
   _presTimerIds=[];
   _presTimerIds.push(setInterval(()=>getState().then(applyState).catch(()=>{}),1000));
-  _presTimerIds.push(setInterval(()=>{refreshUnified();refreshAnswered();refreshStats();},2000));
+  _presTimerIds.push(setInterval(refreshAll,2500));
   // Realtime: мгновенное уведомление о новых игроках
   if(sb){
     try{
@@ -2826,20 +2834,14 @@ function enterPresenter(){
         .subscribe();
     }catch(e){}
   }
-  // Опрос готовности игроков
-  _presTimerIds.push(setInterval(refreshReady, 3000));
 }
 
-async function refreshReady(){
+async function refreshReady(_d){
   if(!sb) return;
   try{
-    const since = new Date(Date.now()-120000).toISOString(); // последние 2 мин
-    const {data} = await sb.from("quiz_chat")
-      .select("sender_name,team_name,created_at,msg_type")
-      .eq("game_id",GID)
-      .in("msg_type",["ready","pause_request"])
-      .gte("created_at",since)
-      .order("id",{ascending:false});
+    let data;
+    if(_d){const since=Date.now()-120000;data=_d.chat.filter(c=>(c.msg_type==="ready"||c.msg_type==="pause_request")&&new Date(c.created_at).getTime()>since).sort((a,b)=>(b.id||0)-(a.id||0));}
+    else{const since=new Date(Date.now()-120000).toISOString();const r=await sb.from("quiz_chat").select("sender_name,team_name,created_at,msg_type").eq("game_id",GID).in("msg_type",["ready","pause_request"]).gte("created_at",since).order("id",{ascending:false});data=r.data;}
     if(!data) return;
     // Дедупликация по имени для ready
     const readySeen = new Map();
