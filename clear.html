@@ -6,9 +6,11 @@
 <style>body{background:#0a1628;color:#e8f4ff;font-family:system-ui;display:flex;align-items:center;justify-content:center;min-height:100vh;margin:0;text-align:center}
 .box{padding:30px;max-width:400px}.status{margin:20px 0;font-size:1.1rem;line-height:1.8}
 .ok{color:#4fdfff}.err{color:#ff8080}.done{color:#7cff6b;font-size:1.3rem;font-weight:bold}
+a.btn{display:inline-block;margin-top:16px;padding:14px 28px;background:#4fdfff;color:#0a1628;font-weight:bold;font-size:1.1rem;border-radius:12px;text-decoration:none}
 </style></head><body><div class="box">
 <h2>Сброс кэша КвизЦентр</h2>
 <div id="log" class="status">Начинаю очистку…</div>
+<div id="btn" style="display:none"><a class="btn" id="goLink" href="presenter.html">Открыть Presenter</a></div>
 <script>
 var log=document.getElementById('log');
 function L(msg,cls){log.innerHTML+='<div class="'+(cls||'')+'">'+msg+'</div>';}
@@ -42,31 +44,27 @@ function L(msg,cls){log.innerHTML+='<div class="'+(cls||'')+'">'+msg+'</div>';}
   try{localStorage.clear();L('localStorage очищен','ok');}catch(e){}
   try{sessionStorage.clear();L('sessionStorage очищен','ok');}catch(e){}
 
-  // 4. Принудительно скачиваем свежий presenter.html минуя ВСЕ кэши
+  // 4. Проверяем свежую версию (без кэша)
   L('');
-  L('Загружаю свежий presenter.html…');
+  L('Проверяю версию на сервере…');
   try{
-    var resp=await fetch('presenter.html',{cache:'no-store',headers:{'Cache-Control':'no-cache','Pragma':'no-cache'}});
-    if(!resp.ok) throw new Error('HTTP '+resp.status);
-    var html=await resp.text();
-    // Проверяем версию
-    var m=html.match(/presVer">(v\d+)/);
-    L('Получена версия: '+(m?m[1]:'не найдена'),'ok');
-    L('');
-    L('Готово! Открываю presenter…','done');
-    // Пишем HTML напрямую — никакого редиректа через HTTP-кэш
-    setTimeout(function(){
-      document.open();
-      document.write(html);
-      document.close();
-      // Исправляем URL в адресной строке
-      if(history.replaceState) history.replaceState(null,'','presenter.html');
-    },2000);
-  }catch(e){
-    L('Ошибка загрузки: '+e.message,'err');
-    L('');
-    L('Попробуйте закрыть браузер полностью и открыть заново','err');
-  }
+    var resp=await fetch('presenter.html',{cache:'no-store'});
+    if(resp.ok){
+      var text=await resp.text();
+      var m=text.match(/presVer">(v\d+)/);
+      L('Версия на сервере: '+(m?m[1]:'?'),'ok');
+    }
+  }catch(e){L('Не удалось проверить: '+e.message,'err');}
+
+  L('');
+  L('Очистка завершена!','done');
+  L('Ждём 3 сек чтобы SW полностью выгрузился…');
+
+  // 5. Ждём чтобы SW точно выгрузился, потом редирект
+  await new Promise(function(r){setTimeout(r,3000);});
+
+  // Редирект с cache-bust параметром
+  window.location.replace('presenter.html?_=' + Date.now());
 })();
 </script>
 </div></body></html>
