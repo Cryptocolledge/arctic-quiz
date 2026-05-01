@@ -908,7 +908,7 @@ tr:hover td{background:rgba(79,223,255,.03);}
     </div>
   </div>
 
-  <div style="text-align:center;padding:8px;font-size:.72rem;color:var(--muted);">КвизЦентр · cryptocolledge.github.io · <span id="presVer">v23</span> · <a href="#" onclick="forceAppUpdate();return false" style="color:#4fdfff;text-decoration:underline">Обновить</a></div>
+  <div style="text-align:center;padding:8px;font-size:.72rem;color:var(--muted);">КвизЦентр · cryptocolledge.github.io · <span id="presVer">v24</span> · <a href="#" onclick="forceAppUpdate();return false" style="color:#4fdfff;text-decoration:underline">Обновить</a></div>
 
 </div>
 </div>
@@ -954,14 +954,24 @@ function loadSupabaseFallback(){
   if(_sbCdnIdx>=_SB_CDNS.length)return;
   const s=document.createElement("script");
   s.src=_SB_CDNS[_sbCdnIdx++];
-  s.onload=()=>{ if(!sb&&window.supabase?.createClient){ try{sb=window.supabase.createClient(SURL,SKEY);}catch(e){} } };
+  s.onload=()=>{ if(!sb&&window.supabase?.createClient){ try{sb=window.supabase.createClient(SURL,SKEY,_sbOpts);}catch(e){} } };
   s.onerror=loadSupabaseFallback;
   document.head.appendChild(s);
 }
 // Запускаем fallback сразу — не ждём onerror от основного тега
 loadSupabaseFallback();
 
-let sb=window.supabase?.createClient?window.supabase.createClient(SURL,SKEY):null;
+// Кастомный fetch с таймаутом — для планшетов с нестабильным WiFi
+function _sbFetch(url, opts){
+  const ctrl=new AbortController();
+  const tid=setTimeout(()=>ctrl.abort(),8000);
+  return fetch(url,{...opts,signal:ctrl.signal})
+    .then(r=>{clearTimeout(tid);return r;})
+    .catch(e=>{clearTimeout(tid);throw e;});
+}
+const _sbOpts={global:{fetch:_sbFetch}};
+
+let sb=window.supabase?.createClient?window.supabase.createClient(SURL,SKEY,_sbOpts):null;
 function pts(d){return !d||d<=1?1:d===2?2:3;}
 
 // Два набора — краткие версии для presenter (только q, opts, ci, dif)
@@ -2736,7 +2746,7 @@ async function initPrep(){
   }
   const sbReady=!!(window.supabase?.createClient);
   if(sbReady && !sb){
-    try{ sb=window.supabase.createClient(SURL,SKEY); }catch(e){}
+    try{ sb=window.supabase.createClient(SURL,SKEY,_sbOpts); }catch(e){}
   }
 
   if(!sbReady||!sb){
@@ -2756,7 +2766,14 @@ async function initPrep(){
       getState(),
       sb.from("quiz_players").select("student_name,team_name,last_seen").eq("game_id",GID).order("joined_at",{ascending:true})
     ]);
-    prepDbStatus.innerHTML='<span style="color:var(--ok)">✓ Подключено</span>';
+    prepDbStatus.innerHTML='<span style="color:var(--ok)">✓ Подключено (чтение)</span>';
+    // Тест записи — на планшетах POST может не проходить
+    try{
+      await sb.from("quiz_state").upsert({game_id:GID,...(s||{game_id:GID}),session_code:currentSessionCode},{onConflict:"game_id"});
+      prepDbStatus.innerHTML='<span style="color:var(--ok)">✓ Подключено (чтение + запись)</span>';
+    }catch(we){
+      prepDbStatus.innerHTML='<span style="color:#ffe080">⚠️ Чтение OK, запись не работает: '+we.message+'</span>';
+    }
     prepBtnStart.disabled=false;
 
     // Синхронизируем session_code из БД
