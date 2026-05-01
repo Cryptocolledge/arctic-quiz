@@ -1,4 +1,4 @@
-const CACHE = 'quizhub-presenter-v26';
+const CACHE = 'quizhub-presenter-v27';
 // Только критичные файлы — чтобы install не падал на медленном WiFi
 const CRITICAL = [
   'presenter.html',

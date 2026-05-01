@@ -548,6 +548,7 @@ tr:hover td{background:rgba(79,223,255,.03);}
     <button class="btn bg" id="btnQList" onclick="openQList()" style="border-color:rgba(79,223,255,.35);color:var(--accent);font-size:.7rem;padding:5px 10px;" title="Список всех вопросов с ответами">📋 Вопросы</button>
     <button class="btn bg" id="btnHelp" style="border-color:rgba(255,211,107,.4);color:var(--gold);" title="Справка ведущего">❓ Справка</button>
     <button class="btn bg" id="diagBadge" title="Диагностика · нет ошибок">🟢<span id="diagErrBubble"></span></button>
+    <span id="netStatus" style="font-size:.62rem;padding:2px 7px;border-radius:6px;background:rgba(97,255,178,.1);border:1px solid rgba(97,255,178,.3);color:#61ffb2;white-space:nowrap;" title="Статус записи">✓ OK</span>
     <button class="btn bg" onclick="localStorage.removeItem('pres_authed');location.reload();" style="border-color:rgba(255,80,80,.35);color:#ff8080;font-size:.7rem;padding:5px 10px;" title="Выйти из панели ведущего (запросит пароль при следующем открытии)">🔒 Выйти</button>
     <button class="btn" id="btnProjector" style="background:rgba(255,211,107,.08);border-color:rgba(255,211,107,.5);color:var(--gold);" title="Открыть проектор на втором экране">🖥 Проектор</button>
     <button class="btn bg" id="btnCopyProjUrl" style="border-color:rgba(255,211,107,.4);color:var(--gold);font-size:.7rem;padding:5px 10px;" title="Скопировать ссылку проектора для другого устройства">📋 Ссылка проектора</button>
@@ -904,7 +905,7 @@ tr:hover td{background:rgba(79,223,255,.03);}
     </div>
   </div>
 
-  <div style="text-align:center;padding:8px;font-size:.72rem;color:var(--muted);">КвизЦентр · cryptocolledge.github.io · <span id="presVer">v26</span> · <a href="#" onclick="forceAppUpdate();return false" style="color:#4fdfff;text-decoration:underline">Обновить</a></div>
+  <div style="text-align:center;padding:8px;font-size:.72rem;color:var(--muted);">КвизЦентр · cryptocolledge.github.io · <span id="presVer">v27</span> · <a href="#" onclick="forceAppUpdate();return false" style="color:#4fdfff;text-decoration:underline">Обновить</a></div>
 
 </div>
 </div>
@@ -957,12 +958,24 @@ function loadSupabaseFallback(){
 // Запускаем fallback сразу — не ждём onerror от основного тега
 loadSupabaseFallback();
 
-// Кастомный fetch — убираем внутренний AbortSignal SDK чтобы не обрывать запросы
+// Кастомный fetch — убираем внутренний AbortSignal SDK + логируем
+let _fetchLog=[];
 function _sbFetch(url, opts){
+  const method=(opts&&opts.method)||'GET';
+  const short=url.replace(/^https:\/\/[^/]+/,'').split('?')[0];
+  const t0=Date.now();
   if(opts){
     const clean={...opts};
-    delete clean.signal; // убираем signal SDK — он обрывает запросы раньше времени
-    return fetch(url,clean);
+    delete clean.signal;
+    return fetch(url,clean).then(r=>{
+      _fetchLog.push({t:Date.now()-t0,m:method,u:short,s:r.status});
+      if(_fetchLog.length>50)_fetchLog.shift();
+      return r;
+    }).catch(e=>{
+      _fetchLog.push({t:Date.now()-t0,m:method,u:short,e:e.message});
+      if(_fetchLog.length>50)_fetchLog.shift();
+      throw e;
+    });
   }
   return fetch(url,opts);
 }
@@ -1830,12 +1843,17 @@ function startPresTimer(at,qtOverride){
 }
 
 // ── СОСТОЯНИЕ ─────────────────────────────────────────────────
+let _applyCount=0;
 function applyState(s){
-  if(!s){chipPhase.textContent="⏳";chipPhase.className="chip";stPhase.textContent="Ожидание";stopPresTimer();btnReveal.disabled=true;ansState.className="ans-state";return;}
+  _applyCount++;
+  if(!s){
+    if(typeof Diagnostics!=='undefined')Diagnostics.warn('applyState(null)',{call:_applyCount});
+    return; // Не сбрасываем UI — null это transient error, polling исправит
+  }
   lastState=s;
   if(typeof Diagnostics!=='undefined'){
     const _np=s.phase||'null';
-    if(_np!==_diagLastPhase){Diagnostics.log('Смена фазы: '+(_diagLastPhase||'—')+' → '+_np,{idx:s.current_index??null});_diagLastPhase=_np;}
+    if(_np!==_diagLastPhase){Diagnostics.log('Смена фазы: '+(_diagLastPhase||'—')+' → '+_np,{idx:s.current_index??null,call:_applyCount});_diagLastPhase=_np;}
   }
   // Синхронизируем QT и подсветку кнопок таймера из state
   if(s.game_timer&&s.game_timer!==QT) presSetTimer(s.game_timer, true);
@@ -2002,8 +2020,16 @@ async function toggleProjMute(){
   if(sb) await sb.from('quiz_state').update({music_playing:!_projMuted}).eq('game_id',GID);
 }
 
+let _upsInFlight=false; // блокируем polling пока идёт запись
+let _upsOkCount=0,_upsFailCount=0;
+function _netBadge(ok,msg){
+  const el=document.getElementById('netStatus');if(!el)return;
+  if(ok){_upsOkCount++;el.textContent='✓ '+_upsOkCount;el.style.color='#61ffb2';el.style.borderColor='rgba(97,255,178,.3)';el.style.background='rgba(97,255,178,.1)';el.title='Успешных записей: '+_upsOkCount;}
+  else{_upsFailCount++;el.textContent='✗ '+msg;el.style.color='#ff5f7a';el.style.borderColor='rgba(255,95,122,.4)';el.style.background='rgba(255,95,122,.1)';el.title='Ошибок записи: '+_upsFailCount;}
+}
 async function ups(patch){
   if(!sb)return null;
+  _upsInFlight=true;
   // Мержим с текущим состоянием чтобы не затирать поля которые не обновляем
   const mode=lastState?.quiz_mode||selectedMode||"spo";
   const base={
@@ -2026,15 +2052,24 @@ async function ups(patch){
   for(let _r=0;_r<3;_r++){
     try{
       const{data,error}=await sb.from("quiz_state").upsert(full,{onConflict:"game_id"}).select().maybeSingle();
-      if(error){if(typeof Diagnostics!=='undefined')Diagnostics.error('Supabase ups() error',error.message||error.code);return null;}
+      if(error){if(typeof Diagnostics!=='undefined')Diagnostics.error('ups() DB error r'+_r,error.message||error.code);
+        if(_r<2){await new Promise(r=>setTimeout(r,600*(1+_r)));continue;}
+        _upsInFlight=false;_netBadge(false,'DB');
+        // Оптимистичный UI — обновляем lastState локально даже при ошибке
+        lastState={...(lastState||{}),...full};return lastState;
+      }
       if(typeof Diagnostics!=='undefined'&&data)Diagnostics.log('ups OK',{phase:data.phase,idx:data.current_index,show:data.show_answer});
-      if(data)lastState=data;return data;
+      if(data)lastState=data;_upsInFlight=false;_netBadge(true);return data;
     }catch(e){
-      if(_r<2){await new Promise(r=>setTimeout(r,800*(1+_r)));continue;}
-      if(typeof Diagnostics!=='undefined')Diagnostics.error('Supabase ups() error',e.message);return null;
+      if(typeof Diagnostics!=='undefined')Diagnostics.warn('ups() fetch r'+_r,e.message);
+      if(_r<2){await new Promise(r=>setTimeout(r,600*(1+_r)));continue;}
+      if(typeof Diagnostics!=='undefined')Diagnostics.error('ups() FAILED 3x',e.message);
+      _upsInFlight=false;_netBadge(false,'NET');
+      // Оптимистичный UI — локально обновляем, polling подтянет реальное значение
+      lastState={...(lastState||{}),...full};return lastState;
     }
   }
-  return null;
+  _upsInFlight=false;return lastState;
 }
 
 // ── ИГРА ─────────────────────────────────────────────────────
@@ -2867,8 +2902,13 @@ function enterPresenter(){
   loadChat().then(subscribeChatRealtime);
   _presTimerIds.forEach(id=>clearInterval(id));
   _presTimerIds=[];
-  _presTimerIds.push(setInterval(()=>getState().then(applyState).catch(()=>{}),1000));
-  _presTimerIds.push(setInterval(refreshAll,2500));
+  _presTimerIds.push(setInterval(()=>{
+    if(_upsInFlight)return; // не конкурируем с записью
+    getState().then(applyState).catch(e=>{
+      if(typeof Diagnostics!=='undefined')Diagnostics.warn('poll getState err',e.message);
+    });
+  },1500));
+  _presTimerIds.push(setInterval(()=>{if(!_upsInFlight)refreshAll();},3000));
   // Realtime: мгновенное уведомление о новых игроках
   if(sb){
     try{
@@ -4375,6 +4415,11 @@ const Diagnostics=(function(){
         const ds=e.data?(typeof e.data==='object'?' | '+JSON.stringify(e.data):' | '+e.data):'';
         lines.push('['+e.ts+'] ['+e.level+'] '+e.msg+ds);
       });
+      // Fetch log
+      if(typeof _fetchLog!=='undefined'&&_fetchLog.length>0){
+        lines.push('','=== Fetch Log (last '+_fetchLog.length+') ===');
+        _fetchLog.forEach(f=>lines.push(JSON.stringify(f)));
+      }
       const blob=new Blob([lines.join('\n')],{type:'text/plain;charset=utf-8'});
       const a=document.createElement('a');
       a.href=URL.createObjectURL(blob);

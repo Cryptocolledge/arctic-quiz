@@ -1,7 +1,21 @@
 {
   "permissions": {
     "allow": [
-      "Bash(grep -o \"getElementById\\([''''\"\"][^''''\"\"]*[''''\"\"]\\)\" /c/Users/seth0/Desktop/quiz/*.html)"
+      "Bash(grep -o \"getElementById\\([''''\"\"][^''''\"\"]*[''''\"\"]\\)\" /c/Users/seth0/Desktop/quiz/*.html)",
+      "Bash(node -e ':*)",
+      "Read(//c/Users/sept0/Desktop/quiz/**)",
+      "Bash(bash /tmp/count_arrays.sh)",
+      "Bash(grep \":\\\\`\")",
+      "Bash(ls -la *.html)",
+      "Bash(python)",
+      "Bash(grep -n \"^const Q_SOLO_ARCTIC\\\\|^const Q_SOLO_ECO\\\\|^];$\" /c/Users/seth0/Desktop/quiz/hub.html)",
+      "Bash(git push:*)",
+      "Bash(git add:*)",
+      "Bash(git commit -m ':*)",
+      "Bash(grep -o '{tp:\"rebus\",dif:3,q:\"Английское[^}]*}' \"c:\\\\Users\\\\seth0\\\\Desktop\\\\quiz\\\\hub.html\")",
+      "Bash(grep -o '{tp:\"rebus\",dif:3,q:\"Хаотичное[^}]*}' \"c:\\\\Users\\\\seth0\\\\Desktop\\\\quiz\\\\hub.html\")",
+      "Bash(grep -o '{tp:\"rebus\",dif:3,q:\"Потомственный[^}]*}' \"c:\\\\Users\\\\seth0\\\\Desktop\\\\quiz\\\\hub.html\")",
+      "Bash(python3 -c ':*)"
     ]
   }
 }

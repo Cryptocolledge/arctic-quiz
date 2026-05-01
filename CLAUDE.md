@@ -24,7 +24,17 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 При добавлении вопросов в любой из этих массивов — внести то же изменение **во все три файла**.
 
-**Соло-массивы** (`Q_SOLO_ARCTIC`, `Q_SOLO_ECO`) — только в `hub.html`, в `<script id="soloQData">` блоке перед основным скриптом. Не синхронизировать с presenter/projector. Эти массивы изолированы от мультиплеерных пулов — намеренно, чтобы игрок не мог запомнить ответы через соло и использовать их в игре с ведущим.
+**Соло-массивы** (`Q_SOLO_ARCTIC`, `Q_SOLO_ECO`, и др.) — только в `hub.html`, в `<script id="soloQData">` блоке перед основным скриптом. Не синхронизировать с presenter/projector. Эти массивы изолированы от мультиплеерных пулов — намеренно, чтобы игрок не мог запомнить ответы через соло и использовать их в игре с ведущим.
+
+Формат соло-вопроса: `{dif:1, q:'...', opts:['A','B','C'], ci:1, exp:'Пояснение'}` — **3 варианта** (не 4). Пул выбирается в `startSoloGame()` по `_soloQuizId`:
+
+```js
+if(_soloQuizId==='arctic')       pool=[...Q_SOLO_ARCTIC];
+else if(_soloQuizId==='ecology') pool=[...Q_SOLO_ECO];
+// добавлять новые квизы здесь
+```
+
+Файл `solo.md` в корне содержит готовые массивы вопросов для 6 квизов (история, наука, патриотика, гео, космос, спорт), ожидающих добавления.
 
 ## Квизы
 
@@ -77,6 +87,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - **`quiz_state`** — текущее состояние: `phase`, `current_index`, `show_answer`, `round_type`, `quiz_id`, `shuffle_seed`, `question_visible`, `game_timer`, `question_started_at`, `session_code`, `music_playing`, `music_broadcast`
 - **`quiz_scores`** — `game_id, student_name, team_name, score numeric(5,1), questions_answered, avg_answer_time`
 - **`quiz_chat`** — чат, свободные ответы 100к1, и статистика ответов (`msg_type='answer_stat'`, message=JSON `{q, ok}`). `msg_type` влияет на видимость: `answer_stat`, `ready`, `bet` — служебные, **не отображаются** в чате игрока (`renderMsg()` в hub.html возвращает `null` для этих типов).
+- **`quiz_players`** — реестр зарегистрировавшихся: `game_id, student_name, team_name, last_seen` (heartbeat). Используется в presenter для онлайн-статуса, disconnect-мониторинга и фильтрации `quiz_scores` по текущей сессии.
 
 ## Game Phases
 
@@ -110,7 +121,9 @@ function pts(d){ return !d||d<=1 ? 1 : d===2 ? 2 : 3; }
 - `streak`: серия правильных; каждые 3 → +0.5 бонус; каждые 5 → `tryStealFromTop()` (−1 у лидера)
 - `penalty`: 1-я смена ответа бесплатна; со 2-й — каждая смена −0.5; `earned = max(0, pts − penalty)`
 - Сброс серии: `streak=0` при неверном ответе и в `resetQuiz()`
-- **Восстановление очков**: `loadSavedScore()` вызывается при первом `syncLoop()` — тянет `score` и `questions_answered` из `quiz_scores` если `score > 0`
+- **Восстановление очков**: `loadSavedScore()` вызывается при первом `syncLoop()`. Быстрый путь: читает `hub_score_snap` из `sessionStorage` (JSON `{s, qa, t}`, TTL 2 ч) — пишется при каждом `_pushScoreNow()`, выживает после крэша вкладки. Медленный путь: Supabase `quiz_scores`.
+- **Сброс между играми**: в `applyState()` при переходе в `phase=waiting` из активной фазы обязательно сбрасываются `REVEALED.clear()`, `score=0`, `streak=0`, `_scoreLoaded=false`. Без этого игроки входят во вторую игру с очками первой.
+- **Защита от дублирующей вкладки**: `hub_tab_id` (sessionStorage, уникальный per-tab) + `hub_active_tab_{pName}` (localStorage, shared). `_pushScoreNow()` блокируется если `hub_tab_id !== hub_active_tab_{pName}`. Второй tab показывает предупреждение через `showToast`.
 
 ## Timer Sync
 
@@ -304,3 +317,18 @@ Intro-анимации CSS: `introTitleReveal`, `introTitleShimmer`, `introLineE
 **CORE-массив** в каждом SW — список файлов для предзагрузки при установке (картинки, аудио). При добавлении нового `tp:"img"` вопроса: добавить файл в `CORE` обоих SW (`sw-presenter.js` и `sw-projector.js`) и в `<link rel="preload">` в `<head>` hub.html и projector.html.
 
 **Ошибка 206 Partial Content**: Cache API не кэширует ответы со статусом 206. Во всех SW стоит guard `r.status===200` перед `c.put()` — не убирать.
+
+## Presenter Diagnostics
+
+`presenter.html` содержит встроенный модуль самодиагностики `Diagnostics` (IIFE-объект, объявлен в отдельном `<script>` в конце `<body>`).
+
+- **Индикатор** — кнопка 🟢/⚠️/🔴 в топбаре (`#diagBadge`). Клик открывает панель лога.
+- **API**: `Diagnostics.log()`, `.warn()`, `.error()`, `.ok()`, `.exportLog()`, `.checkHealth()`
+- **Перехват**: `window.onerror` + `unhandledrejection` → `Diagnostics.error()`
+- **Авто-проверка**: `checkHealth()` каждые 30 с — пингует Supabase, проверяет `lastState`, SW-статус
+- **Авто-уведомление**: при >5 ERROR всплывает toast с кнопкой «💾 Скачать»
+- **Экспорт**: `exportLog()` скачивает `quiz_debug_YYYY-MM-DD-HH-MM-SS.txt`
+
+Интеграция с существующим кодом: `ups()` логирует Supabase-ошибки, `goStart()` → `.ok()`, `goReset()` → `.warn()`, `applyState()` логирует каждую смену `phase`, `refreshUnified()` catch → `.error()`.
+
+Все вызовы обёрнуты в guard `typeof Diagnostics!=='undefined'` — модуль разбирается позже основного скрипта, но функции вызываются только по событиям (кнопки, интервалы), поэтому порядок безопасен.
