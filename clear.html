@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Сброс кэша</title>
+<style>body{background:#0a1628;color:#e8f4ff;font-family:system-ui;display:flex;align-items:center;justify-content:center;min-height:100vh;margin:0;text-align:center}
+.box{padding:30px;max-width:400px}.status{margin:20px 0;font-size:1.1rem;line-height:1.8}
+.ok{color:#4fdfff}.err{color:#ff8080}.done{color:#7cff6b;font-size:1.3rem;font-weight:bold}
+</style></head><body><div class="box">
+<h2>Сброс кэша КвизЦентр</h2>
+<div id="log" class="status">Начинаю очистку…</div>
+<script>
+var log=document.getElementById('log');
+function L(msg,cls){log.innerHTML+='<div class="'+(cls||'')+'">'+msg+'</div>';}
+
+(async function(){
+  // 1. Удаляем все кэши
+  if('caches' in window){
+    try{
+      var keys=await caches.keys();
+      L('Найдено кэшей: '+keys.length);
+      for(var i=0;i<keys.length;i++){
+        await caches.delete(keys[i]);
+        L('Удалён: '+keys[i],'ok');
+      }
+    }catch(e){L('Ошибка кэшей: '+e.message,'err');}
+  } else { L('Cache API недоступен','err'); }
+
+  // 2. Удаляем все Service Workers
+  if('serviceWorker' in navigator){
+    try{
+      var regs=await navigator.serviceWorker.getRegistrations();
+      L('Service Workers: '+regs.length);
+      for(var j=0;j<regs.length;j++){
+        await regs[j].unregister();
+        L('SW удалён: '+regs[j].scope,'ok');
+      }
+    }catch(e){L('Ошибка SW: '+e.message,'err');}
+  } else { L('SW недоступен','err'); }
+
+  // 3. Очищаем localStorage/sessionStorage
+  try{localStorage.clear();L('localStorage очищен','ok');}catch(e){}
+  try{sessionStorage.clear();L('sessionStorage очищен','ok');}catch(e){}
+
+  L('');
+  L('Готово! Перенаправляю на presenter…','done');
+
+  setTimeout(function(){
+    window.location.href='presenter.html?nocache='+Date.now();
+  },2500);
+})();
+</script>
+</div></body></html>
