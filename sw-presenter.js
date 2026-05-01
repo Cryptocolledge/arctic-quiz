@@ -1,4 +1,4 @@
-const CACHE = 'quizhub-presenter-v15';
+const CACHE = 'quizhub-presenter-v16';
 const CORE = [
   'presenter.html',
   'manifest-presenter.json',

@@ -2723,27 +2723,27 @@ async function initPrep(){
     return;
   }
 
-  // Проверяем соединение и текущее состояние
+  // Параллельно: состояние игры + список игроков
   try{
-    const s=await getState();
-    // getState() возвращает null и при ошибке и при пустой таблице — различаем по прямому запросу
+    const [s, {data:plData}] = await Promise.all([
+      getState(),
+      sb.from("quiz_players").select("student_name,team_name,last_seen").eq("game_id",GID).order("joined_at",{ascending:true})
+    ]);
     prepDbStatus.innerHTML='<span style="color:var(--ok)">✓ Подключено</span>';
     prepBtnStart.disabled=false;
 
-    // Синхронизируем session_code из БД — чтобы разные устройства (планшет+ПК) показывали один код
+    // Синхронизируем session_code из БД
     if(s){
-      lastState=s; // устанавливаем до начала sync-loop чтобы ups() мог использовать session_code
+      lastState=s;
       if(s.session_code){
         saveSessionCode(s.session_code);
         updateQRBlock();
       } else {
-        // В БД нет кода — записываем наш (первый запуск)
-        ups({session_code:currentSessionCode});
+        ups({session_code:currentSessionCode}); // fire-and-forget
       }
     }
 
     if(s&&s.phase&&s.phase!=="waiting"){
-      // Игра уже идёт — показываем предупреждение
       const phaseLabel={running:"▶ Идёт",paused:"⏸ Пауза",ended:"✓ Завершена"}[s.phase]||s.phase;
       prepPhase.innerHTML=`<span style="color:#ffe080">${phaseLabel}</span>`;
       prepWarn.style.display="block";
@@ -2753,38 +2753,31 @@ async function initPrep(){
     }else{
       prepPhase.innerHTML='<span style="color:var(--ok)">⏳ Ожидание (готово к старту)</span>';
     }
+
+    // Отображаем игроков (данные уже загружены параллельно)
+    if(plData&&plData.length>0){
+      const now=Date.now();
+      prepPlayerCount.textContent=plData.length;
+      const onlineCount=plData.filter(r=>r.last_seen&&(now-new Date(r.last_seen).getTime())<ONLINE_MS).length;
+      prepPlayerList.innerHTML=plData.map(r=>{
+        const onl=r.last_seen&&(now-new Date(r.last_seen).getTime())<ONLINE_MS;
+        const ago=r.last_seen?Math.round((now-new Date(r.last_seen).getTime())/1000):null;
+        const agoStr=ago===null?"никогда":ago<60?ago+"с назад":Math.round(ago/60)+"мин назад";
+        return`<div class="prep-player">
+          <span style="width:8px;height:8px;border-radius:50%;background:${onl?"var(--ok)":"#555"};flex-shrink:0;${onl?"box-shadow:0 0 5px var(--ok)":""}"></span>
+          <b>${r.student_name}</b>
+          <span style="color:var(--muted);font-size:.7rem">${r.team_name||""}</span>
+          <span style="margin-left:auto;font-size:.67rem;color:${onl?"var(--ok)":"#777"}">${onl?"онлайн":agoStr}</span>
+        </div>`;
+      }).join("");
+      prepPlayerCount.innerHTML=`<span style="color:var(--ok)">${onlineCount}</span><span style="color:var(--muted);font-size:.75rem"> / ${plData.length}</span>`;
+    }
+    if(plData)plData.forEach(r=>knownPlayers.add(r.student_name+"_"+r.team_name));
   }catch(e){
     prepDbStatus.innerHTML='<span style="color:var(--err)">✗ Ошибка подключения к базе</span>';
     prepBtnStart.disabled=false;
     prepBtnStart.textContent="🔄 Повторить";
     prepBtnStart.onclick=()=>{location.reload();};
-  }
-
-  // Загружаем игроков для отображения
-  if(sb){
-    try{
-      const{data}=await sb.from("quiz_players").select("student_name,team_name,last_seen").eq("game_id",GID).order("joined_at",{ascending:true});
-      if(data&&data.length>0){
-        prepPlayerCount.textContent=data.length;
-        const now=Date.now();
-        const onlineCount=data.filter(r=>r.last_seen&&(now-new Date(r.last_seen).getTime())<ONLINE_MS).length;
-        prepPlayerList.innerHTML=data.map(r=>{
-          const onl=r.last_seen&&(now-new Date(r.last_seen).getTime())<ONLINE_MS;
-          const ago=r.last_seen?Math.round((now-new Date(r.last_seen).getTime())/1000):null;
-          const agoStr=ago===null?"никогда":ago<60?ago+"с назад":Math.round(ago/60)+"мин назад";
-          return`<div class="prep-player">
-            <span style="width:8px;height:8px;border-radius:50%;background:${onl?"var(--ok)":"#555"};flex-shrink:0;${onl?"box-shadow:0 0 5px var(--ok)":""}"></span>
-            <b>${r.student_name}</b>
-            <span style="color:var(--muted);font-size:.7rem">${r.team_name||""}</span>
-            <span style="margin-left:auto;font-size:.67rem;color:${onl?"var(--ok)":"#777"}">${onl?"онлайн":agoStr}</span>
-          </div>`;
-        }).join("");
-        // Обновляем счётчик с разбивкой онлайн/всего
-        prepPlayerCount.innerHTML=`<span style="color:var(--ok)">${onlineCount}</span><span style="color:var(--muted);font-size:.75rem"> / ${data.length}</span>`;
-      }
-      // Предзагружаем knownPlayers
-      if(data)data.forEach(r=>knownPlayers.add(r.student_name+"_"+r.team_name));
-    }catch(e){}
   }
 
   // Обновляем список игроков каждые 3 сек пока overlay открыт
@@ -2874,8 +2867,10 @@ prepBtnStart.addEventListener("click",async()=>{
   prepBtnStart.disabled=true;
   prepBtnStart.textContent="Запуск…";
   try{
-    await sb.from("quiz_chat").delete().eq("game_id",GID);
-    await ups({phase:"waiting",current_index:0,question_started_at:null,show_answer:false,quiz_mode:selectedMode,round_type:null,bet_question_index:null,bet_correct_index:null,quiz_id:QUIZ_ID_CURRENT});
+    await Promise.all([
+      sb.from("quiz_chat").delete().eq("game_id",GID),
+      ups({phase:"waiting",current_index:0,question_started_at:null,show_answer:false,quiz_mode:selectedMode,round_type:null,bet_question_index:null,bet_correct_index:null,quiz_id:QUIZ_ID_CURRENT})
+    ]);
   }catch(e){console.error(e);}
   enterPresenter();
 });
