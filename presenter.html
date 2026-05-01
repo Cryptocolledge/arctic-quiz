@@ -908,7 +908,7 @@ tr:hover td{background:rgba(79,223,255,.03);}
     </div>
   </div>
 
-  <div style="text-align:center;padding:8px;font-size:.72rem;color:var(--muted);">КвизЦентр · cryptocolledge.github.io · <span id="presVer">v21</span> · <a href="#" onclick="forceAppUpdate();return false" style="color:#4fdfff;text-decoration:underline">Обновить</a></div>
+  <div style="text-align:center;padding:8px;font-size:.72rem;color:var(--muted);">КвизЦентр · cryptocolledge.github.io · <span id="presVer">v22</span> · <a href="#" onclick="forceAppUpdate();return false" style="color:#4fdfff;text-decoration:underline">Обновить</a></div>
 
 </div>
 </div>
@@ -2020,7 +2020,17 @@ async function ups(patch){
     game_timer:lastState?.game_timer??QT,
   };
   const full={...base,...patch};
-  try{const{data,error}=await sb.from("quiz_state").upsert(full,{onConflict:"game_id"}).select().maybeSingle();if(error){if(typeof Diagnostics!=='undefined')Diagnostics.error('Supabase ups() error',error.message||error.code);return null;}if(data)lastState=data;return data;}catch(e){if(typeof Diagnostics!=='undefined')Diagnostics.error('Supabase ups() exception',e.message);return null;}
+  for(let _r=0;_r<3;_r++){
+    try{
+      const{data,error}=await sb.from("quiz_state").upsert(full,{onConflict:"game_id"}).select().maybeSingle();
+      if(error){if(typeof Diagnostics!=='undefined')Diagnostics.error('Supabase ups() error',error.message||error.code);return null;}
+      if(data)lastState=data;return data;
+    }catch(e){
+      if(_r<2){await new Promise(r=>setTimeout(r,800*(1+_r)));continue;}
+      if(typeof Diagnostics!=='undefined')Diagnostics.error('Supabase ups() error',e.message);return null;
+    }
+  }
+  return null;
 }
 
 // ── ИГРА ─────────────────────────────────────────────────────
@@ -2028,7 +2038,9 @@ async function ups(patch){
 function nowUtc(){return new Date().toISOString().replace(/\.\d+Z$/,"Z");}
 function nowUtcPlus3(){ return new Date(Date.now()+3000).toISOString(); }
 
+let _goStartLock=false;
 async function goStart(){
+  if(_goStartLock)return;_goStartLock=true;
   if(typeof Diagnostics!=='undefined')Diagnostics.ok('Игра запущена',{quiz:QUIZ_ID_CURRENT||QUIZ_ID,mode:presenterMode||'offline'});
   const vis = presenterMode==="online" ? false : true;
   const seed = Math.floor(Math.random()*100000);
@@ -2039,6 +2051,7 @@ async function goStart(){
   }catch(e){console.warn("Score reset:",e);}}
   applyState(await ups({phase:"running",current_index:0,question_started_at:vis?nowUtc():null,show_answer:false,question_visible:vis,shuffle_seed:seed,game_timer:QT,quiz_id:QUIZ_ID_CURRENT}));
   if(!vis) showRevealQBtn(true);
+  _goStartLock=false;
 }
 async function goPause(){applyState(await ups({phase:"paused"}));}
 async function goResume(){applyState(await ups({phase:"running",question_started_at:nowUtc(),show_answer:false,question_visible:true}));showRevealQBtn(false);}
