@@ -321,6 +321,9 @@ tr:hover td{background:rgba(79,223,255,.03);}
     navigator.serviceWorker.addEventListener('controllerchange',function(){
       if(_swRefreshing)return;_swRefreshing=true;window.location.reload();
     });
+    navigator.serviceWorker.addEventListener('message',function(e){
+      if(e.data&&e.data.type==='reloadNow'){window.location.reload();}
+    });
     window.addEventListener('load', function(){
       navigator.serviceWorker.register('sw-presenter.js',{updateViaCache:'none'}).then(function(reg){
         reg.update();
@@ -332,6 +335,18 @@ tr:hover td{background:rgba(79,223,255,.03);}
         });
       }).catch(function(){});
     });
+  }
+  // Принудительный сброс кэша — вызывается кнопкой на prep-экране
+  function forceAppUpdate(){
+    if('caches' in window){
+      caches.keys().then(function(k){return Promise.all(k.map(function(n){return caches.delete(n)}))})
+        .then(function(){
+          if(navigator.serviceWorker&&navigator.serviceWorker.controller){
+            navigator.serviceWorker.controller.postMessage('forceRefresh');
+          }
+          setTimeout(function(){window.location.reload(true)},500);
+        });
+    } else { window.location.reload(true); }
   }
 </script>
 </head>
@@ -893,7 +908,7 @@ tr:hover td{background:rgba(79,223,255,.03);}
     </div>
   </div>
 
-  <div style="text-align:center;padding:8px;font-size:.72rem;color:var(--muted);">КвизЦентр · cryptocolledge.github.io · <span id="presVer">v19</span></div>
+  <div style="text-align:center;padding:8px;font-size:.72rem;color:var(--muted);">КвизЦентр · cryptocolledge.github.io · <span id="presVer">v21</span> · <a href="#" onclick="forceAppUpdate();return false" style="color:#4fdfff;text-decoration:underline">Обновить</a></div>
 
 </div>
 </div>

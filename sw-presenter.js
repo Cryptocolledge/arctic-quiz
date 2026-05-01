@@ -1,8 +1,12 @@
-const CACHE = 'quizhub-presenter-v20';
-const CORE = [
+const CACHE = 'quizhub-presenter-v21';
+// Только критичные файлы — чтобы install не падал на медленном WiFi
+const CRITICAL = [
   'presenter.html',
   'manifest-presenter.json',
-  'icon-presenter-192.png',
+  'icon-presenter-192.png'
+];
+// Медиа кэшируются лениво (при первом запросе)
+const LAZY = [
   'icon-presenter-512.png',
   'respuesta-correcta.mp3',
   'wrong-1.mp3',
@@ -19,7 +23,9 @@ const CORE = [
 
 self.addEventListener('install', e => {
   e.waitUntil(
-    caches.open(CACHE).then(c => c.addAll(CORE)).then(() => self.skipWaiting())
+    caches.open(CACHE)
+      .then(c => c.addAll(CRITICAL))
+      .then(() => self.skipWaiting())
   );
 });
 
@@ -44,7 +50,7 @@ self.addEventListener('fetch', e => {
     );
     return;
   }
-  // HTML — network-first (всегда свежий, чтобы изменения кода применялись сразу)
+  // HTML + SW — network-first (всегда свежий)
   if(e.request.url.match(/\.html(\?|$)/) || e.request.url.endsWith('/')){
     e.respondWith(
       fetch(e.request, {cache:'no-cache'})
@@ -70,4 +76,10 @@ self.addEventListener('fetch', e => {
 
 self.addEventListener('message', e => {
   if(e.data === 'skipWaiting') self.skipWaiting();
+  // Принудительный сброс кэша из страницы
+  if(e.data === 'forceRefresh'){
+    caches.keys().then(keys => Promise.all(keys.map(k => caches.delete(k))))
+      .then(() => self.clients.matchAll())
+      .then(clients => clients.forEach(c => c.postMessage({type:'reloadNow'})));
+  }
 });
