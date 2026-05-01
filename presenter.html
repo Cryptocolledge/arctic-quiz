@@ -908,7 +908,7 @@ tr:hover td{background:rgba(79,223,255,.03);}
     </div>
   </div>
 
-  <div style="text-align:center;padding:8px;font-size:.72rem;color:var(--muted);">КвизЦентр · cryptocolledge.github.io · <span id="presVer">v24</span> · <a href="#" onclick="forceAppUpdate();return false" style="color:#4fdfff;text-decoration:underline">Обновить</a></div>
+  <div style="text-align:center;padding:8px;font-size:.72rem;color:var(--muted);">КвизЦентр · cryptocolledge.github.io · <span id="presVer">v25</span> · <a href="#" onclick="forceAppUpdate();return false" style="color:#4fdfff;text-decoration:underline">Обновить</a></div>
 
 </div>
 </div>
@@ -961,13 +961,14 @@ function loadSupabaseFallback(){
 // Запускаем fallback сразу — не ждём onerror от основного тега
 loadSupabaseFallback();
 
-// Кастомный fetch с таймаутом — для планшетов с нестабильным WiFi
+// Кастомный fetch — убираем внутренний AbortSignal SDK чтобы не обрывать запросы
 function _sbFetch(url, opts){
-  const ctrl=new AbortController();
-  const tid=setTimeout(()=>ctrl.abort(),8000);
-  return fetch(url,{...opts,signal:ctrl.signal})
-    .then(r=>{clearTimeout(tid);return r;})
-    .catch(e=>{clearTimeout(tid);throw e;});
+  if(opts){
+    const clean={...opts};
+    delete clean.signal; // убираем signal SDK — он обрывает запросы раньше времени
+    return fetch(url,clean);
+  }
+  return fetch(url,opts);
 }
 const _sbOpts={global:{fetch:_sbFetch}};
 
