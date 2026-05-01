@@ -893,7 +893,7 @@ tr:hover td{background:rgba(79,223,255,.03);}
     </div>
   </div>
 
-  <div style="text-align:center;padding:8px;font-size:.72rem;color:var(--muted);">КвизЦентр · cryptocolledge.github.io</div>
+  <div style="text-align:center;padding:8px;font-size:.72rem;color:var(--muted);">КвизЦентр · cryptocolledge.github.io · <span id="presVer">v18</span></div>
 
 </div>
 </div>
@@ -2702,11 +2702,11 @@ async function initPrep(){
   setTimeout(updateQRBlock, 100);
   let tries=0;
   prepDbStatus.innerHTML='<span style="color:var(--muted)">⏳ Загрузка SDK…</span>';
-  while(!window.supabase?.createClient&&tries<40){
-    await new Promise(r=>setTimeout(r,200));
+  while(!window.supabase?.createClient&&tries<25){
+    await new Promise(r=>setTimeout(r,150));
     tries++;
-    if(tries%5===0){
-      const sec=Math.round(tries/5);
+    if(tries%4===0){
+      const sec=Math.round(tries*150/1000);
       prepDbStatus.innerHTML=`<span style="color:var(--muted)">⏳ Подключение… ${sec}с</span>`;
     }
   }
@@ -2878,12 +2878,11 @@ prepBtnStart.addEventListener("click",async()=>{
   if(!sb){alert("Нет соединения с базой данных. Перезагрузите страницу.");return;}
   prepBtnStart.disabled=true;
   prepBtnStart.textContent="Запуск…";
-  try{
-    await Promise.all([
-      sb.from("quiz_chat").delete().eq("game_id",GID),
-      ups({phase:"waiting",current_index:0,question_started_at:null,show_answer:false,quiz_mode:selectedMode,round_type:null,bet_question_index:null,bet_correct_index:null,quiz_id:QUIZ_ID_CURRENT})
-    ]);
-  }catch(e){console.error(e);}
+  // Не ждём ответа — переходим сразу, запросы доедут в фоне
+  Promise.all([
+    sb.from("quiz_chat").delete().eq("game_id",GID),
+    ups({phase:"waiting",current_index:0,question_started_at:null,show_answer:false,quiz_mode:selectedMode,round_type:null,bet_question_index:null,bet_correct_index:null,quiz_id:QUIZ_ID_CURRENT})
+  ]).catch(e=>console.error(e));
   enterPresenter();
 });
 
