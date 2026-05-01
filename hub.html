@@ -3588,6 +3588,8 @@ function applyState(s){
 
   // ОЖИДАНИЕ
   if(phase==="waiting"){
+    // Если блиц активен — не сбрасываем (блиц работает локально, state в БД может скакать)
+    if(ovBlitz.classList.contains("active")||ovBetting.classList.contains("active")){lastPhase="waiting";return;}
     stopTimer();showWaitPanel();showOv(ovWait);hideOv(ovRes);
     // Сброс игрового состояния при переходе между играми
     // Условие: пришли из реальной фазы (не первый applyState на загрузке страницы)

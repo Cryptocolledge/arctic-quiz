@@ -908,7 +908,7 @@ tr:hover td{background:rgba(79,223,255,.03);}
     </div>
   </div>
 
-  <div style="text-align:center;padding:8px;font-size:.72rem;color:var(--muted);">КвизЦентр · cryptocolledge.github.io · <span id="presVer">v22</span> · <a href="#" onclick="forceAppUpdate();return false" style="color:#4fdfff;text-decoration:underline">Обновить</a></div>
+  <div style="text-align:center;padding:8px;font-size:.72rem;color:var(--muted);">КвизЦентр · cryptocolledge.github.io · <span id="presVer">v23</span> · <a href="#" onclick="forceAppUpdate();return false" style="color:#4fdfff;text-decoration:underline">Обновить</a></div>
 
 </div>
 </div>
@@ -1824,16 +1824,12 @@ function startPresTimer(at,qtOverride){
 
 // ── СОСТОЯНИЕ ─────────────────────────────────────────────────
 function applyState(s){
-  lastState=s;
-  // Логируем смену фазы
-  if(typeof Diagnostics!=='undefined'){
-    const _np=s?.phase||'null';
-    if(_np!==_diagLastPhase){
-      Diagnostics.log('Смена фазы: '+(_diagLastPhase||'—')+' → '+_np,{idx:s?.current_index??null});
-      _diagLastPhase=_np;
-    }
-  }
   if(!s){chipPhase.textContent="⏳";chipPhase.className="chip";stPhase.textContent="Ожидание";stopPresTimer();btnReveal.disabled=true;ansState.className="ans-state";return;}
+  lastState=s;
+  if(typeof Diagnostics!=='undefined'){
+    const _np=s.phase||'null';
+    if(_np!==_diagLastPhase){Diagnostics.log('Смена фазы: '+(_diagLastPhase||'—')+' → '+_np,{idx:s.current_index??null});_diagLastPhase=_np;}
+  }
   // Синхронизируем QT и подсветку кнопок таймера из state
   if(s.game_timer&&s.game_timer!==QT) presSetTimer(s.game_timer, true);
   // Переключаем набор вопросов по quiz_mode
