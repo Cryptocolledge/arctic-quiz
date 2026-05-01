@@ -317,20 +317,20 @@ tr:hover td{background:rgba(79,223,255,.03);}
 <link rel="apple-touch-icon" href="icon-presenter-192.png">
 <script>
   if('serviceWorker' in navigator){
+    var _swRefreshing=false;
+    navigator.serviceWorker.addEventListener('controllerchange',function(){
+      if(_swRefreshing)return;_swRefreshing=true;window.location.reload();
+    });
     window.addEventListener('load', function(){
-      navigator.serviceWorker.register('sw-presenter.js').then(function(reg){
+      navigator.serviceWorker.register('sw-presenter.js',{updateViaCache:'none'}).then(function(reg){
         reg.update();
         reg.addEventListener('updatefound', function(){
-          const newSW = reg.installing;
-          if(!newSW) return;
-          newSW.addEventListener('statechange', function(){
-            if(newSW.state === 'installed' && navigator.serviceWorker.controller){
-              newSW.postMessage('skipWaiting');
-            }
+          var nw=reg.installing;if(!nw)return;
+          nw.addEventListener('statechange',function(){
+            if(nw.state==='installed'&&navigator.serviceWorker.controller)nw.postMessage('skipWaiting');
           });
         });
       }).catch(function(){});
-      // controllerchange без авто-reload — иначе hub и presenter зацикливаются
     });
   }
 </script>
@@ -893,7 +893,7 @@ tr:hover td{background:rgba(79,223,255,.03);}
     </div>
   </div>
 
-  <div style="text-align:center;padding:8px;font-size:.72rem;color:var(--muted);">КвизЦентр · cryptocolledge.github.io · <span id="presVer">v18</span></div>
+  <div style="text-align:center;padding:8px;font-size:.72rem;color:var(--muted);">КвизЦентр · cryptocolledge.github.io · <span id="presVer">v19</span></div>
 
 </div>
 </div>
