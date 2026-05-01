@@ -317,10 +317,6 @@ tr:hover td{background:rgba(79,223,255,.03);}
 <link rel="apple-touch-icon" href="icon-presenter-192.png">
 <script>
   if('serviceWorker' in navigator){
-    var _swRefreshing=false;
-    navigator.serviceWorker.addEventListener('controllerchange',function(){
-      if(_swRefreshing)return;_swRefreshing=true;window.location.reload();
-    });
     navigator.serviceWorker.addEventListener('message',function(e){
       if(e.data&&e.data.type==='reloadNow'){window.location.reload();}
     });
@@ -908,7 +904,7 @@ tr:hover td{background:rgba(79,223,255,.03);}
     </div>
   </div>
 
-  <div style="text-align:center;padding:8px;font-size:.72rem;color:var(--muted);">КвизЦентр · cryptocolledge.github.io · <span id="presVer">v25</span> · <a href="#" onclick="forceAppUpdate();return false" style="color:#4fdfff;text-decoration:underline">Обновить</a></div>
+  <div style="text-align:center;padding:8px;font-size:.72rem;color:var(--muted);">КвизЦентр · cryptocolledge.github.io · <span id="presVer">v26</span> · <a href="#" onclick="forceAppUpdate();return false" style="color:#4fdfff;text-decoration:underline">Обновить</a></div>
 
 </div>
 </div>
@@ -2031,6 +2027,7 @@ async function ups(patch){
     try{
       const{data,error}=await sb.from("quiz_state").upsert(full,{onConflict:"game_id"}).select().maybeSingle();
       if(error){if(typeof Diagnostics!=='undefined')Diagnostics.error('Supabase ups() error',error.message||error.code);return null;}
+      if(typeof Diagnostics!=='undefined'&&data)Diagnostics.log('ups OK',{phase:data.phase,idx:data.current_index,show:data.show_answer});
       if(data)lastState=data;return data;
     }catch(e){
       if(_r<2){await new Promise(r=>setTimeout(r,800*(1+_r)));continue;}
